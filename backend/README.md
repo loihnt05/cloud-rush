@@ -14,7 +14,7 @@ This is a FastAPI backend for a flight ticket sales system. It provides RESTful 
 
 - **Framework:** FastAPI
 - **Database:** PostgreSQL (via SQLAlchemy)
-- **Authentication:** JWT
+- **Authentication:** JWT, OAth2
 - **ORM:** SQLAlchemy
 - **Migrations:** Alembic
 
@@ -28,8 +28,8 @@ This is a FastAPI backend for a flight ticket sales system. It provides RESTful 
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/flight-tickets-backend.git
-cd flight-tickets-backend
+git clone https://github.com/loihnt05/cloudrush.git
+cd cloudrush
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -48,7 +48,7 @@ alembic upgrade head
 ### Running the Server
 
 ```bash
-uvicorn app.main:app --reload
+uv uvicorn app.main:app --reload
 ```
 
 ## API Documentation
@@ -60,7 +60,9 @@ Interactive docs available at [http://localhost:8000/docs](http://localhost:8000
 ```
 app/
 ├── main.py
+├── dependencies.py
 ├── models/
+├── internal/
 ├── schemas/
 ├── routers/
 ├── services/
