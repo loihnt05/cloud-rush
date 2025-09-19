@@ -5,8 +5,6 @@
 **Backend:** FastAPI  
 **Team Members:** 2
 
-## Badges
-
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-blue?logo=react&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-green?logo=fastapi&logoColor=white)
