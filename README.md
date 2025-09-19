@@ -1,11 +1,9 @@
-# ✈️ Flight Ticket Revenue Forecasting
+# ✈️ Airline Ticket Sales Revenue Predictor
 
 **Project Type:** Time Series Forecasting  
 **Frontend:** React  
 **Backend:** FastAPI  
 **Team Members:** 2
-
----
 
 ## Badges
 
@@ -13,8 +11,6 @@
 ![React](https://img.shields.io/badge/React-18-blue?logo=react&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-green?logo=fastapi&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
-
----
 
 ## Table of Contents
 
@@ -26,10 +22,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Results](#results)
-- [Team Members](#team-members)
 - [License](#license)
-
----
 
 ## Overview
 
@@ -49,16 +42,12 @@ The system consists of:
     - **Transformer-based models:** Handle complex sequential patterns with attention mechanisms.
   - **Hybrid approaches:** Combine statistical and ML/DL models to improve robustness.
 
----
-
 ## Features
 
 - Predict daily, weekly, or monthly flight revenue.
 - Visualize historical revenue trends and forecast results.
 - Interactive dashboard to explore trends and models.
 - Compare multiple forecasting models (Prophet, XGBoost).
-
----
 
 ## Tech Stack
 
@@ -67,22 +56,16 @@ The system consists of:
 - **Database:** PostgreSQL
 - **Deployment:** Docker
 
----
-
 ## Dataset
 
 - Historical flight ticket revenue (date, route, revenue, etc.)
 - Preprocessing includes handling missing values, aggregating revenue, and feature engineering for modeling.
-
----
 
 ## Modeling Approach
 
 - **Time Series Models:** Prophet, ARIMA/SARIMA
 - **Machine Learning Models:** XGBoost, Random Forest
 - **Evaluation Metrics:** RMSE, MAE, MAPE
-
----
 
 ## Installation
 
@@ -124,13 +107,12 @@ pnpm install
 ```bash
 pnpm run dev
 ```
+
 Cloudrush will be available at http://localhost:5173
 
 ## Usage
 
 ## Results
-
-## Team Members
 
 ## License
 
