@@ -43,31 +43,11 @@ The system consists of:
 
   - **Statistical models:**
     - **ARIMA / SARIMA:** Capture trends and seasonality in stationary time series. Good for short-term forecasts and interpretable results.
-    - **Exponential Smoothing (ETS):** Useful for data with trend and seasonal patterns.
   - **Machine Learning models:**
     - **Random Forest / XGBoost:** Treats lagged values and engineered features as predictors. Can capture nonlinear relationships.
   - **Deep Learning models:**
-    - **LSTM / GRU:** Recurrent neural networks that learn long-term temporal dependencies.
     - **Transformer-based models:** Handle complex sequential patterns with attention mechanisms.
   - **Hybrid approaches:** Combine statistical and ML/DL models to improve robustness.
-
-- **Data Storage:**
-
-  - **Time series database / relational DB:** Store historical revenue, features, and model predictions.
-  - **Cache layer (optional):** For frequently requested forecasts to reduce computation time.
-
-- **Workflow:**
-
-  1. **Data ingestion:** Load historical revenue and preprocess (handle missing values, scaling, feature engineering).
-  2. **Model selection:** Choose appropriate model(s) based on data characteristics (trend, seasonality, volatility).
-  3. **Forecasting:** Generate future revenue predictions and confidence intervals.
-  4. **API response:** Serve predictions to frontend via REST endpoints.
-  5. **Visualization:** Display forecasts, historical trends, and error metrics (MAE, RMSE) interactively.
-
-- **Monitoring & Maintenance:**
-  - Track model performance over time.
-  - Retrain models periodically as new data becomes available.
-  - Log API requests and prediction latency for performance analysis.
 
 ---
 
@@ -84,7 +64,7 @@ The system consists of:
 
 - **Frontend:** React, Tailwind CSS, Recharts
 - **Backend:** FastAPI, Python, Pandas, Prophet/XGBoost
-- **Database (optional):** PostgreSQL
+- **Database:** PostgreSQL
 - **Deployment:** Docker
 
 ---
@@ -111,8 +91,8 @@ The system consists of:
 1. Clone the repository and navigate to the backend folder:
 
 ```bash
-git clone https://github.com/loihnt05/cloudrush.git
-cd cloudrush/backend
+git clone https://github.com/loihnt05/cloud-rush.git
+cd cloud-rush/backend
 ```
 
 2. Create a virtual environment and install dependencies:
@@ -122,6 +102,7 @@ docker compose up --build
 ```
 
 The API will be available at http://localhost:8000
+
 See document at http://localhost:8000/docs
 
 ### Frontend (React)
@@ -143,6 +124,7 @@ pnpm install
 ```bash
 pnpm run dev
 ```
+Cloudrush will be available at http://localhost:5173
 
 ## Usage
 
