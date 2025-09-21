@@ -46,6 +46,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "itsdangerous" },
     { name = "python-dotenv" },
+    { name = "starlette" },
 ]
 
 [package.metadata]
@@ -54,6 +55,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.116.2" },
     { name = "itsdangerous", specifier = ">=2.1.2" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "starlette", specifier = ">=0.48.0" },
 ]
 
 [[package]]
