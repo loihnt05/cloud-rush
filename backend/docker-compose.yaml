@@ -5,16 +5,28 @@ services:
       - "8000:8000"
     environment:
       - PYTHONPATH=/app
-  db-cloudrush:
+      - DATABASE_URL=postgresql+psycopg2://admin:admin@database:5432/crdb
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  database:
     image: postgres:13
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: cloudrush_db
+      POSTGRES_DB: crdb
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d crdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:
