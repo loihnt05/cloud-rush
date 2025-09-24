@@ -35,7 +35,7 @@ def read_pets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=PetResponse)
 def create_pet(pet: PetCreate, db: Session = Depends(get_db)):
-    db_pet = Pet(**pet.dict())
+    db_pet = Pet(**pet.model_dump())
     db.add(db_pet)
     db.commit()
     db.refresh(db_pet)

@@ -1,45 +1,15 @@
 from fastapi import APIRouter, Request, Depends
-from authlib.integrations.starlette_client import OAuth, OAuthError
-from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
-from ..core.config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
+from authlib.integrations.starlette_client import OAuthError
+
 from ..core.database import get_db
-from ..models import User
-from pydantic import BaseModel
+from ..models.user_model import User
+from ..schemas.user import UserCreate, UserResponse
+from ..core.oauth import oAuth
 
 router = APIRouter(
     tags=["auth"],
-    prefix="/auth"
 )
-
-class UserCreate(BaseModel):
-    name: str
-    email: str
-    google_id: str = None
-
-class UserResponse(BaseModel):
-    id: int
-    name: str
-    email: str
-    google_id: str = None
-
-    class Config:
-        from_attributes = True
-
-# Cấu hình OAuth
-oAuth = OAuth()
-oAuth.register(
-    name="google",
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={
-        "scope": "email openid profile",
-        "redirect_uri": REDIRECT_URI,
-        "response_type": "code",
-    },
-)
-
 
 @router.get("/login")
 async def login(request: Request):
@@ -55,23 +25,29 @@ async def auth(request: Request, db: Session = Depends(get_db)):
         return {"error": str(e)}
     user_info = token.get('userinfo')
     if user_info:
-        # Save or update user in database
         google_id = user_info.get('sub')
         email = user_info.get('email')
         name = user_info.get('name')
 
-        # Check if user exists
         db_user = db.query(User).filter(User.google_id == google_id).first()
         if not db_user:
-            # Create new user
-            db_user = User(
-                google_id=google_id,
-                email=email,
-                name=name
-            )
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
+            db_user = db.query(User).filter(User.email == email).first()
+            if db_user:
+                if db_user.google_id is None:
+                    db_user.google_id = google_id
+                    db.commit()
+                    db.refresh(db_user)
+                elif db_user.google_id != google_id:
+                    return {"error": "Email already associated with different Google account"}
+            else:
+                db_user = User(
+                    google_id=google_id,
+                    email=email,
+                    name=name
+                )
+                db.add(db_user)
+                db.commit()
+                db.refresh(db_user)
 
         request.session['user'] = dict(user_info)
         request.session['user_id'] = db_user.id
@@ -88,7 +64,7 @@ async def me(request: Request):
 
 @router.post("/users", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = User(**user.dict())
+    db_user = User(**user.model_dump())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
