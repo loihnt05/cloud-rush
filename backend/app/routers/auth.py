@@ -4,7 +4,7 @@ from authlib.integrations.starlette_client import OAuthError
 
 from ..core.database import get_db
 from ..models.user_model import User
-from ..schemas.user import UserCreate, UserResponse
+from ..schemas.user_schema import UserCreate, UserResponse
 from ..core.oauth import oAuth
 
 router = APIRouter(

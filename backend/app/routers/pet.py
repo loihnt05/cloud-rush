@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
-from app.models import Pet
+from app.models import Pet, User
 from pydantic import BaseModel
 
 router = APIRouter(
@@ -35,6 +35,10 @@ def read_pets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=PetResponse)
 def create_pet(pet: PetCreate, db: Session = Depends(get_db)):
+    if pet.owner_id is not None:
+        user = db.query(User).filter(User.id == pet.owner_id).first()
+        if user is None:
+            raise HTTPException(status_code=400, detail="Owner not found")
     db_pet = Pet(**pet.model_dump())
     db.add(db_pet)
     db.commit()

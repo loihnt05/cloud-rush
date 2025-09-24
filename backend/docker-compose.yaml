@@ -5,7 +5,7 @@ services:
       - "8000:8000"
     environment:
       - PYTHONPATH=/app
-      - DATABASE_URL=postgresql+psycopg2://admin:admin@database:5432/crdb
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       database:
         condition: service_healthy
