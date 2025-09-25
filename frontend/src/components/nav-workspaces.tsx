@@ -17,6 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { Link } from "react-router-dom"
 
 export function NavWorkspaces({
   workspaces,
@@ -39,10 +40,10 @@ export function NavWorkspaces({
             <Collapsible key={workspace.name}>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <a href="#">
+                  <Link to="#">
                     <span>{workspace.emoji}</span>
                     <span>{workspace.name}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuAction
@@ -60,10 +61,10 @@ export function NavWorkspaces({
                     {workspace.pages.map((page) => (
                       <SidebarMenuSubItem key={page.name}>
                         <SidebarMenuSubButton asChild>
-                          <a href="#">
+                          <Link to="#">
                             <span>{page.emoji}</span>
                             <span>{page.name}</span>
-                          </a>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
