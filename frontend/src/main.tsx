@@ -38,6 +38,7 @@ createRoot(document.getElementById("root")!).render(
       authorizationParams={{
         redirect_uri: window.location.origin,
         audience: authConfig.audience,
+        scope: "openid profile email"
       }}
       cacheLocation="localstorage"
     >
