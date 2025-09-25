@@ -11,7 +11,7 @@ import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
 
 const queryClient = new QueryClient();
-function AccessTokenProvider({ children }: { children: React.ReactNode }) {
+export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
   const { getAccessTokenSilently, user } = useAuth0();
 
   useEffect(() => {

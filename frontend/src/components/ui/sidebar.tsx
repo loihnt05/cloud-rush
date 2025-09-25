@@ -695,7 +695,7 @@ function SidebarMenuSubButton({
     />
   )
 }
-
+export default Sidebar
 export {
   Sidebar,
   SidebarContent,
@@ -720,5 +720,4 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
 }
