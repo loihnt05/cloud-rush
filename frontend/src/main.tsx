@@ -6,7 +6,8 @@ import "./styles/index.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import authConfig from "./auth-config.ts";
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 function AccessTokenProvider({ children }: { children: React.ReactNode }) {
   const { getAccessTokenSilently, user } = useAuth0();
 
@@ -33,9 +34,11 @@ createRoot(document.getElementById("root")!).render(
     >
       <AccessTokenProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/*" element={<App />} />
-          </Routes>
+          <QueryClientProvider client={queryClient}>
+            <Routes>
+              <Route path="/*" element={<App />} />
+            </Routes>
+          </QueryClientProvider>
         </BrowserRouter>
       </AccessTokenProvider>
     </Auth0Provider>
