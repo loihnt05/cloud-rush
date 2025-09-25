@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 DATABASE_URL = os.getenv("DATABASE_URL")
-REDIRECT_URI = os.getenv("REDIRECT_URI")
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
+API_AUDIENCE = os.getenv("API_AUDIENCE")

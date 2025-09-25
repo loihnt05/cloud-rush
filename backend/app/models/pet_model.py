@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, func
 from app.core.database import Base
 
 class Pet(Base):
@@ -10,8 +9,6 @@ class Pet(Base):
     species = Column(String, nullable=False)
     breed = Column(String, nullable=True)
     age = Column(Integer, nullable=True)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    owner_id = Column(String, nullable=True)  # JWT sub claim
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    owner = relationship("User", back_populates="pets")

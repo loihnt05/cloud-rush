@@ -10,9 +10,10 @@ export default function Home() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["pets"], 
     queryFn: async () => {
-      const res = await appAxios.get("/pets/");
+      const res = await appAxios.get("/pets");
       return res.data;
     },
+    // enabled: isAuthenticated, 
   });
 
   if (isLoading) return <p>Loading...</p>;

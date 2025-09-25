@@ -1,4 +1,3 @@
-// main.tsx
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
@@ -9,18 +8,24 @@ import authConfig from "./auth-config.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
+import useSettingStore from "./stores/setting-store";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
-  const { getAccessTokenSilently, user } = useAuth0();
+  const { getAccessTokenSilently, user, isAuthenticated } = useAuth0();
+  const { setAccessToken } = useSettingStore();
 
   useEffect(() => {
-    if (user?.sub) {
+    if (isAuthenticated && user?.sub) {
       getAccessTokenSilently().then((token) => {
-        console.log("Access token:", token);
+        setAccessToken(token);
+      }).catch(() => {
+        setAccessToken(null);
       });
+    } else {
+      setAccessToken(null);
     }
-  }, [user?.sub, getAccessTokenSilently]);
+  }, [user?.sub, getAccessTokenSilently, isAuthenticated, setAccessToken]);
 
   return <>{children}</>;
 }
@@ -32,6 +37,7 @@ createRoot(document.getElementById("root")!).render(
       clientId={authConfig.clientId}
       authorizationParams={{
         redirect_uri: window.location.origin,
+        audience: authConfig.audience,
       }}
       cacheLocation="localstorage"
     >

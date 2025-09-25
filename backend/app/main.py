@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 from contextlib import asynccontextmanager
-
-from app.routers import pet, auth
+from fastapi_auth0 import Auth0User
+from app.routers import pet
 from app.core.database import create_tables
+from app.core.auth import auth0
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,8 +24,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key="!secret")
 
 # Routers
 app.include_router(pet.router)
-app.include_router(auth.router)
+
+@app.get("/private")
+def private_route(user: Auth0User = Depends(auth0.get_user)):
+    return {"message": f"Hello {user.email}"}
