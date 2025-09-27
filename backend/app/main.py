@@ -10,6 +10,7 @@ import json
 import httpx
 from app.core.config import AUTH0_DOMAIN
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -32,19 +33,22 @@ app.add_middleware(
 # Routers
 app.include_router(pet.router)
 
+# decode JWT token function
+
 
 @app.get("/private")
 async def private_route(user: Auth0User = Depends(auth0.get_user), request: Request = None):
     print(f"User object: {user}")
     print(f"User email: {user.email}")
     print(f"User id: {user.id}")
-    
+
     auth_header = request.headers.get('authorization', '') if request else ''
     if not auth_header.startswith('Bearer '):
-        raise HTTPException(status_code=401, detail="Missing authorization header")
-    
+        raise HTTPException(
+            status_code=401, detail="Missing authorization header")
+
     token = auth_header[7:]
-    
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
@@ -56,12 +60,13 @@ async def private_route(user: Auth0User = Depends(auth0.get_user), request: Requ
                 print(f"UserInfo response: {user_info}")
                 return {
                     "message": "This is a private route",
-                    "email": user_info.get('email'),  
-                    "user_email_from_object": user.email, 
+                    "email": user_info.get('email'),
+                    "user_email_from_object": user.email,
                     "user_info": user_info
                 }
             else:
-                print(f"UserInfo request failed: {response.status_code} - {response.text}")
+                print(
+                    f"UserInfo request failed: {response.status_code} - {response.text}")
                 return {
                     "message": "This is a private route",
                     "email": None,
@@ -69,5 +74,13 @@ async def private_route(user: Auth0User = Depends(auth0.get_user), request: Requ
                 }
         except Exception as e:
             print(f"Error fetching user info: {e}")
-            raise HTTPException(status_code=400, detail=f"Error fetching user info: {str(e)}")
-    
+            raise HTTPException(
+                status_code=400, detail=f"Error fetching user info: {str(e)}")
+
+# Simple public route
+@app.get("/public")
+async def public_route(user: Auth0User = Depends(auth0.get_user), request: Request = None):
+    return {
+        "message": user.id if user else "This is a public route",
+        "auth_header": request.headers.get('authorization', '') if request else ''
+    }
