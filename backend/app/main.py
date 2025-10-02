@@ -27,7 +27,7 @@ app.add_middleware(
 )
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
-    authorizationUrl=f"https://{AUTH0_DOMAIN}/authorize",p
+    authorizationUrl=f"https://{AUTH0_DOMAIN}/authorize",
     refreshUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
     scopes={"openid": "description", "profile": "description", "email": "description"}
 )
