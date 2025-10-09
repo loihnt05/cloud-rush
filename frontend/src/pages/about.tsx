@@ -11,7 +11,7 @@ export default function About() {
         <div>
           <p>Welcome back!</p>
           <LogoutButton />
-          <p>Your profile</p>
+          <p>Your profile US</p>
           <Profile />
         </div>
       ) : (
