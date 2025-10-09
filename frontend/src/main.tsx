@@ -1,4 +1,4 @@
-import { StrictMode, useEffect } from "react";
+import { Children, StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./styles/index.css";
@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
 import useSettingStore from "./stores/setting-store";
+import Flight from "./pages/Flight.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,7 @@ createRoot(document.getElementById("root")!).render(
             <Routes>
               <Route path="/" element={<Layout />} >
                 <Route path="/home" element={<App />} />
+                <Route path="/flight" element={<Flight></Flight>} />
                 <Route path="/about" element={<About />} />
               </Route>
             </Routes>
