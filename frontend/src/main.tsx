@@ -1,4 +1,4 @@
-import { Children, StrictMode, useEffect } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./styles/index.css";
@@ -49,7 +49,7 @@ createRoot(document.getElementById("root")!).render(
             <Routes>
               <Route path="/" element={<Layout />} >
                 <Route path="/home" element={<App />} />
-                <Route path="/flight" element={<Flight></Flight>} />
+                <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
               </Route>
             </Routes>

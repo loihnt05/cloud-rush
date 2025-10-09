@@ -8,7 +8,7 @@ import {
 } from "../ui/popover";
 import Button from "../ui/button";
 
-function Header(children: React.ReactNode) {
+function Header() {
     return (
         <div className="bg-white shadow-md">
             <div className="flex items-center justify-between px-6 py-3 ">
