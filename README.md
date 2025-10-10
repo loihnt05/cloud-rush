@@ -109,7 +109,21 @@ pnpm run dev
 Cloudrush will be available at http://localhost:5173
 
 ## Usage
+To use the Airline Ticket Sales Revenue Predictor:
 
+1. **Access the Frontend Dashboard:**  
+  Visit [https://cloud-rush.netlify.app/](https://cloud-rush.netlify.app/) to interact with the web application.
+
+2. **Explore Historical Data & Forecasts:**  
+  - Upload or select a dataset to visualize historical revenue trends.
+  - Choose forecasting models and parameters directly from the dashboard.
+  - View and compare prediction results in interactive charts.
+
+3. **API Access:**  
+  For programmatic access or integration, use the backend REST API at [https://cloud-rush.onrender.com/docs](https://cloud-rush.onrender.com/docs) to submit data and retrieve forecasts.
+
+No local installation is required—everything runs in the cloud!
+But if you want to use in local, check readme.md in backend and frontend folder!
 ## Results
 
 ## License
