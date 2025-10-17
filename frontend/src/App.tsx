@@ -19,6 +19,7 @@ function App() {
             localStorage.setItem('auth_error', JSON.stringify({ message: err?.message ?? String(err), stack: err?.stack }));
           } catch (e) {
             // ignore storage errors
+            console.error('Failed to store auth error in localStorage', e);
           }
         });
     }
