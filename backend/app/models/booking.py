@@ -1,5 +1,5 @@
 from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String
-from .base import Base
+from app.core.database import Base
 from sqlalchemy.orm import relationship
 
 class Booking(Base):

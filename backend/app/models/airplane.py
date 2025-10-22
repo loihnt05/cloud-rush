@@ -1,7 +1,7 @@
 from tokenize import String
 from sqlalchemy import TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
-from .base import Base
+from app.core.database import Base
 
 class Airplane(Base):
     __tablename__ = 'airplanes'

@@ -1,5 +1,5 @@
-from sqlalchemy import DECIMAL, Column, Date, Integer, String
-from .base import Base
+from sqlalchemy import DECIMAL, TIMESTAMP, Column, Date, Integer, String
+from app.core.database import Base
 
 
 class RevenueForecast(Base):

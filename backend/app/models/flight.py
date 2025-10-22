@@ -1,6 +1,6 @@
 from sqlalchemy import DECIMAL, TIMESTAMP, Column, ForeignKey, Integer, String, DateTime, Numeric
 from sqlalchemy.ext.declarative import declarative_base
-from .base import Base
+from app.core.database import Base
 
 Base = declarative_base()
 

@@ -2,7 +2,7 @@ from uuid import UUID
 import uuid
 from sqlalchemy import JSON, TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
-from .base import Base
+from app.core.database import Base
 
 class Role(Base):
     __tablename__ = "roles"
