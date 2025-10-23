@@ -1,4 +1,5 @@
 from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -6,7 +7,7 @@ class Booking(Base):
     __tablename__ = "bookings"
 
     booking_id = Column(Integer, primary_key=True)
-    user_id = Column(ForeignKey(
+    user_id = Column(UUID(as_uuid=True), ForeignKey(
         "users.user_id", ondelete="CASCADE"), nullable=False)
     flight_id = Column(ForeignKey("flights.flight_id",
                        ondelete="CASCADE"), nullable=False)

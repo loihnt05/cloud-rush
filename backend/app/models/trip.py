@@ -1,18 +1,19 @@
 from app.core.database import Base
 from sqlalchemy import TIMESTAMP, Column, Date, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 class Trip(Base):
     __tablename__ = "trips"
 
     trip_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False)
     name = Column(String(100), nullable=False)
     start_date = Column(Date)
     end_date = Column(Date)
     
     user = relationship("User", back_populates="trips")
-    activities = relationship("Activity", back_populates="trip")
+    activities = relationship("TripActivity", back_populates="trip")
     
     
 class TripActivity(Base):

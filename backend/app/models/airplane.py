@@ -1,5 +1,4 @@
-from tokenize import String
-from sqlalchemy import TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey, Integer
+from sqlalchemy import TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 

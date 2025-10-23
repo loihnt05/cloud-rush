@@ -1,8 +1,6 @@
 from sqlalchemy import DECIMAL, TIMESTAMP, Column, ForeignKey, Integer, String, DateTime, Numeric
-from sqlalchemy.ext.declarative import declarative_base
 from app.core.database import Base
-
-Base = declarative_base()
+from sqlalchemy.orm import relationship
 
 
 class Flight(Base):

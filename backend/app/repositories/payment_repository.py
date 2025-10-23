@@ -12,5 +12,5 @@ def create_payment(db: Session, payment_data):
     payment = Payment(**payment_data)
     db.add(payment)
     db.commit()
-    db.refresh()
+    db.refresh(payment)
     return payment

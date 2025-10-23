@@ -1,4 +1,4 @@
-from app.schemas.flight_schema import Flight
+from app.models.flight import Flight
 from sqlalchemy.orm import Session
 
 def get_flight_by_id(db: Session, flight_id: int):

@@ -2,23 +2,26 @@
 from pydantic import BaseModel
 from datetime import datetime
 from decimal import Decimal
+from typing import Optional
 
-# Shared properties
-class FlightBase(BaseModel):
+class FlightCreate(BaseModel):
     flight_number: str
+    airplane_id: Optional[int] = None
     origin: str
     destination: str
     departure_time: datetime
     arrival_time: datetime
-    price: Decimal
+    base_price: Decimal
 
-# Properties to receive on creation (if you have an admin endpoint)
-class FlightCreate(FlightBase):
-    pass
-
-# Properties to return to a client
-class Flight(FlightBase):
+class FlightResponse(BaseModel):
     flight_id: int
+    flight_number: str
+    airplane_id: Optional[int] = None
+    origin: str
+    destination: str
+    departure_time: datetime
+    arrival_time: datetime
+    base_price: Decimal
 
     class Config:
-        orm_mode = True # This allows Pydantic to read data from ORM models
+        from_attributes = True
