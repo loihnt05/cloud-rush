@@ -15,12 +15,11 @@ def create_booking(db: Session, booking_data):
     db.refresh(booking)
     return booking
     
-def update_booking_status(db: Session, booking_id: int, booking_data: dict):
+def update_booking_status(db: Session, booking_id: int, status: str):
     booking = get_booking_by_id(db, booking_id)
     if not booking:
         return None
-    for key, value in booking_data.items():
-        setattr(booking, key, value)
+    booking.status = status
     db.commit()
     db.refresh(booking)
     return booking

@@ -11,4 +11,4 @@ def create_role(db: Session, role_data: Role):
     db.add(role_data)
     db.commit()
     db.refresh(role_data)
-    return role_data
+    return role_data 
