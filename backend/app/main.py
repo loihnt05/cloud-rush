@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.dependencies import verify_jwt
 from app.routers import (
-    booking_router, flight_router, payment_router, pet, revenue_router, user_router
+    booking_router, flight_router, payment_router, pet, revenue_router, seat_router, airplane_router
 )
 from app.core.database import create_tables
 from app.core.config import API_AUDIENCE, AUTH0_DOMAIN
@@ -28,11 +28,12 @@ app.add_middleware(
 
  
 app.include_router(pet.router)
-app.include_router(user_router.router)
 app.include_router(flight_router.router)
 app.include_router(booking_router.router)
 app.include_router(payment_router.router)
 app.include_router(revenue_router.router)
+app.include_router(seat_router.router)
+app.include_router(airplane_router.router)
 
 @app.get("/auth")
 def auth_required(payload: dict = Depends(verify_jwt)):
