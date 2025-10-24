@@ -32,7 +32,7 @@ class Payment(Base):
     amount = Column(DECIMAL(10, 2), nullable=False)
     payment_date = Column(TIMESTAMP, server_default="NOW()")
     method = Column(String(50))
-    status = Column(String(20), default="success")
+    status = Column(String(20), default="pending")
 
     __tableargs__ = (
         CheckConstraint("status IN ('success','failed','pending')"),
