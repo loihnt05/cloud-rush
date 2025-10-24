@@ -29,3 +29,4 @@ class Seat(Base):
     
     airplane = relationship("Airplane", back_populates="seats")
     bookings = relationship("Booking", back_populates="seat")
+    
