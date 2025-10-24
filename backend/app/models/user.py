@@ -12,7 +12,7 @@ class Role(Base):
     description = Column(Text)
     
     users = relationship("User", back_populates="role")
-    
+
 class User(Base):
     __tablename__ = "users"
 
