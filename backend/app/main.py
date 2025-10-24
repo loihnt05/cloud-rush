@@ -1,19 +1,18 @@
 from typing import Optional
-from app.dependencies import get_auth0_claims
-from app.routers import (
-    airplane_router,
-    booking_router,
-    flight_router,
-    payment_router,
-    pet,
-    revenue_router,
-    seat_router,
-    user_router
-)
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import Base, create_tables
+from jose import jwt
+from jose.exceptions import JWTError, ExpiredSignatureError
+from urllib.request import urlopen
+import json
 from contextlib import asynccontextmanager
+
+from app.routers import (
+    booking_router, flight_router, payment_router, pet, revenue_router, user_router
+)
+from app.core.database import create_tables
+from app.core.config import API_AUDIENCE, AUTH0_DOMAIN
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,52 +31,56 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    tokenUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
+    authorizationUrl=f"https://{AUTH0_DOMAIN}/authorize?audience={API_AUDIENCE}",
+    refreshUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
+    scopes={"openid": "description", "profile": "description", "email": "description"}
+)
  
 app.include_router(pet.router)
 app.include_router(user_router.router)
 app.include_router(flight_router.router)
-app.include_router(airplane_router.router)
-app.include_router(seat_router.router)
 app.include_router(booking_router.router)
 app.include_router(payment_router.router)
 app.include_router(revenue_router.router)
 
-@app.get("/auth")
-async def auth_required(claims: dict = Depends(get_auth0_claims)):
-    """
-    A protected endpoint that requires a valid Auth0 token.
-    Returns user information from the decoded token.
-    """
-    sub = claims.get("sub")
-    if not sub:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token missing 'sub' claim"
-        )
-    
-    return {
-        "message": "Login successful!",
-        "sub": sub,
-        "user_id": sub,
-        "email": claims.get("email"),
-        "all_claims": claims
-    }
+def verify_jwt(token: str = Depends(oauth2_scheme)):
+    try:
+        # Get JWKS
+        jsonurl = urlopen(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
+        jwks = json.loads(jsonurl.read())
+        unverified_header = jwt.get_unverified_header(token)
 
-@app.get("/protected")
-async def protected_route(claims: dict = Depends(get_auth0_claims)):
-    """
-    Another protected endpoint demonstrating the same authentication.
-    """
-    sub = claims.get("sub")
-    if not sub:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token missing 'sub' claim"
-        )
-    
-    return {
-        "message": "Access granted to protected resource!",
-        "sub": sub,
-        "user_id": sub,
-        "all_claims": claims
-    }
+        rsa_key = {}
+        for key in jwks["keys"]:
+            if key["kid"] == unverified_header["kid"]:
+                rsa_key = {
+                    "kty": key["kty"],
+                    "kid": key["kid"],
+                    "use": key["use"],
+                    "n": key["n"],
+                    "e": key["e"],
+                }
+
+        if rsa_key:
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=["RS256"],
+                audience=API_AUDIENCE,
+                issuer=f"https://{AUTH0_DOMAIN}/",
+            )
+            return payload
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+    except JWTError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Token invalid: {str(e)}")
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header")
+
+
+@app.get("/auth")
+def auth_required(payload: dict = Depends(verify_jwt)):
+    return {"user": payload}
+
