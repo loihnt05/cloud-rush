@@ -9,7 +9,7 @@ export interface Airplane {
   created_at?: string;
 }
 
-export type CreateAirplaneDto = {
+export interface CreateAirplaneDto {
   model: string;
   manufacturer?: string;
   seat_capacity: number;
