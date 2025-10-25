@@ -1,11 +1,12 @@
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
-from app.core.config import AUTH0_DOMAIN, API_AUDIENCE
+from app.core.config import AUTH0_DOMAIN, API_AUDIENCE, MGMT_CLIENT_ID, MGMT_CLIENT_SECRET
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from jose import jwt
 from jose.exceptions import JWTError, ExpiredSignatureError
 from urllib.request import urlopen
 import json
+import requests
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
@@ -46,3 +47,12 @@ def verify_jwt(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Token invalid: {str(e)}")
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header")
+
+def get_mgmt_token():
+    res = requests.post(f"https://{AUTH0_DOMAIN}/oauth/token", json={
+        "client_id": MGMT_CLIENT_ID,
+        "client_secret": MGMT_CLIENT_SECRET,
+        "audience": f"https://{AUTH0_DOMAIN}/api/v2/",
+        "grant_type": "client_credentials"
+    })
+    return res.json()["access_token"]
