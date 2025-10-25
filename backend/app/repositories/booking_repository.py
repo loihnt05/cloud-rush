@@ -24,5 +24,5 @@ def update_booking_status(db: Session, booking_id: int, status: str):
     db.refresh(booking)
     return booking
     
-def get_user_bookings(db: Session, user_id: int):
+def get_user_bookings(db: Session, user_id: str):
     return db.query(Booking).filter(Booking.user_id == user_id).all()

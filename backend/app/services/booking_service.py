@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.repositories import booking_repository, flight_repository, payment_repository
+from app.repositories import booking_repository, flight_repository, payment_repository, seat_repository
 from app.models.booking import Booking, Payment
 from app.schemas.booking_schema import BookingCreate
 from datetime import datetime
@@ -45,6 +45,10 @@ class BookingService:
         # Update booking status to confirmed
         booking_repository.update_booking_status(self.db, booking.booking_id, "confirmed")
         
+        
+        # set seat unvailable
+        seat_repository.update_seat_availability(self.db, booking_data.seat_id, False)
+                
         return booking
     
     def get_user_bookings(self, user_id: str):

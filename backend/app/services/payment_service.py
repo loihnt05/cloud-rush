@@ -26,7 +26,13 @@ class PaymentService:
         payment_dict['payment_date'] = datetime.now()
         
         # Set status to success by default (can be overridden)
-        if payment_dict.get('status') == 'pending':
-            payment_dict['status'] = 'success'
+        # if payment_dict.get('status') == 'pending':
+        #     payment_dict['status'] = 'success'
         
         return payment_repository.create_payment(self.db, payment_dict)
+    def update_payment_status(self, payment_id: int, status: str):
+        """Update payment status"""
+        payment = payment_repository.update_payment_status(self.db, payment_id, status)
+        if not payment:
+            raise ValueError("Payment not found")
+        return payment

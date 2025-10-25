@@ -1,5 +1,4 @@
 from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -7,8 +6,7 @@ class Booking(Base):
     __tablename__ = "bookings"
 
     booking_id = Column(Integer, primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey(
-        "users.user_id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String(255), nullable=False)
     flight_id = Column(ForeignKey("flights.flight_id",
                        ondelete="CASCADE"), nullable=False)
     seat_id = Column(ForeignKey("seats.seat_id", ondelete="SET NULL"))
@@ -19,7 +17,6 @@ class Booking(Base):
         CheckConstraint("status IN ('pending','confirmed','canceled')"),
     )
 
-    user = relationship("User", back_populates="bookings")
     flight = relationship("Flight", back_populates="bookings")
     seat = relationship("Seat", back_populates="bookings")
     payments = relationship("Payment", back_populates="booking")
@@ -35,7 +32,7 @@ class Payment(Base):
     amount = Column(DECIMAL(10, 2), nullable=False)
     payment_date = Column(TIMESTAMP, server_default="NOW()")
     method = Column(String(50))
-    status = Column(String(20), default="success")
+    status = Column(String(20), default="pending")
 
     __tableargs__ = (
         CheckConstraint("status IN ('success','failed','pending')"),

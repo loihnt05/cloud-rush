@@ -1,48 +1,48 @@
-from fastapi import HTTPException, Depends, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2AuthorizationCodeBearer
-from app.core.config import AUTH0_DOMAIN, API_AUDIENCE, ALGORITHMS
-from app.core.auth import verify_jwt_token
+from fastapi import HTTPException, Depends, status
+from fastapi.security import OAuth2AuthorizationCodeBearer
+from app.core.config import AUTH0_DOMAIN, API_AUDIENCE
+from fastapi.security import OAuth2AuthorizationCodeBearer
+from jose import jwt
+from jose.exceptions import JWTError, ExpiredSignatureError
+from urllib.request import urlopen
+import json
 
-# OAuth2 scheme for Swagger UI OAuth2 auto-completion
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
-    authorizationUrl=f"https://{AUTH0_DOMAIN}/authorize",
+    authorizationUrl=f"https://{AUTH0_DOMAIN}/authorize?audience={API_AUDIENCE}",
     refreshUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
-    scopes={"openid": "OpenID Connect", "profile": "User profile", "email": "User email"}
+    scopes={"openid": "description", "profile": "description", "email": "description"}
 )
-
-async def get_auth0_claims(request: Request, token: str = Depends(oauth2_scheme)) -> dict:
-    """
-    Dependency to extract and verify Auth0 JWT token claims.
-    Uses OAuth2AuthorizationCodeBearer for Swagger UI integration.
-    Extracts token from Authorization header for proper validation.
-    """
-    # Extract token from Authorization header directly
-    auth_header = request.headers.get("Authorization", "")
-    
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:].strip()
-    elif token:
-        # Use the token from oauth2_scheme if no Bearer header
-        token = token.strip()
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authentication token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
+def verify_jwt(token: str = Depends(oauth2_scheme)):
     try:
-        # Verify and decode the token using the centralized function
-        payload = verify_jwt_token(token)
-        return payload
-    except HTTPException:
-        # Re-raise HTTPException from verify_jwt_token
-        raise
-    except Exception as e:
-        # Catch any other unexpected errors
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication error: {str(e)}",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # Get JWKS
+        jsonurl = urlopen(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
+        jwks = json.loads(jsonurl.read())
+        unverified_header = jwt.get_unverified_header(token)
+
+        rsa_key = {}
+        for key in jwks["keys"]:
+            if key["kid"] == unverified_header["kid"]:
+                rsa_key = {
+                    "kty": key["kty"],
+                    "kid": key["kid"],
+                    "use": key["use"],
+                    "n": key["n"],
+                    "e": key["e"],
+                }
+
+        if rsa_key:
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=["RS256"],
+                audience=API_AUDIENCE,
+                issuer=f"https://{AUTH0_DOMAIN}/",
+            )
+            return payload
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+    except JWTError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Token invalid: {str(e)}")
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header")

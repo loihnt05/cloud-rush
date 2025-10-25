@@ -7,7 +7,7 @@ CREATE TABLE roles (
 
 -- ========== USERS ==========
 CREATE TABLE users (
-    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id VARCHAR(255) PRIMARY KEY,
     provider VARCHAR(50) NOT NULL,
     provider_id VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE flights (
 -- ========== BOOKINGS ==========
 CREATE TABLE bookings (
     booking_id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id VARCHAR(255) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     flight_id INT NOT NULL REFERENCES flights(flight_id) ON DELETE CASCADE,
     seat_id INT REFERENCES seats(seat_id) ON DELETE SET NULL,
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +98,7 @@ CREATE TABLE places (
 -- ========== EXPLORES ==========
 CREATE TABLE explores (
     explore_id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
+    user_id VARCHAR(255) REFERENCES users(user_id) ON DELETE SET NULL,
     place_id INT REFERENCES places(place_id) ON DELETE SET NULL,
     title VARCHAR(200) NOT NULL,
     content TEXT,
@@ -108,7 +108,7 @@ CREATE TABLE explores (
 -- ========== TRIPS ==========
 CREATE TABLE trips (
     trip_id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id VARCHAR(255) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     start_date DATE,
     end_date DATE
