@@ -10,6 +10,7 @@ import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
 import useSettingStore from "./stores/setting-store";
 import Flight from "./pages/Flight.tsx";
+import PassengerInformation from "./pages/PassengerInfomation.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/home" element={<App />} />
                 <Route path="/flight" element={<Flight></Flight>} />
                 <Route path="/about" element={<About />} />
+                <Route path="/passenger-information" element={<PassengerInformation />} />
               </Route>
             </Routes>
           </QueryClientProvider>
