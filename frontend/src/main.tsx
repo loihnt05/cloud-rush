@@ -11,6 +11,9 @@ import About from "./pages/about.tsx";
 import useSettingStore from "./stores/setting-store";
 import Flight from "./pages/Flight.tsx";
 import PassengerInformation from "./pages/PassengerInfomation.tsx";
+import Packages from "./pages/Packages.tsx";
+import { PackagePlus } from "lucide-react";
+import Places from "./pages/Places.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
@@ -53,6 +56,9 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/flight" element={<Flight></Flight>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/passenger-information" element={<PassengerInformation />} />
+                <Route path="/packages" element={<Packages/>} />
+                <Route path="/places" element={<Places/>} />
+
               </Route>
             </Routes>
           </QueryClientProvider>

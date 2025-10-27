@@ -16,7 +16,7 @@ function Header() {
                 <div className="flex items-center gap-3">
                     <ul className="flex gap-6 text-gray-700 font-medium">
                         <Link to="/flight" className="hover:text-blue-500">Flight</Link>
-                        <Link to="/package" className="hover:text-blue-500">Package</Link>
+                        <Link to="/packages" className="hover:text-blue-500">Package</Link>
                         <Link to="/places" className="hover:text-blue-500">Places</Link>
                     </ul>
 
