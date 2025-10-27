@@ -5,12 +5,88 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState } from "react";
 
-// type Student = {
-//     name: string;
-//     age: number;
-// }
+type Package = 
+{
+    id: number,
+    name: string,
+    price: number,
+    description: string
+    imageUrl: string
+}
+type Place =
+    {
+        id: number,
+        description: string,
+        name: string,
+        imgUrl: string,
+    }
 
 function Flight() {
+    const places: Place[] =
+        [
+            {
+                id: 1,
+                name: "Sofitel Legend Metropole Hanoi",
+                description: "Historic luxury hotel in the heart of Hanoi since 1901",
+                imgUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+            },
+                        {
+                id: 2,
+                name: "Sofitel Legend Metropole Hanoi",
+                description: "Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901",
+                imgUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+            },
+            {
+                id: 3,
+                name: "Sofitel Legend Metropole Hanoi",
+                description: "Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901",
+                imgUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+            }
+            ,
+            {
+                id: 4,
+                name: "Sofitel Legend Metropole Hanoi",
+                description: "Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901",
+                imgUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+            }
+            ,
+            {
+                id: 5,
+                name: "Sofitel Legend Metropole Hanoi",
+                description: "Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901Historic luxury hotel in the heart of Hanoi since 1901",
+                imgUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+            }
+        ]
+    const packages: Package[] = [
+        {
+            id: 1,
+            name: "Sofitel Legend Metropole Hanoi",
+            description: "Historic luxury hotel in the heart of Hanoi since 1901",
+            price: 250,
+            imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+        }
+        ,{
+            id: 2,
+            name: "Sofitel Legend Metropole Hanoi",
+            description: "Historic luxury hotel in the heart of Hanoi since 1901",
+            price: 250,
+            imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+        }
+                        ,{
+            id: 4,
+            name: "Sofitel Legend Metropole Hanoi",
+            description: "Historic luxury hotel in the heart of Hanoi since 1901",
+            price: 250,
+            imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+        }
+                                ,{
+            id: 3,
+            name: "Sofitel Legend Metropole Hanoi",
+            description: "Historic luxury hotel in the heart of Hanoi since 1901",
+            price: 250,
+            imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80"
+        }
+    ] 
     return (
         <>
             <div>
@@ -76,99 +152,53 @@ function Flight() {
             {/* {Featured flight deals} */}
             <div className="flex flex-col">
                 <div className="flex flex-row">
-                    <p>Find your next adventure with these <span className="text-blue-200">exciting flight deals</span></p>
+                    <p className="mx-1 mt-1">Find your next adventure with these 
+                        <span className="text-blue-200"> exciting flight deals
+                        </span>
+                    </p>
                     <Button className="ml-auto mr-2">All</Button>
                 </div>
-                <div className="flex flex-row justify-between p-1 my-3">
-                    <Card>
+                <div className="grid grid-cols-4 gap-5 justify-start mt-2">
+                {
+                    packages.slice(0, 4).map(pack => (
+                    <Card key={pack.id}>
                         <CardHeader>
-                            <CardTitle>Ha Long Bay</CardTitle>
-                            <CardDescription>UNESCO World Heritage Site with stunning limestone karsts</CardDescription>
-                            <CardAction>$180</CardAction>
+                            <CardTitle>{pack.name}</CardTitle>
+                            <CardDescription>{pack.description}</CardDescription>
+                            <CardAction>{pack.price} $</CardAction>
                         </CardHeader>
                         <CardContent>
-                            <img src="https://images.unsplash.com/photo-1528127269322-539801943592?w=1470&q=80" alt="Ha Long Bay" className="w-full h-48 object-cover rounded-md mb-4" />
+                            <img 
+                                src={pack.imageUrl} 
+                                className="w-full h-48 object-cover rounded-md mb-4" 
+                            />
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Hoi An Ancient Town</CardTitle>
-                            <CardDescription>Charming historic town with lantern-lit streets</CardDescription>
-                            <CardAction>$150</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1470&q=80" alt="Hoi An" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Sapa Rice Terraces</CardTitle>
-                            <CardDescription>Breathtaking mountain landscapes and ethnic villages</CardDescription>
-                            <CardAction>$165</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1470&q=80" alt="Sapa" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Phong Nha-Ke Bang</CardTitle>
-                            <CardDescription>World's largest caves and pristine national park</CardDescription>
-                            <CardAction>$170</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1470&q=80" alt="Phong Nha" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
+                    ))
+                }
                 </div>
             </div>
             {/* {Featured places to stay} */}
-            <div className="flex flex-col">
+            <div className="flex flex-col mt-5">
                 <div className="flex flex-row">
-                    <p className="ml-2">Explore unique <span className="text-blue-200"> places to stay</span></p>
+                    <p className="ml-2 mt-1">Explore unique <span className="text-blue-200"> places to stay</span></p>
                     <Button className="ml-auto mr-2">All</Button>
                 </div>
-                <div className="flex flex-row justify-between p-1 my-3">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Sofitel Legend Metropole Hanoi</CardTitle>
-                            <CardDescription>Historic luxury hotel in the heart of Hanoi since 1901</CardDescription>
-                            <CardAction>$250/night</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80" alt="Luxury Hotel" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>InterContinental Danang</CardTitle>
-                            <CardDescription>Beachfront resort with stunning ocean views</CardDescription>
-                            <CardAction>$200/night</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1470&q=80" alt="Beach Resort" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Azerai La Residence Hue</CardTitle>
-                            <CardDescription>Colonial elegance along the Perfume River</CardDescription>
-                            <CardAction>$180/night</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1470&q=80" alt="Heritage Hotel" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Six Senses Ninh Van Bay</CardTitle>
-                            <CardDescription>Exclusive island retreat with private villas</CardDescription>
-                            <CardAction>$350/night</CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1470&q=80" alt="Island Resort" className="w-full h-48 object-cover rounded-md mb-4" />
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-4 gap-5 mt-2">
+                    {places.slice(0, 4).map(place => (
+                        <Card key={place.id}>
+                            <CardContent>
+                                <img
+                                    src={place.imgUrl}
+                                    className="w-full h-48 object-cover rounded-md mb-4"
+                                />
+                            </CardContent>
+                            <CardHeader>
+                                <CardTitle className="text-emerald-400 text-xl" >{place.name}</CardTitle>
+                                <CardDescription className="text-s">{place.description}</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    ))}
                 </div>
             </div>
 
