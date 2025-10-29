@@ -132,10 +132,10 @@ CREATE TABLE trip_activities (
     scheduled_time TIMESTAMP
 );
 -- ========== REVENUE FORECASTS ==========
--- CREATE TABLE revenue_forecasts (
---    forecast_id SERIAL PRIMARY KEY,
---    forecast_date DATE NOT NULL,
---    predicted_revenue DECIMAL(12,2) NOT NULL,
---    model_used VARCHAR(100),
---    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+CREATE TABLE revenue_forecasts (
+   forecast_id SERIAL PRIMARY KEY,
+   forecast_date DATE NOT NULL,
+   predicted_revenue DECIMAL(12,2) NOT NULL,
+   model_used VARCHAR(100),
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
