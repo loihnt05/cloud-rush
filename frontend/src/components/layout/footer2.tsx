@@ -108,9 +108,9 @@ const Footer7 = ({
                   </a>
                 </li>
               ))}
-            </ul>
+            </ul> 
           </div>
-          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
+          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">    
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>
                 <h3 className="mb-4 font-bold">{section.title}</h3>
