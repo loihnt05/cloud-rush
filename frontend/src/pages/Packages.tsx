@@ -71,7 +71,7 @@ export default function Packages() {
     return (
         <div className="bg-[#07401F]">
             {/* {hero section} */}
-            <div className="justify-center items-center">
+            <div className="justify-center items-center mt-10">
                 <p className="text-5xl text-white font-bold text-center">We plan. <br></br>
                     <span className="text-[#148C56] font-bold"> You live the adventure</span>
                 </p>

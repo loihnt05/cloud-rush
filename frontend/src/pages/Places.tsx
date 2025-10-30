@@ -78,14 +78,17 @@ export default function Places() {
     return (
         <div className="bg-white">
             {/* Hero */}
-            <div className="mt-10 text-center bg-[#07401F] ">
-                <p className="text-5xl text-white font-bold">Every place has a story. <br></br>
+            <div className="mt-10 text-center bg-linear-to-r from-[#07401F] to-[#148C56] h-64">
+                <p className="pt-10 text-5xl text-white font-bold">Every place has a story. <br></br>
                     <span className="text-[#148C56]">Live it !</span>
+                </p>
+                <p className="text-xl text-white/90 max-w-2xl mx-auto mt-5">
+                    Discover unforgettable stays at the world's most remarkable destinations
                 </p>
             </div>
             {/* card */}
             <div className="max-w-7xl mx-auto px-4 py-12 space-y-6 ">
-                {places.slice(0,4).map(place => (
+                {places.slice(0, 4).map(place => (
                     <div className="group flex flex-col 
                     md:flex-row bg-white border shadow-xl rounded-2xl overflow-hidden m-10">
                         <div className="md:w-2/5 md:h-full h-auto overflow-hidden">
