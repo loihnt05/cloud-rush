@@ -26,3 +26,11 @@ def update_booking_status(db: Session, booking_id: int, status: str):
     
 def get_user_bookings(db: Session, user_id: str):
     return db.query(Booking).filter(Booking.user_id == user_id).all()
+
+def delete_booking(db: Session, booking_id: int):
+    booking = get_booking_by_id(db, booking_id)
+    if not booking:
+        return None
+    db.delete(booking)
+    db.commit()
+    return booking
