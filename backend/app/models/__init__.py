@@ -1,5 +1,6 @@
 from .airplane import Airplane, Seat
-from .flight import Flight
+from .airport import Airport
+from .flight import Flight, FlightSeat
 from .booking import Booking, Payment, BookingService, Service
 from .place import Place, Explore
 from .trip import Trip, TripActivity
@@ -8,7 +9,8 @@ from .pet_model import Pet
 
 __all__ = [
     "Airplane", "Seat",
-    "Flight",
+    "Airport",
+    "Flight", "FlightSeat",
     "Booking", "Payment", "BookingService", "Service",
     "Place", "Explore",
     "Trip", "TripActivity",
