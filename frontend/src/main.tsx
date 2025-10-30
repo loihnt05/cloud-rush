@@ -1,15 +1,18 @@
+import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
-import "./styles/index.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import App from "./App.tsx";
 import authConfig from "./auth-config.ts";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
-import useSettingStore from "./stores/setting-store";
 import Flight from "./pages/Flight.tsx";
+import Packages from "./pages/Packages.tsx";
+import PassengerInformation from "./pages/PassengerInfomation.tsx";
+import Places from "./pages/Places.tsx";
+import useSettingStore from "./stores/setting-store";
+import "./styles/index.css";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
@@ -49,8 +52,11 @@ createRoot(document.getElementById("root")!).render(
             <Routes>
               <Route path="/" element={<Layout />} >
                 <Route path="/home" element={<App />} />
-                <Route path="/flight" element={<Flight />} />
+                <Route path="/flight" element={<Flight></Flight>} />
                 <Route path="/about" element={<About />} />
+                <Route path="/passenger-information" element={<PassengerInformation />} />
+                <Route path="/packages" element={<Packages/>} />
+                <Route path="/places" element={<Places/>} />
               </Route>
             </Routes>
           </QueryClientProvider>

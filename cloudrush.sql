@@ -21,7 +21,7 @@ CREATE TABLE airplanes (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ========== SEATS ==========
+-- ========== SEATS (FIXED) ==========
 CREATE TABLE seats (
     seat_id SERIAL PRIMARY KEY,
     airplane_id INT REFERENCES airplanes(airplane_id) ON DELETE CASCADE,
@@ -29,7 +29,7 @@ CREATE TABLE seats (
     seat_class VARCHAR(20) CHECK (seat_class IN ('economy', 'business', 'first'))
 );
 
--- ========== FLIGHTS ==========
+-- ========== FLIGHTS (FIXED) ==========
 CREATE TABLE flights (
     flight_id SERIAL PRIMARY KEY,
     flight_number VARCHAR(20) NOT NULL,
@@ -52,8 +52,19 @@ CREATE TABLE flight_seats (
     price_multiplier DECIMAL(5,2) DEFAULT 1.0,
     UNIQUE(flight_id, seat_id)
 );
+ALTER TABLE flights ADD COLUMN tax_rate DECIMAL(5,2) DEFAULT 0.15;
+-- ========== FLIGHT SEATS (NEW) ==========
+CREATE TABLE flight_seats (
+    flight_seat_id SERIAL PRIMARY KEY,
+    flight_id INT NOT NULL REFERENCES flights(flight_id) ON DELETE CASCADE,
+    seat_id INT NOT NULL REFERENCES seats(seat_id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'booked')),
+    price_multiplier DECIMAL(5,2) DEFAULT 1.0,
+    UNIQUE(flight_id, seat_id)
+);
 
--- ========== BOOKINGS ==========
+-- ========== BOOKINGS (DEBUG VERSION FOR DRAW.SQL) ==========
+-- Thử phiên bản này nếu bản gốc bị lỗi "unsupported statement"
 CREATE TABLE bookings (
     booking_id SERIAL PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
