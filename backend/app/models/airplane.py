@@ -1,4 +1,4 @@
-from sqlalchemy import TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey, Integer, String
+from sqlalchemy import TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 

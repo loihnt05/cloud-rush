@@ -30,3 +30,12 @@ def delete_flight(db: Session, flight_id: int):
     db.delete(flight)
     db.commit()
     return True
+
+def get_flights_by_airport(db: Session, origin_id: int, destination_id: int):
+    return db.query(Flight).filter(
+        (Flight.origin_airport_id == origin_id) & 
+        (Flight.destination_airport_id == destination_id)
+    ).all()
+    
+def get_flights_by_status(db: Session, status: str):
+    return db.query(Flight).filter(Flight.status == status).all()
