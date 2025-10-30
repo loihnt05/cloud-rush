@@ -203,47 +203,84 @@ function Flight() {
             </div>
 
             {/* {User testimonials} */}
-            <div className="flex flex-col my-5">
-                <div className="flex flex-row justify-center">
-                    <h1 className="text-lg font-bold">What Cloudrush users are saying</h1>
+            <div className="flex flex-col my-10 bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-6 rounded-2xl">
+                <div className="text-center mb-8">
+                    <h2 className="text-4xl font-bold text-gray-800 mb-2">What Our Travelers Say</h2>
+                    <p className="text-gray-600">Real experiences from real customers</p>
                 </div>
-                <div className="flex flex-row gap-3 my-5">
-                    <Card className="w-1/3">
-                        <div className="flex flex-row gap-5">
-                            <CardContent>
-                                <img className="w-10 h-10 rounded-full mb-4" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="User Avatar" />
-                            </CardContent>
-                            <div className="flex flex-col">
-                                <CardTitle>Card Name</CardTitle>
-                                <CardDescription>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora dolores esse accusamus eius pariatur sequi, qui quos doloremque? Eaque ea ipsa corrupti fugit consequatur aperiam quia porro dolorem qui iste.</CardDescription>
-                                <CardAction>Card Action</CardAction>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border-t-4 border-t-blue-500">
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-4 mb-4">
+                                <img 
+                                    className="w-16 h-16 rounded-full object-cover ring-2 ring-blue-200" 
+                                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" 
+                                    alt="Sarah Johnson" 
+                                />
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-800">Sarah Johnson</h3>
+                                    <p className="text-sm text-gray-500">Hanoi, Vietnam</p>
+                                    <div className="flex gap-1 mt-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <span key={i} className="text-yellow-400">★</span>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <p className="text-gray-700 italic leading-relaxed">
+                                "CloudRush made booking my trip to Ha Long Bay incredibly easy! The interface is intuitive and I found amazing deals. Highly recommend for anyone planning a Vietnam adventure."
+                            </p>
+                        </CardContent>
                     </Card>
-                    <Card className="w-1/3">
-                        <div className="flex flex-row gap-5">
-                            <CardContent>
-                                <img className="w-10 h-10 rounded-full mb-4" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="User Avatar" />
-                            </CardContent>
-                            <div className="flex flex-col">
-                                <CardTitle>Card Name</CardTitle>
-                                <CardDescription>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora dolores esse accusamus eius pariatur sequi, qui quos doloremque? Eaque ea ipsa corrupti fugit consequatur aperiam quia porro dolorem qui iste.</CardDescription>
-                                <CardAction>Card Action</CardAction>
+
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border-t-4 border-t-green-500">
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-4 mb-4">
+                                <img 
+                                    className="w-16 h-16 rounded-full object-cover ring-2 ring-green-200" 
+                                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" 
+                                    alt="Michael Chen" 
+                                />
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-800">Michael Chen</h3>
+                                    <p className="text-sm text-gray-500">Singapore</p>
+                                    <div className="flex gap-1 mt-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <span key={i} className="text-yellow-400">★</span>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <p className="text-gray-700 italic leading-relaxed">
+                                "Best travel platform I've used! Booked flights and hotels for my family vacation. Everything was seamless from start to finish. The customer support team was also super helpful!"
+                            </p>
+                        </CardContent>
                     </Card>
-                    <Card className="w-1/3">
-                        <div className="flex flex-row gap-5">
-                            <CardContent>
-                                <img className="w-10 h-10 rounded-full mb-4" src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="User Avatar" />
-                            </CardContent>
-                            <div className="flex flex-col">
-                                <CardTitle>Card Name</CardTitle>
-                                <CardDescription>Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora dolores esse accusamus eius pariatur sequi, qui quos doloremque? Eaque ea ipsa corrupti fugit consequatur aperiam quia porro dolorem qui iste.</CardDescription>
-                                <CardAction>Card Action</CardAction>
+
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 border-t-4 border-t-purple-500">
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-4 mb-4">
+                                <img 
+                                    className="w-16 h-16 rounded-full object-cover ring-2 ring-purple-200" 
+                                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" 
+                                    alt="Emma Rodriguez" 
+                                />
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-800">Emma Rodriguez</h3>
+                                    <p className="text-sm text-gray-500">Barcelona, Spain</p>
+                                    <div className="flex gap-1 mt-1">
+                                        {[...Array(4)].map((_, i) => (
+                                            <span key={i} className="text-yellow-400">★</span>
+                                        ))}
+                                        <span className="text-gray-300">★</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </Card>
+                            <p className="text-gray-700 italic leading-relaxed">
+                                "Found incredible prices for my Hoi An trip! The booking process was quick and I appreciated the detailed information about each hotel. Will definitely use again for my next journey."
+                            </p>
+                        </CardContent>
+                    </Card> 
                 </div>
             </div>
         </>
