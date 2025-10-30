@@ -1,11 +1,10 @@
-from typing import Optional
-from app.routers import pet
-from fastapi import FastAPI, Depends  
-from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import create_tables
 from contextlib import asynccontextmanager
-from app.core.config import AUTH0_DOMAIN
+from app.routers import (
+    auth_router, booking_router, flight_router, payment_router, pet, revenue_router, seat_router, airplane_router
+)
+from app.core.database import create_tables
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,7 +15,6 @@ async def lifespan(app: FastAPI):
     pass
 
 app = FastAPI(lifespan=lifespan)
-
 # Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -25,17 +23,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    tokenUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
-    authorizationUrl=f"https://{AUTH0_DOMAIN}/authorize",
-    refreshUrl=f"https://{AUTH0_DOMAIN}/oauth/token",
-    scopes={"openid": "description", "profile": "description", "email": "description"}
-)
+
  
+app.include_router(auth_router.router)
+app.include_router(airplane_router.router)
+app.include_router(seat_router.router)
+app.include_router(flight_router.router)
+app.include_router(booking_router.router)
+app.include_router(payment_router.router)
+app.include_router(revenue_router.router)
 app.include_router(pet.router)
-
-@app.get("/auth",)  
-def auth_required(token: Optional[str] = Depends(oauth2_scheme)):  
-  return {"Logged in"}
-
 

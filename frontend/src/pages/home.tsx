@@ -1,9 +1,12 @@
+import { AirplaneExample } from "@/components/UserExample";
 import Header from "@/components/layout/Header";
 import { Footer7 } from "@/components/layout/footer2";
 export default function Home() {
   return (
     <>
-      <Footer7></Footer7>
+      <Header />
+      <AirplaneExample />
+      <Footer7 />
     </>
   );
 }

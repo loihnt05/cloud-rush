@@ -1,12 +1,5 @@
 import LoginButton from "@/components/login-button";
 import { Link } from "react-router-dom";
-import { Input } from "../ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from "../ui/popover";
-import Button from "../ui/button";
 
 function Header() {
     return (
