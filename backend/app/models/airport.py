@@ -1,5 +1,4 @@
-from tokenize import String
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, String
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
