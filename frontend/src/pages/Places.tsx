@@ -31,6 +31,9 @@ export default function Places() {
         ]
     return (
         <>
+                        <div className="flex justify-center items-center my-6">
+                    <h1 className="text-6xl font-bold text-center">Every place has a story. Live it.</h1>
+                </div>
             <p className="ml-1 text-3xl mb-5">Find best
                 <span className="text-emerald-800"> places to stay</span>
             </p>
