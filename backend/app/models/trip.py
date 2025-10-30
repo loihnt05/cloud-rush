@@ -17,12 +17,12 @@ class Trip(Base):
 class TripActivity(Base):
     __tablename__ = "trip_activities"
 
-    trip_activity_id = Column(Integer, primary_key=True)
+    activity_id = Column(Integer, primary_key=True)
     trip_id = Column(Integer, ForeignKey("trips.trip_id", ondelete="CASCADE"), nullable=False)
     flight_id = Column(Integer, ForeignKey("flights.flight_id", ondelete="SET NULL"))
     service_id = Column(Integer, ForeignKey("services.service_id", ondelete="SET NULL"))
     place_id = Column(Integer, ForeignKey("places.place_id", ondelete="SET NULL"))
-    scheduled_date = Column(TIMESTAMP)
+    scheduled_time = Column(TIMESTAMP)
 
     trip = relationship("Trip", back_populates="activities")
     flight = relationship("Flight", back_populates="activities")

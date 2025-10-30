@@ -20,12 +20,11 @@ class Seat(Base):
     seat_id = Column(Integer, primary_key=True)
     airplane_id = Column(Integer, ForeignKey('airplanes.airplane_id', ondelete="CASCADE"))
     seat_number = Column(String(10), nullable=False)
-    seat_class = Column(String(20))  # e.g., Economy, Business, First Class
-    available = Column(Boolean, default=True)
+    seat_class = Column(String(20))
 
     __table_args__ = (
         CheckConstraint("seat_class IN ('economy','business','first')"),
     )
     
     airplane = relationship("Airplane", back_populates="seats")
-    bookings = relationship("Booking", back_populates="seat")
+    flight_seats = relationship("FlightSeat", back_populates="seat")
