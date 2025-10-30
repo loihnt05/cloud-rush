@@ -1,4 +1,6 @@
-import { FaStar } from "react-icons/fa";
+import { Palette } from "lucide-react"
+import { FaBed, FaMapMarkerAlt, FaParking, FaWifi } from "react-icons/fa";
+import { MdRestaurant } from "react-icons/md";
 
 type Place = {
     id: number;
@@ -8,11 +10,10 @@ type Place = {
     imageUrl: string;
     rating?: number;
     location?: string;
+    amenities?: string[];
 };
-export default function Packages() {
-
-    // // call api to take data from here
-    const packages: Place[] = [
+export default function Places() {
+    const places: Place[] = [
         {
             id: 1,
             name: "Sofitel Legend Metropole Hanoi",
@@ -20,16 +21,18 @@ export default function Packages() {
             price: 250,
             imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
             rating: 4.8,
-            location: "Hanoi, Vietnam"
+            location: "Hanoi, Vietnam",
+            amenities: ["WiFi", "Restaurant", "Parking"]
         },
         {
             id: 2,
             name: "Sofitel Legend Metropole Hanoi",
-            description: "Historic luxury hotel in the heart of Hanoi since 1901",
+            description: "Historic luxury hotel in the heart of Hanoi since 1901 istoric luxury hotel in istoric luxury hotel in the heart of Hanoi since 1901the heart of Hanoi since 1901",
             price: 250,
             imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
             rating: 4.8,
-            location: "Hanoi, Vietnam"
+            location: "Hanoi, Vietnam",
+            amenities: ["WiFi", "Restaurant", "Parking"]
         },
         {
             id: 3,
@@ -38,7 +41,8 @@ export default function Packages() {
             price: 250,
             imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
             rating: 4.8,
-            location: "Hanoi, Vietnam"
+            location: "Hanoi, Vietnam",
+            amenities: ["WiFi", "Restaurant", "Parking"]
         },
         {
             id: 4,
@@ -47,7 +51,8 @@ export default function Packages() {
             price: 250,
             imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
             rating: 4.8,
-            location: "Hanoi, Vietnam"
+            location: "Hanoi, Vietnam",
+            amenities: ["WiFi", "Restaurant", "Parking"]
         },
         {
             id: 5,
@@ -56,7 +61,8 @@ export default function Packages() {
             price: 250,
             imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
             rating: 4.8,
-            location: "Hanoi, Vietnam"
+            location: "Hanoi, Vietnam",
+            amenities: ["WiFi", "Restaurant", "Parking"]
         },
         {
             id: 6,
@@ -65,74 +71,84 @@ export default function Packages() {
             price: 250,
             imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
             rating: 4.8,
-            location: "Hanoi, Vietnam"
+            location: "Hanoi, Vietnam",
+            amenities: ["WiFi", "Restaurant", "Parking"]
         }
     ];
     return (
-        <div className="bg-[#07401F]">
-            {/* {hero section} */}
-            <div className="justify-center items-center">
-                <p className="text-5xl text-white font-bold text-center">Every place has a story.<br></br>
-                    <span className="text-[#148C56] font-bold">Live it !</span>
-                </p>
-                <p className="text-2xl text-white font-normal text-center mt-5">Find your next adventure with these
-                    <span className="text-[#148C56]"> exclusive flight deals </span>
+        <div className="bg-white">
+            {/* Hero */}
+            <div className="mt-10 text-center bg-[#07401F] ">
+                <p className="text-5xl text-white font-bold">Every place has a story. <br></br>
+                    <span className="text-[#148C56]">Live it !</span>
                 </p>
             </div>
-            {/* Package */}
-            <div className=" grid grid-cols-4 gap-10 m-15 ">
-                {packages.slice(0, 4).map(pack => (
-                    <div key={pack.id}
-                        className=" group bg-white hover:shadow-xl rounded-2xl overflow-hidden">
-                        {/* img */}
-                        <div className="overflow-hidden relative h-56">
-                            <img
-                                src={pack.imageUrl}
-                                alt={pack.name}
-                                className="w-full h-full transition-transform duration-700 group-hover:scale-110"></img>
-
-                            <div className="absolute top-4 right-4 rounded-full bg-[#148C56] py-1 px-3 text-white">
-                                ${pack.price}
-                            </div>
+            {/* card */}
+            <div className="max-w-7xl mx-auto px-4 py-12 space-y-6 ">
+                {places.slice(0,4).map(place => (
+                    <div className="group flex flex-col 
+                    md:flex-row bg-white border shadow-xl rounded-2xl overflow-hidden m-10">
+                        <div className="md:w-2/5 md:h-full h-auto overflow-hidden">
+                            <img src={place.imageUrl}
+                                alt={place.name}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"></img>
                         </div>
+
                         {/* content */}
-                        <div className="overflow-hidden p-6 space-y-2">
-                            {/* name */}
-                            <p className="text-xl font-bold text-black group-hover:text-[#357D52] transition-all duration-500">{pack.name}</p>
-                            {/* description */}
-                            <p className=" text-gray-600 text-s font-normal">{pack.description}</p>
-                            {pack.rating && (
-                                <div className="flex items-center gap-2">
-                                    {[...Array(5)].map((_, i) => (
-                                        <FaStar
-                                            key={i}
-                                            className={`text-sm ${i < Math.floor(pack.rating!)
-                                                ? "text-[#148C56]"
-                                                : "text-gray-300"
-                                                }`}
-                                        />
-                                    ))}
-                                    <span className="text-sm font-semibold text-[#224A33] ml-1">
-                                        {pack.rating}
-                                    </span>
+                        <div className="flex flex-col md:w-3/5 p-5 gap-3 justify-between">
+                            <div className="items-center flex gap-2">
+                                <FaMapMarkerAlt></FaMapMarkerAlt>
+                                <span className="text-s font-normal text-[#148C56]">{place.location}</span>
+                            </div>
+                            <div className="mt-1">
+                                <p className="text-2xl font-bold duration-500 group-hover:text-[#357D52] line-clamp-2"> {place.name}</p>
+                            </div>
+                            <p className="text-l font-light line-clamp-2">{place.description}</p>
+                            {place.amenities && (
+                                <div className="flex flex-wrap gap-3 mb-4">
+                                    {place.amenities.includes("WiFi") && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-[#148C56]/10 rounded-full text-[#224A33] text-sm">
+                                            <FaWifi className="text-[#148C56]" />
+                                            <span>Free WiFi</span>
+                                        </div>
+                                    )}
+                                    {place.amenities.includes("Restaurant") && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-[#148C56]/10 rounded-full text-[#224A33] text-sm">
+                                            <MdRestaurant className="text-[#148C56]" />
+                                            <span>Restaurant</span>
+                                        </div>
+                                    )}
+                                    {place.amenities.includes("Parking") && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-[#148C56]/10 rounded-full text-[#224A33] text-sm">
+                                            <FaParking className="text-[#148C56]" />
+                                            <span>Parking</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                            <div className="pt-2">
-                                <button className="w-full h-14 bg-linear-to-r from-[#224A33] to-[#148C56] rounded-2xl text-white font-bold 
-                                     transform shadow-2xl hover:shadow2xl hover:from-[#148C56] hover:to-[#357D52] transition-all duration-500 hover:scale-105">
-                                    Book Now
-                                </button>
+                            {/* button */}
+                            <div className="flex flex-row border-t-2">
+                                <div className="mt-2">
+                                    <p className="font-light text-l">Starting from</p>
+                                    <div className="flex">
+                                        <p className="text-2xl text-[#148C56] font-bold">{place.price}$
+                                        </p>
+                                        <span className="text-s font-light text-black mt-2">/night</span>
+                                    </div>
+                                </div>
+                                <button className="ml-auto bg-linear-to-r from-[#07401F] to-[#148C56] text-white
+                                font-bold hover:from-[#148C56] hover:to-[#148C11] transition-all duration-300
+                                hover:scale-105 rounded-full px-10 py-2 mt-2">View now</button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
-            {/* View all pages */}
+            {/* view more */}
             <div className="text-center">
-                <button className=" h-full mb-5 px-10 py-4 text-xl font-bold bg-white rounded-full hover:bg-[#148C56] hover:text-white text-[#07401F]
-                    transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105">
-                    View all pages
-                </button>
+                <button className="text-white bg-linear-to-r from-[#07401F] to-[#148C56] text-l font-bold
+                px-15 py-4 rounded-full hover:text-[#148C56] hover:from-white hover:to-white hover:border-2 
+                duration-150 hover:scale-110" > <FaBed className="inline mr-2" />View all </button>
             </div>
         </div>
     )
