@@ -1,4 +1,4 @@
-from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String
+from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String, func
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -8,7 +8,7 @@ class Booking(Base):
     booking_id = Column(Integer, primary_key=True)
     user_id = Column(String(255), nullable=False)
     flight_seat_id = Column(Integer, ForeignKey("flight_seats.flight_seat_id", ondelete="SET NULL"), unique=True)
-    booking_date = Column(TIMESTAMP, server_default="CURRENT_TIMESTAMP")
+    booking_date = Column(TIMESTAMP, server_default=func.current_timestamp())
     status = Column(String(20), default="pending")
 
     __table_args__ = (
