@@ -22,10 +22,14 @@ class BookingService:
     
     def create_booking(self, booking_data: BookingCreate):
         """Create a new booking"""
-        # Check if flight seat exists and is available
-        flight_seat = flight_seat_repository.get_flight_seat_by_id(self.db, booking_data.flight_seat_id)
-        if not flight_seat:
-            raise ValueError("Flight seat not existed")
+        flight_seat = None
+        total_amount = 0.0
+        
+        # Check if flight seat exists and is available (only if flight_seat_id is provided)
+        if booking_data.flight_seat_id is not None:
+            flight_seat = flight_seat_repository.get_flight_seat_by_id(self.db, booking_data.flight_seat_id)
+            if not flight_seat:
+                raise ValueError("Flight seat not existed")
 
         # Convert Pydantic model to dict and create booking
         booking_dict = booking_data.model_dump()
@@ -33,13 +37,18 @@ class BookingService:
         
         booking = booking_repository.create_booking(self.db, booking_dict)
         
-        # Calculate price (base_price * price_multiplier + tax)
-        flight = flight_repository.get_flight_by_id(self.db, flight_seat.flight_id)
-        price = float(flight.base_price) * float(flight_seat.price_multiplier)
-        tax = price * float(flight.tax_rate)
-        total_amount = price + tax
+        # Calculate price if there's a flight booking
+        if flight_seat is not None:
+            # Calculate price (base_price * price_multiplier + tax)
+            flight = flight_repository.get_flight_by_id(self.db, flight_seat.flight_id)
+            price = float(flight.base_price) * float(flight_seat.price_multiplier)
+            tax = price * float(flight.tax_rate)
+            total_amount = price + tax
+            
+            # Update flight seat status to reserved
+            flight_seat_repository.update_flight_seat(self.db, booking_data.flight_seat_id, {"status": "reserved"})
         
-        # Auto payment mock
+        # Create payment for all bookings (with flight or services only)
         payment = Payment(
             booking_id=booking.booking_id,
             amount=total_amount,
@@ -47,14 +56,10 @@ class BookingService:
             method="credit_card",
             # status="success"
         )
-        
         payment_repository.create_payment(self.db, payment)
         
         # Update booking status to confirmed
         booking_repository.update_booking_status(self.db, booking.booking_id, "confirmed")
-        
-        # Update flight seat status to reserved
-        flight_seat_repository.update_flight_seat(self.db, booking_data.flight_seat_id, {"status": "reserved"})
 
         return booking
     
@@ -68,8 +73,8 @@ class BookingService:
         if not booking:
             raise ValueError("Booking not found")
         
-        # If cancelling, free up the flight seat
-        if status == "cancelled" and booking.flight_seat:
+        # If cancelling, free up the flight seat (only if flight_seat_id exists)
+        if status == "cancelled" and booking.flight_seat_id is not None and booking.flight_seat:
             flight_seat_repository.update_flight_seat(
                 self.db, 
                 booking.flight_seat_id, 
