@@ -7,13 +7,12 @@ class TripPlan(Base):
     __tablename__ = "trip_plans"
 
     plan_id = Column(Integer, primary_key=True)
-    user_id = Column(String(255), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String(255), nullable=False)
     name = Column(String(100), nullable=False)
     start_date = Column(Date)
     end_date = Column(Date)
     notes = Column(Text)
 
-    user = relationship("User", back_populates="trip_plans")
     trip_plan_items = relationship("TripPlanItem", back_populates="trip_plan")
 
 

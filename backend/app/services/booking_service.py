@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
-from app.repositories import booking_repository, flight_repository, payment_repository, seat_repository
+from app.repositories import booking_repository, flight_repository, flight_seat_repository, payment_repository, seat_repository
 from app.models.booking import Booking, Payment
 from app.schemas.booking_schema import BookingCreate
+from app.schemas.flight_seat_schema import FlightSeatCreate
 from datetime import datetime
 
 class BookingService:
@@ -21,34 +22,40 @@ class BookingService:
     
     def create_booking(self, booking_data: BookingCreate):
         """Create a new booking"""
-        # Check if flight exists
-        flight = flight_repository.get_flight_by_id(self.db, booking_data.flight_id)
-        if not flight:
-            raise ValueError("Flight not found")
-        
+        # Check if flight seat exists and is available
+        flight_seat = flight_seat_repository.get_flight_seat_by_id(self.db, booking_data.flight_seat_id)
+        if not flight_seat:
+            raise ValueError("Flight seat not existed")
+
         # Convert Pydantic model to dict and create booking
         booking_dict = booking_data.model_dump()
         booking_dict['booking_date'] = datetime.now()
         
         booking = booking_repository.create_booking(self.db, booking_dict)
         
+        # Calculate price (base_price * price_multiplier + tax)
+        flight = flight_repository.get_flight_by_id(self.db, flight_seat.flight_id)
+        price = float(flight.base_price) * float(flight_seat.price_multiplier)
+        tax = price * float(flight.tax_rate)
+        total_amount = price + tax
+        
         # Auto payment mock
         payment = Payment(
             booking_id=booking.booking_id,
-            amount=flight.base_price,
+            amount=total_amount,
             payment_date=datetime.now(),
-            method="credit_card",
-            status="success"
+            # method="credit_card",
+            # status="success"
         )
+        
         payment_repository.create_payment(self.db, payment)
         
         # Update booking status to confirmed
         booking_repository.update_booking_status(self.db, booking.booking_id, "confirmed")
         
-        
-        # set seat unvailable
-        seat_repository.update_seat_availability(self.db, booking_data.seat_id, False)
-                
+        # Update flight seat status to reserved
+        flight_seat_repository.update_flight_seat(self.db, booking_data.flight_seat_id, {"status": "reserved"})
+
         return booking
     
     def get_user_bookings(self, user_id: str):
@@ -60,5 +67,13 @@ class BookingService:
         booking = booking_repository.get_booking_by_id(self.db, booking_id)
         if not booking:
             raise ValueError("Booking not found")
+        
+        # If cancelling, free up the flight seat
+        if status == "cancelled" and booking.flight_seat:
+            flight_seat_repository.update_flight_seat(
+                self.db, 
+                booking.flight_seat_id, 
+                {"status": "available"}
+            )
         
         return booking_repository.update_booking_status(self.db, booking_id, status)

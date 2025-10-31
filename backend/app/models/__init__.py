@@ -6,7 +6,6 @@ from .place import Place, Explore
 from .trip import TripPlan, TripPlanItem
 from .forecast import RevenueForecast
 from .pet_model import Pet
-from .user import User
 from .hotel import Hotel
 from .car_rental import CarRental
 from .package import BookingPackage, PackagePlace
@@ -19,6 +18,6 @@ __all__ = [
     "Place", "Explore",
     "TripPlan", "TripPlanItem",
     "RevenueForecast", "Pet",
-    "User", "Hotel", "CarRental",
+    "Hotel", "CarRental",
     "BookingPackage", "PackagePlace"
 ]

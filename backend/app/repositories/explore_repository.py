@@ -12,3 +12,17 @@ def create_explore(db: Session, data: Explore):
     db.commit()
     db.refresh(data)
     return data
+
+def update_explore(db: Session, explore_id: int, data: dict):
+    explore = db.query(Explore).filter(Explore.explore_id == explore_id).first()
+    for key, value in data.items():
+        setattr(explore, key, value)
+    db.commit()
+    db.refresh(explore)
+    return explore
+
+def delete_explore(db: Session, explore_id: int):
+    explore = db.query(Explore).filter(Explore.explore_id == explore_id).first()
+    db.delete(explore)
+    db.commit()
+    return explore
