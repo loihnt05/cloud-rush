@@ -11,12 +11,6 @@ def get_all_seats(db: Session):
 def get_seats_by_airplane(db: Session, airplane_id: int):
     return db.query(Seat).filter(Seat.airplane_id == airplane_id).all()
 
-def get_available_seats_by_airplane(db: Session, airplane_id: int):
-    return db.query(Seat).filter(
-        Seat.airplane_id == airplane_id,
-        Seat.available == True
-    ).all()
-
 def get_seats_by_class(db: Session, airplane_id: int, seat_class: str):
     return db.query(Seat).filter(
         Seat.airplane_id == airplane_id,
@@ -46,12 +40,3 @@ def delete_seat(db: Session, seat_id: int):
     db.delete(seat)
     db.commit()
     return True
-
-def update_seat_availability(db: Session, seat_id: int, available: bool):
-    seat = get_seat_by_id(db, seat_id)
-    if not seat:
-        return None
-    seat.available = available
-    db.commit()
-    db.refresh(seat)
-    return seat

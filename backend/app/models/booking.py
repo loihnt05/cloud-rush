@@ -1,4 +1,4 @@
-from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String
+from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String, func
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -7,18 +7,15 @@ class Booking(Base):
 
     booking_id = Column(Integer, primary_key=True)
     user_id = Column(String(255), nullable=False)
-    flight_id = Column(ForeignKey("flights.flight_id",
-                       ondelete="CASCADE"), nullable=False)
-    seat_id = Column(ForeignKey("seats.seat_id", ondelete="SET NULL"))
-    booking_date = Column(TIMESTAMP, server_default="NOW()")
+    flight_seat_id = Column(Integer, ForeignKey("flight_seats.flight_seat_id", ondelete="SET NULL"), unique=True)
+    booking_date = Column(TIMESTAMP, server_default=func.current_timestamp())
     status = Column(String(20), default="pending")
 
-    __tableargs__ = (
-        CheckConstraint("status IN ('pending','confirmed','canceled')"),
+    __table_args__ = (
+        CheckConstraint("status IN ('pending','confirmed','cancelled')"),
     )
 
-    flight = relationship("Flight", back_populates="bookings")
-    seat = relationship("Seat", back_populates="bookings")
+    flight_seat = relationship("FlightSeat", back_populates="booking")
     payments = relationship("Payment", back_populates="booking")
     booking_services = relationship("BookingService", back_populates="booking")
 
