@@ -11,6 +11,9 @@ def get_booking_services_by_booking(db: Session, booking_id: int):
     """Get all services for a specific booking"""
     return db.query(BookingService).filter(BookingService.booking_id == booking_id).all()
 
+def get_all_booking_services(db: Session):
+    """Get all booking services"""
+    return db.query(BookingService).all()
 
 def create_booking_service(db: Session, booking_service_data: BookingService):
     """Add a service to a booking"""

@@ -62,3 +62,14 @@ def remove_service_from_booking(
         return {"message": "Service removed from booking successfully"}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/", response_model=list[BookingServiceResponse])
+def get_all_booking_services(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(verify_jwt)
+):
+    """Get all booking services"""
+    try:
+        return BookingServiceService(db).get_all_booking_services()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

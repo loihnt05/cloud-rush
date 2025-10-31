@@ -44,7 +44,7 @@ class BookingService:
             booking_id=booking.booking_id,
             amount=total_amount,
             payment_date=datetime.now(),
-            # method="credit_card",
+            method="credit_card",
             # status="success"
         )
         

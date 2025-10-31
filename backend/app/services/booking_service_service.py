@@ -17,6 +17,10 @@ class BookingServiceService:
         
         return booking_service_repository.get_booking_services_by_booking(self.db, booking_id)
 
+    def get_all_booking_services(self):
+        """Get all booking services"""
+        return booking_service_repository.get_all_booking_services(self.db)
+    
     def add_service_to_booking(self, booking_service_data: BookingServiceCreate):
         """Add a service to a booking"""
         # Verify booking exists
