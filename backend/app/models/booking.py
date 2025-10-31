@@ -50,7 +50,10 @@ class Service(Base):
     )
     
     booking_services = relationship("BookingService", back_populates="service")
-    activities = relationship("TripActivity", back_populates="service")
+    trip_plan_items = relationship("TripPlanItem", back_populates="service")
+    hotel = relationship("Hotel", back_populates="service", uselist=False)
+    car_rental = relationship("CarRental", back_populates="service", uselist=False)
+    package = relationship("BookingPackage", back_populates="service", uselist=False)
 
 class BookingService(Base):
     __tablename__ = "booking_services"

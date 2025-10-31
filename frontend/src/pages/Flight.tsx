@@ -201,7 +201,7 @@ function Flight() {
             </div>
 
             {/* {User testimonials} */}
-            <div className="flex flex-col my-10 bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-6 rounded-2xl">
+            <div className="flex flex-col my-10 bg-linear-to-br from-blue-50 to-indigo-50 py-12 px-6 rounded-2xl">
                 <div className="text-center mb-8">
                     <h2 className="text-4xl font-bold text-gray-800 mb-2">What Our Travelers Say</h2>
                     <p className="text-gray-600">Real experiences from real customers</p>

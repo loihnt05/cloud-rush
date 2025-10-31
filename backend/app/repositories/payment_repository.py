@@ -21,3 +21,10 @@ def update_payment_status(db: Session, payment_id: int, status: str):
         db.commit()
         db.refresh(payment)
     return payment
+
+def delete_payment(db: Session, payment_id: int):
+    payment = db.query(Payment).filter(Payment.payment_id == payment_id).first()
+    if payment:
+        db.delete(payment)
+        db.commit()
+    return payment

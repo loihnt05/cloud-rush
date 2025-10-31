@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev-d": "doppler run -- vite",
+    "build-d": "doppler run -- tsc -b && vite build",
+    "lint-d": "doppler run -- eslint .",
+    "preview-d": "doppler run -- vite preview"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.8.0",
