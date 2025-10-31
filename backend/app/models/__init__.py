@@ -3,9 +3,13 @@ from .airport import Airport
 from .flight import Flight, FlightSeat
 from .booking import Booking, Payment, BookingService, Service
 from .place import Place, Explore
-from .trip import Trip, TripActivity
+from .trip import TripPlan, TripPlanItem
 from .forecast import RevenueForecast
 from .pet_model import Pet
+from .user import User
+from .hotel import Hotel
+from .car_rental import CarRental
+from .package import BookingPackage, PackagePlace
 
 __all__ = [
     "Airplane", "Seat",
@@ -13,6 +17,8 @@ __all__ = [
     "Flight", "FlightSeat",
     "Booking", "Payment", "BookingService", "Service",
     "Place", "Explore",
-    "Trip", "TripActivity",
-    "RevenueForecast", "Pet"
+    "TripPlan", "TripPlanItem",
+    "RevenueForecast", "Pet",
+    "User", "Hotel", "CarRental",
+    "BookingPackage", "PackagePlace"
 ]
