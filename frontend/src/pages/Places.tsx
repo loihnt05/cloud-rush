@@ -1,4 +1,3 @@
-import { Palette } from "lucide-react"
 import { FaBed, FaMapMarkerAlt, FaParking, FaWifi } from "react-icons/fa";
 import { MdRestaurant } from "react-icons/md";
 

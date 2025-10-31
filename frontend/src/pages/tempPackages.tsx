@@ -1,15 +1,5 @@
-import { FaPlane, FaStar, FaMapMarkerAlt, FaWifi, FaParking, FaBed } from "react-icons/fa";
-import { MdFlightTakeoff, MdRestaurant } from "react-icons/md";
-
-type Package = {
-    id: number;
-    name: string;
-    price: number;
-    description: string;
-    imageUrl: string;
-    rating?: number;
-    location?: string;
-};
+import { FaBed, FaMapMarkerAlt, FaParking, FaStar, FaWifi } from "react-icons/fa";
+import { MdRestaurant } from "react-icons/md";
 type Place = {
     id: number;
     name: string;
