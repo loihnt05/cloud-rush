@@ -4,7 +4,7 @@ from datetime import datetime
 
 class BookingCreate(BaseModel):
     user_id: str
-    flight_seat_id: int
+    flight_seat_id: Optional[int] = None
     status: Optional[str] = "pending"
 
 class BookingUpdate(BaseModel):
