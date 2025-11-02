@@ -13,7 +13,7 @@ import PassengerInformation from "./pages/PassengerInfomation.tsx";
 import Places from "./pages/Places.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
-import { FlightSearch } from "./pages/flight/flight-search.tsx";
+import FlightSearch from "./pages/flight/flight-search.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -28,9 +28,11 @@ export function AccessTokenProvider({
     if (isAuthenticated && user?.sub) {
       getAccessTokenSilently()
         .then((token) => {
+          console.log("Access Token:", token);
           setAccessToken(token);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("Error getting access token:", err);
           setAccessToken(null);
         });
     } else {
