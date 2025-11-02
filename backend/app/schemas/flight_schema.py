@@ -25,7 +25,7 @@ class FlightResponse(BaseModel):
     arrival_time: datetime
     status: str
     base_price: Decimal
-    tax_rate: Decimal
+    tax_rate: Optional[Decimal] = Decimal("0.15")
 
     class Config:
         from_attributes = True

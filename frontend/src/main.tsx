@@ -13,19 +13,26 @@ import PassengerInformation from "./pages/PassengerInfomation.tsx";
 import Places from "./pages/Places.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
+import { FlightSearch } from "./pages/flight/flight-search.tsx";
 
 const queryClient = new QueryClient();
-export function AccessTokenProvider({ children }: { children: React.ReactNode }) {
+export function AccessTokenProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { getAccessTokenSilently, user, isAuthenticated } = useAuth0();
   const { setAccessToken } = useSettingStore();
 
   useEffect(() => {
     if (isAuthenticated && user?.sub) {
-      getAccessTokenSilently().then((token) => {
-        setAccessToken(token);
-      }).catch(() => {
-        setAccessToken(null);
-      });
+      getAccessTokenSilently()
+        .then((token) => {
+          setAccessToken(token);
+        })
+        .catch(() => {
+          setAccessToken(null);
+        });
     } else {
       setAccessToken(null);
     }
@@ -42,7 +49,7 @@ createRoot(document.getElementById("root")!).render(
       authorizationParams={{
         redirect_uri: window.location.origin,
         audience: authConfig.audience,
-        scope: "openid profile email"
+        scope: "openid profile email",
       }}
       cacheLocation="localstorage"
     >
@@ -50,13 +57,17 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <QueryClientProvider client={queryClient}>
             <Routes>
-              <Route path="/" element={<Layout />} >
+              <Route path="/" element={<Layout />}>
                 <Route path="/home" element={<App />} />
                 <Route path="/flight" element={<Flight></Flight>} />
                 <Route path="/about" element={<About />} />
-                <Route path="/passenger-information" element={<PassengerInformation />} />
-                <Route path="/packages" element={<Packages/>} />
-                <Route path="/places" element={<Places/>} />
+                <Route
+                  path="/passenger-information"
+                  element={<PassengerInformation />}
+                />
+                <Route path="/packages" element={<Packages />} />
+                <Route path="/places" element={<Places />} />
+                <Route path="/flight/search" element={<FlightSearch />} />
               </Route>
             </Routes>
           </QueryClientProvider>
