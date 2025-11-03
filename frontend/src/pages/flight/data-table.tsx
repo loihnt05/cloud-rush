@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -25,24 +25,115 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import type { Flight } from "@/types/flight";
+import type { FlightFilters } from "./flight-filter-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filters?: FlightFilters;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filters = {},
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
+  // Apply custom filters to the data
+  const filteredData = useMemo(() => {
+    if (Object.keys(filters).length === 0) {
+      return data;
+    }
+
+    return data.filter((row) => {
+      const flight = row as unknown as Flight;
+
+      // Flight number filter
+      if (
+        filters.flightNumber &&
+        !flight.flight_number
+          .toLowerCase()
+          .includes(filters.flightNumber.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Origin filter
+      if (
+        filters.origin &&
+        flight.origin &&
+        !flight.origin.toLowerCase().includes(filters.origin.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Destination filter
+      if (
+        filters.destination &&
+        flight.destination &&
+        !flight.destination
+          .toLowerCase()
+          .includes(filters.destination.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Status filter
+      if (
+        filters.status &&
+        flight.status &&
+        flight.status.toLowerCase() !== filters.status.toLowerCase()
+      ) {
+        return false;
+      }
+
+      // Departure date filter
+      if (filters.departureDate) {
+        const departureDate = new Date(flight.departure_time);
+        const filterDate = new Date(filters.departureDate);
+        filterDate.setHours(0, 0, 0, 0);
+        departureDate.setHours(0, 0, 0, 0);
+        if (departureDate.getTime() !== filterDate.getTime()) {
+          return false;
+        }
+      }
+
+      // Arrival date filter
+      if (filters.arrivalDate) {
+        const arrivalDate = new Date(flight.arrival_time);
+        const filterDate = new Date(filters.arrivalDate);
+        filterDate.setHours(0, 0, 0, 0);
+        arrivalDate.setHours(0, 0, 0, 0);
+        if (arrivalDate.getTime() !== filterDate.getTime()) {
+          return false;
+        }
+      }
+
+      // Price range filter
+      const price =
+        typeof flight.base_price === "string"
+          ? parseFloat(flight.base_price)
+          : flight.base_price;
+
+      if (filters.minPrice !== undefined && price < filters.minPrice) {
+        return false;
+      }
+
+      if (filters.maxPrice !== undefined && price > filters.maxPrice) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [data, filters]);
+
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -62,16 +153,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter by origin..."
-          value={(table.getColumn("origin")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("origin")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

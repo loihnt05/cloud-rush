@@ -52,27 +52,64 @@ CREATE TABLE flight_seats (
     price_multiplier DECIMAL(5,2) DEFAULT 1.0,
     UNIQUE(flight_id, seat_id)
 );
-ALTER TABLE flights ADD COLUMN tax_rate DECIMAL(5,2) DEFAULT 0.15;
--- ========== FLIGHT SEATS (NEW) ==========
-CREATE TABLE flight_seats (
-    flight_seat_id SERIAL PRIMARY KEY,
-    flight_id INT NOT NULL REFERENCES flights(flight_id) ON DELETE CASCADE,
-    seat_id INT NOT NULL REFERENCES seats(seat_id) ON DELETE CASCADE,
-    status VARCHAR(20) DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'booked')),
-    price_multiplier DECIMAL(5,2) DEFAULT 1.0,
-    UNIQUE(flight_id, seat_id)
-);
 
--- ========== BOOKINGS (DEBUG VERSION FOR DRAW.SQL) ==========
--- Thử phiên bản này nếu bản gốc bị lỗi "unsupported statement"
+-- ========== BOOKINGS (UPDATED - Now group-level) ==========
+-- One booking can have multiple passengers
 CREATE TABLE bookings (
     booking_id SERIAL PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
-    flight_seat_id INT,
+    booking_reference VARCHAR(20) UNIQUE NOT NULL, -- e.g., ABC123XYZ
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending','confirmed','cancelled')),
-    CONSTRAINT fk_flight_seat FOREIGN KEY(flight_seat_id) REFERENCES flight_seats(flight_seat_id) ON DELETE SET NULL,
-    CONSTRAINT uq_flight_seat UNIQUE(flight_seat_id)
+    total_amount DECIMAL(10,2),
+    notes TEXT
+);
+
+-- ========== PASSENGERS (NEW) ==========
+-- Store passenger details for each booking
+CREATE TABLE passengers (
+    passenger_id SERIAL PRIMARY KEY,
+    booking_id INT NOT NULL REFERENCES bookings(booking_id) ON DELETE CASCADE,
+    passenger_type VARCHAR(20) NOT NULL CHECK (passenger_type IN ('adult', 'child', 'infant')),
+    
+    -- Personal Information
+    first_name VARCHAR(100) NOT NULL,
+    middle_name VARCHAR(100),
+    last_name VARCHAR(100) NOT NULL,
+    suffix VARCHAR(20),
+    date_of_birth DATE NOT NULL,
+    
+    -- Contact Information (usually for lead passenger)
+    email VARCHAR(255),
+    phone_number VARCHAR(20),
+    
+    -- Travel Documents
+    redress_number VARCHAR(50),
+    known_traveller_number VARCHAR(50), -- TSA PreCheck, Global Entry, etc.
+    
+    -- Seat Assignment
+    flight_seat_id INT REFERENCES flight_seats(flight_seat_id) ON DELETE SET NULL,
+    
+    -- Special Requirements
+    special_requests TEXT, -- wheelchair, meal preferences, etc.
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Ensure each passenger gets unique seat per booking
+    UNIQUE(booking_id, flight_seat_id)
+);
+
+-- ========== EMERGENCY CONTACTS (NEW) ==========
+-- Store emergency contact for each passenger
+CREATE TABLE emergency_contacts (
+    contact_id SERIAL PRIMARY KEY,
+    passenger_id INT NOT NULL REFERENCES passengers(passenger_id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255),
+    phone_number VARCHAR(20) NOT NULL,
+    relationship VARCHAR(50), -- spouse, parent, sibling, friend, etc.
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ========== PAYMENTS ==========
@@ -130,7 +167,6 @@ CREATE TABLE booking_services (
 );
 
 -- ========== PACKAGES ==========
--- A package is a combined service that includes hotel, car rental, and places
 CREATE TABLE booking_packages (
     package_id SERIAL PRIMARY KEY,
     service_id INT UNIQUE REFERENCES services(service_id) ON DELETE CASCADE,
@@ -148,10 +184,9 @@ CREATE TABLE package_places (
 );
 
 -- ========== TRIP PLANS ==========
--- User can plan their trip by combining packages, services, and flights
 CREATE TABLE trip_plans (
     plan_id SERIAL PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     start_date DATE,
     end_date DATE,
@@ -185,3 +220,9 @@ CREATE TABLE revenue_forecasts (
    model_used VARCHAR(100),
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ========== INDEXES FOR PERFORMANCE ==========
+CREATE INDEX idx_passengers_booking ON passengers(booking_id);
+CREATE INDEX idx_passengers_type ON passengers(passenger_type);
+CREATE INDEX idx_emergency_contacts_passenger ON emergency_contacts(passenger_id);
+CREATE INDEX idx_bookings_reference ON bookings(booking_reference);
