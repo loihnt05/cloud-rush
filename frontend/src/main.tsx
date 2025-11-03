@@ -66,7 +66,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/about" element={<About />} />
 
                 <Route path="/flight/search" element={<FlightSearch />} />
-                <Route
+                <Route  
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
