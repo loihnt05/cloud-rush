@@ -2,6 +2,7 @@ from .airplane import Airplane, Seat
 from .airport import Airport
 from .flight import Flight, FlightSeat
 from .booking import Booking, Payment, BookingService, Service
+from .passenger import Passenger, EmergencyContact
 from .place import Place, Explore
 from .trip import TripPlan, TripPlanItem
 from .forecast import RevenueForecast
@@ -15,6 +16,7 @@ __all__ = [
     "Airport",
     "Flight", "FlightSeat",
     "Booking", "Payment", "BookingService", "Service",
+    "Passenger", "EmergencyContact",
     "Place", "Explore",
     "TripPlan", "TripPlanItem",
     "RevenueForecast", "Pet",

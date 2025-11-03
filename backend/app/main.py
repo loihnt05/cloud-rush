@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from app.routers import (
     auth_router, booking_router, flight_router, payment_router, pet, revenue_router, seat_router, airplane_router,
     hotel_router, car_rental_router, package_router, explore_router, service_router, booking_service_router, trip_router,
-    airport_router, flight_seat_router
+    airport_router, flight_seat_router, passenger_router, emergency_contact_router
 )
 from app.core.database import create_tables
 
@@ -36,6 +36,8 @@ app.include_router(flight_router.router)
 app.include_router(flight_seat_router.router)
 
 app.include_router(booking_router.router)
+app.include_router(passenger_router.router)
+app.include_router(emergency_contact_router.router)
 app.include_router(booking_service_router.router)
 app.include_router(payment_router.router)
 app.include_router(service_router.router)

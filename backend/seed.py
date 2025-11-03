@@ -1,7 +1,8 @@
 import random
+import string
 import psycopg2
 from faker import Faker
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from decimal import Decimal
 
 # ---------- CONFIG ----------
@@ -25,7 +26,8 @@ FLIGHTS_PER_DAY = 12   # average flights created (multiplied by days_range)
 DAYS_RANGE = 30        # creating flights across next X days
 N_SERVICES = 120
 N_PLACES = 80
-N_EXplores_PER_USER = 2
+N_EXPLORES_PER_USER = 2
+AVG_PASSENGERS_PER_BOOKING = 2.5  # average passengers per booking
 
 # ---------- HELPERS ----------
 def exec_sql(cur, sql, params=None):
@@ -33,6 +35,13 @@ def exec_sql(cur, sql, params=None):
 
 def bulk_insert(cur, sql, data):
     cur.executemany(sql, data)
+
+def generate_booking_reference():
+    """Generate a unique booking reference like ABC123XYZ"""
+    letters = ''.join(random.choices(string.ascii_uppercase, k=3))
+    numbers = ''.join(random.choices(string.digits, k=3))
+    letters2 = ''.join(random.choices(string.ascii_uppercase, k=3))
+    return f"{letters}{numbers}{letters2}"
 
 # ---------- MAIN ----------
 def main():
@@ -59,6 +68,7 @@ def main():
             uid = F.uuid4()
             users.append((str(uid),))
         user_ids = [u[0] for u in users]
+        conn.commit()
 
         # ---------- AIRPORTS ----------
         print("3) Seeding airports...")
@@ -170,58 +180,202 @@ def main():
             """, flight_seats_data)
             conn.commit()
 
-        # ---------- BOOKINGS & PAYMENTS ----------
-        print("8) Seeding bookings and payments...")
-        # Get some flight_seats that are marked 'booked' or convert some 'available' to 'booked'
-        cur.execute("SELECT flight_seat_id, flight_id, price_multiplier FROM flight_seats")
-        fs_rows = cur.fetchall()
-        booked_candidates = []
-        for fs in fs_rows:
-            fsid, fid, pm = fs
-            # ~10-20% of seats will be booked
-            if random.random() < 0.12:
-                booked_candidates.append((fsid, fid, pm))
+        # ---------- BOOKINGS, PASSENGERS, EMERGENCY CONTACTS & PAYMENTS ----------
+        print("8) Seeding bookings, passengers, emergency contacts, and payments...")
+        
+        # Get available flight seats
+        cur.execute("SELECT flight_seat_id, flight_id, price_multiplier FROM flight_seats WHERE status = 'available'")
+        available_seats = cur.fetchall()
+        
+        # Create ~300-500 bookings with multiple passengers
+        n_bookings = min(200, len(available_seats) // 3)
         bookings_data = []
-        payments_data = []
-        booking_service_data = []
-        # Create bookings (one booking per flight_seat) and payments
-        for fsid, fid, pm in booked_candidates:
+        booking_references = set()
+        
+        for _ in range(n_bookings):
             user_id = random.choice(user_ids)
-            status = random.choices(['confirmed','pending','cancelled'], weights=[0.8,0.1,0.1])[0]
-            booking_date = datetime.now() - timedelta(days=random.randint(0, 10), hours=random.randint(0, 48))
-            bookings_data.append((user_id, fsid, booking_date, status))
+            status = random.choices(['confirmed','pending','cancelled'], weights=[0.75,0.15,0.1])[0]
+            booking_date = datetime.now() - timedelta(days=random.randint(0, 30), hours=random.randint(0, 48))
+            
+            # Generate unique booking reference
+            booking_ref = generate_booking_reference()
+            while booking_ref in booking_references:
+                booking_ref = generate_booking_reference()
+            booking_references.add(booking_ref)
+            
+            notes = F.text(max_nb_chars=100) if random.random() < 0.3 else None
+            
+            # We'll calculate total_amount later after creating passengers
+            bookings_data.append((user_id, booking_ref, booking_date, status, None, notes))
+        
         if bookings_data:
             bulk_insert(cur, """
-                INSERT INTO bookings (user_id, flight_seat_id, booking_date, status)
-                VALUES (%s,%s,%s,%s) RETURNING booking_id
-            """, bookings_data)  # psycopg2 executemany will not return rows; so we insert and then fetch inserted rows below
+                INSERT INTO bookings (user_id, booking_reference, booking_date, status, total_amount, notes)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """, bookings_data)
             conn.commit()
-
-            # Fetch booking ids and create payments for non-cancelled bookings
-            cur.execute("SELECT booking_id, flight_seat_id, status FROM bookings ORDER BY booking_id DESC LIMIT %s", (len(bookings_data),))
-            inserted_bookings = cur.fetchall()
-            for b in inserted_bookings:
-                b_id, fsid, b_status = b
-                # amount: derive from flight base_price * multiplier + tax
+            
+            # Fetch created bookings
+            cur.execute("SELECT booking_id, user_id, status, booking_reference FROM bookings ORDER BY booking_id")
+            all_bookings = cur.fetchall()
+            
+            # Create passengers for each booking
+            passengers_data = []
+            seat_index = 0
+            
+            for booking_id, user_id, b_status, b_ref in all_bookings:
+                # Number of passengers per booking (1-4, weighted towards 1-2)
+                n_passengers = random.choices([1,2,3,4], weights=[0.35, 0.40, 0.15, 0.10])[0]
+                
+                for p_idx in range(n_passengers):
+                    # Determine passenger type
+                    if p_idx == 0:
+                        passenger_type = 'adult'  # First passenger is always adult
+                    else:
+                        passenger_type = random.choices(
+                            ['adult', 'child', 'infant'],
+                            weights=[0.6, 0.3, 0.1]
+                        )[0]
+                    
+                    # Personal info
+                    first_name = F.first_name()
+                    middle_name = F.first_name() if random.random() < 0.3 else None
+                    last_name = F.last_name()
+                    suffix = random.choice(['Jr.', 'Sr.', 'III', None, None, None])
+                    
+                    # Date of birth based on type
+                    if passenger_type == 'adult':
+                        dob = F.date_of_birth(minimum_age=18, maximum_age=85)
+                    elif passenger_type == 'child':
+                        dob = F.date_of_birth(minimum_age=2, maximum_age=17)
+                    else:  # infant
+                        dob = F.date_of_birth(minimum_age=0, maximum_age=1)
+                    
+                    # Contact info (mainly for lead passenger)
+                    email = F.email() if p_idx == 0 else (F.email() if random.random() < 0.2 else None)
+                    # Generate simple phone number (max 20 chars for VARCHAR(20))
+                    phone = f"+1{random.randint(2000000000,9999999999)}" if p_idx == 0 else (f"+1{random.randint(2000000000,9999999999)}" if random.random() < 0.1 else None)
+                    
+                    # Travel documents (respecting VARCHAR limits)
+                    redress = f"RN{random.randint(100000,999999)}" if random.random() < 0.1 else None  # max 9 chars
+                    known_traveler = f"KTN{random.randint(10000000,99999999)}" if random.random() < 0.15 else None  # max 11 chars
+                    
+                    # Assign seat if available and not cancelled
+                    flight_seat_id = None
+                    if b_status != 'cancelled' and seat_index < len(available_seats):
+                        flight_seat_id = available_seats[seat_index][0]
+                        seat_index += 1
+                    
+                    # Special requests
+                    special_requests = random.choice([
+                        'Wheelchair assistance', 
+                        'Vegetarian meal',
+                        'Window seat preferred',
+                        'Extra legroom',
+                        None, None, None, None
+                    ])
+                    
+                    passengers_data.append((
+                        booking_id, passenger_type, first_name, middle_name, last_name,
+                        suffix, dob, email, phone, redress, known_traveler,
+                        flight_seat_id, special_requests
+                    ))
+            
+            if passengers_data:
+                bulk_insert(cur, """
+                    INSERT INTO passengers (
+                        booking_id, passenger_type, first_name, middle_name, last_name,
+                        suffix, date_of_birth, email, phone_number, redress_number,
+                        known_traveler_number, flight_seat_id, special_requests
+                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                """, passengers_data)
+                conn.commit()
+                
+                # Update flight_seats status to 'booked' for assigned seats
+                if seat_index > 0:
+                    booked_seat_ids = [available_seats[i][0] for i in range(seat_index)]
+                    for seat_id in booked_seat_ids:
+                        cur.execute("UPDATE flight_seats SET status = 'booked' WHERE flight_seat_id = %s", (seat_id,))
+                    conn.commit()
+            
+            # Create emergency contacts for passengers
+            print("   - Creating emergency contacts...")
+            cur.execute("SELECT passenger_id, first_name, last_name FROM passengers")
+            all_passengers = cur.fetchall()
+            
+            emergency_contacts_data = []
+            for passenger_id, p_first, p_last in all_passengers:
+                # ~60% of passengers have emergency contact
+                if random.random() < 0.6:
+                    ec_first = F.first_name()
+                    ec_last = p_last if random.random() < 0.7 else F.last_name()  # often same last name
+                    ec_email = F.email() if random.random() < 0.7 else None
+                    # Generate simple phone number (max 20 chars for VARCHAR(20))
+                    ec_phone = f"+1{random.randint(2000000000,9999999999)}"
+                    relationship = random.choice(['spouse', 'parent', 'sibling', 'friend', 'partner', 'child'])
+                    
+                    emergency_contacts_data.append((
+                        passenger_id, ec_first, ec_last, ec_email, ec_phone, relationship
+                    ))
+            
+            if emergency_contacts_data:
+                bulk_insert(cur, """
+                    INSERT INTO emergency_contacts (
+                        passenger_id, first_name, last_name, email, phone_number, relationship_type
+                    ) VALUES (%s,%s,%s,%s,%s,%s)
+                """, emergency_contacts_data)
+                conn.commit()
+            
+            # Calculate total_amount for each booking and create payments
+            print("   - Calculating booking totals and creating payments...")
+            payments_data = []
+            
+            for booking_id, user_id, b_status, b_ref in all_bookings:
+                # Get passengers and their seats for this booking
                 cur.execute("""
-                    SELECT f.base_price, f.tax_rate FROM flights f
-                    JOIN flight_seats fs ON fs.flight_id = f.flight_id
-                    WHERE fs.flight_seat_id = %s
-                """, (fsid,))
-                r = cur.fetchone()
-                if r:
-                    base_price, tax_rate = r
-                    # price_multiplier we stored earlier unknown here; fallback approximate
-                    amount = Decimal(base_price) * Decimal(1.0)
-                    tax = Decimal(amount) * Decimal(tax_rate)
-                    total = (Decimal(amount) + Decimal(tax)).quantize(Decimal("0.01"))
-                else:
-                    total = Decimal(random.randint(50, 900))
-                # create payment only if not cancelled
-                if b_status != 'cancelled':
-                    method = random.choice(['credit_card','paypal','bank_transfer'])
-                    pay_status = random.choices(['success','failed','pending'], weights=[0.9,0.05,0.05])[0]
-                    payments_data.append((b_id, total, datetime.now(), method, pay_status))
+                    SELECT p.passenger_id, p.flight_seat_id, p.passenger_type
+                    FROM passengers p
+                    WHERE p.booking_id = %s
+                """, (booking_id,))
+                booking_passengers = cur.fetchall()
+                
+                total_amount = Decimal(0)
+                
+                for p_id, fs_id, p_type in booking_passengers:
+                    if fs_id:
+                        # Get flight price info
+                        cur.execute("""
+                            SELECT f.base_price, f.tax_rate, fs.price_multiplier
+                            FROM flight_seats fs
+                            JOIN flights f ON fs.flight_id = f.flight_id
+                            WHERE fs.flight_seat_id = %s
+                        """, (fs_id,))
+                        price_info = cur.fetchone()
+                        
+                        if price_info:
+                            base_price, tax_rate, multiplier = price_info
+                            # Infants typically pay less or free
+                            passenger_multiplier = 0.1 if p_type == 'infant' else (0.75 if p_type == 'child' else 1.0)
+                            
+                            seat_price = Decimal(base_price) * Decimal(multiplier) * Decimal(passenger_multiplier)
+                            tax = seat_price * Decimal(tax_rate)
+                            total_amount += (seat_price + tax).quantize(Decimal("0.01"))
+                
+                # Update booking total_amount
+                if total_amount > 0:
+                    cur.execute("""
+                        UPDATE bookings SET total_amount = %s WHERE booking_id = %s
+                    """, (total_amount, booking_id))
+                    
+                    # Create payment for non-cancelled bookings
+                    if b_status != 'cancelled':
+                        method = random.choice(['credit_card', 'credit_card', 'credit_card', 'paypal', 'bank_transfer'])
+                        pay_status = random.choices(['success','failed','pending'], weights=[0.88,0.04,0.08])[0]
+                        pay_date = datetime.now() - timedelta(days=random.randint(0, 25))
+                        payments_data.append((booking_id, total_amount, pay_date, method, pay_status))
+            
+            conn.commit()
+            
             if payments_data:
                 bulk_insert(cur, """
                     INSERT INTO payments (booking_id, amount, payment_date, method, status)
@@ -372,7 +526,7 @@ def main():
         print("14) Seeding explores (user posts) ...")
         explores_rows = []
         for u in user_ids:
-            for _ in range(random.randint(0, N_EXplores_PER_USER)):
+            for _ in range(random.randint(0, N_EXPLORES_PER_USER)):
                 place = random.choice(place_ids)
                 title = f"{random.choice(['My trip to','Exploring','Review:'])} {F.city()}"
                 content = F.paragraph(nb_sentences=5)
