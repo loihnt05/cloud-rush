@@ -9,6 +9,7 @@ import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
 import Flight from "./pages/Flight.tsx";
 import Packages from "./pages/Packages.tsx";
+import TempPackages from "./pages/tempPackages.tsx";
 import PassengerInformation from "./pages/PassengerInfomation.tsx";
 import Places from "./pages/Places.tsx";
 import useSettingStore from "./stores/setting-store";
@@ -63,13 +64,15 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/home" element={<App />} />
                 <Route path="/flight" element={<Flight></Flight>} />
                 <Route path="/about" element={<About />} />
+
+                <Route path="/flight/search" element={<FlightSearch />} />
                 <Route
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
                 <Route path="/packages" element={<Packages />} />
                 <Route path="/places" element={<Places />} />
-                <Route path="/flight/search" element={<FlightSearch />} />
+                <Route path="/test" element={<TempPackages />} />
               </Route>
             </Routes>
           </QueryClientProvider>
