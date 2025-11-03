@@ -12,7 +12,8 @@ class Place(Base):
     description = Column(Text)
 
     explores = relationship("Explore", back_populates="place")
-    activities = relationship("TripActivity", back_populates="place")
+    trip_plan_items = relationship("TripPlanItem", back_populates="place")
+    package_places = relationship("PackagePlace", back_populates="place")
 
 
 class Explore(Base):

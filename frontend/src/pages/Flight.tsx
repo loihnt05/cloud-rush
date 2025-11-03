@@ -1,8 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { FaPlane, FaStar, FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaQuoteLeft } from "react-icons/fa";
-import { MdFlightTakeoff, MdFlightLand } from "react-icons/md";
 import { useState } from "react";
+import { FaCalendarAlt, FaMapMarkerAlt, FaPlane, FaQuoteLeft, FaStar, FaUsers } from "react-icons/fa";
+import { MdFlightLand, MdFlightTakeoff } from "react-icons/md";
 
 type Flight = {
     id: number;

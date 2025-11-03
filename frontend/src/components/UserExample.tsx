@@ -6,8 +6,8 @@ import {
   useUpdateAirplane,
   useDeleteAirplane,
 } from "@/hooks/use-users";
-import Button from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "./ui/button";
 
 export const AirplaneExample = () => {
   const [selectedAirplaneId, setSelectedAirplaneId] = useState<number | null>(null);

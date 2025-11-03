@@ -17,4 +17,5 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "requests>=2.31.0",
     "pyjwt[crypto]>=2.1.0",
+    "faker>=37.12.0",
 ]

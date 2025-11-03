@@ -1,4 +1,4 @@
-from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String, func
+from sqlalchemy import DECIMAL, TIMESTAMP, CheckConstraint, Column, ForeignKey, Integer, String, Text, func
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -7,17 +7,20 @@ class Booking(Base):
 
     booking_id = Column(Integer, primary_key=True)
     user_id = Column(String(255), nullable=False)
-    flight_seat_id = Column(Integer, ForeignKey("flight_seats.flight_seat_id", ondelete="SET NULL"), unique=True)
+    booking_reference = Column(String(20), unique=True, nullable=False)  # e.g., ABC123XYZ
     booking_date = Column(TIMESTAMP, server_default=func.current_timestamp())
     status = Column(String(20), default="pending")
+    total_amount = Column(DECIMAL(10, 2))
+    notes = Column(Text)
 
     __table_args__ = (
         CheckConstraint("status IN ('pending','confirmed','cancelled')"),
     )
 
-    flight_seat = relationship("FlightSeat", back_populates="booking")
-    payments = relationship("Payment", back_populates="booking")
-    booking_services = relationship("BookingService", back_populates="booking")
+    # Relationships
+    passengers = relationship("Passenger", back_populates="booking", cascade="all, delete-orphan")
+    payments = relationship("Payment", back_populates="booking", cascade="all, delete-orphan")
+    booking_services = relationship("BookingService", back_populates="booking", cascade="all, delete-orphan")
 
 
 class Payment(Base):
@@ -31,7 +34,7 @@ class Payment(Base):
     method = Column(String(50))
     status = Column(String(20), default="pending")
 
-    __tableargs__ = (
+    __table_args__ = (
         CheckConstraint("status IN ('success','failed','pending')"),
     )
     
@@ -50,7 +53,10 @@ class Service(Base):
     )
     
     booking_services = relationship("BookingService", back_populates="service")
-    activities = relationship("TripActivity", back_populates="service")
+    trip_plan_items = relationship("TripPlanItem", back_populates="service")
+    hotel = relationship("Hotel", back_populates="service", uselist=False)
+    car_rental = relationship("CarRental", back_populates="service", uselist=False)
+    package = relationship("BookingPackage", back_populates="service", uselist=False)
 
 class BookingService(Base):
     __tablename__ = "booking_services"

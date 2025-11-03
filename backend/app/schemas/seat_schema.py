@@ -5,7 +5,6 @@ class SeatCreate(BaseModel):
     airplane_id: int
     seat_number: str
     seat_class: Literal['economy', 'business', 'first']
-    available: Optional[bool] = True
 
     @field_validator('seat_number')
     @classmethod
@@ -19,7 +18,6 @@ class SeatResponse(BaseModel):
     airplane_id: int
     seat_number: str
     seat_class: str
-    available: bool
 
     class Config:
         from_attributes = True

@@ -17,7 +17,6 @@ import {
   Trash2,
 } from "lucide-react"
 
-import Button from "@/components/ui/button"
 import {
   Popover,
   PopoverContent,
@@ -32,6 +31,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
 
 const data = [
   [

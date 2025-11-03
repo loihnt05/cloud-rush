@@ -19,7 +19,7 @@ class FlightSeat(Base):
 
     flight = relationship("Flight", back_populates="flight_seats")
     seat = relationship("Seat", back_populates="flight_seats")
-    booking = relationship("Booking", back_populates="flight_seat", uselist=False)
+    passengers = relationship("Passenger", back_populates="flight_seat")
 
 
 class Flight(Base):
@@ -45,4 +45,4 @@ class Flight(Base):
     origin_airport = relationship("Airport", foreign_keys=[origin_airport_id], back_populates="origin_flights")
     destination_airport = relationship("Airport", foreign_keys=[destination_airport_id], back_populates="destination_flights")
     flight_seats = relationship("FlightSeat", back_populates="flight")
-    activities = relationship("TripActivity", back_populates="flight")
+    trip_plan_items = relationship("TripPlanItem", back_populates="flight")
