@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.hotel import Hotel
 from app.repositories import hotel_repository
 from app.schemas.hotel_schema import HotelCreate, HotelUpdate
+from app.factories import get_service_factory
 
 
 class HotelService:
@@ -26,10 +27,40 @@ class HotelService:
         return hotel_repository.get_hotels_by_stars(self.db, stars)
 
     def create_hotel(self, hotel_data: HotelCreate):
-        """Create a new hotel"""
+        """Create a new hotel (traditional way - kept for backward compatibility)"""
         hotel_dict = hotel_data.model_dump()
         hotel = Hotel(**hotel_dict)
         return hotel_repository.create_hotel(self.db, hotel)
+    
+    def create_hotel_with_service(self, name: str, price: float, location: str, stars: int, description: str = None):
+        """
+        Create a hotel using the Factory Pattern.
+        This is the recommended way to create hotels.
+        
+        Args:
+            name: Hotel/service name
+            price: Service price
+            location: Hotel location
+            stars: Star rating (1-5)
+            description: Optional description
+            
+        Returns:
+            Tuple of (Service, Hotel)
+        """
+        try:
+            factory = get_service_factory("hotel")
+            service, hotel = factory.create_service_with_details(
+                self.db,
+                service_data={"name": name, "price": price},
+                details_data={"location": location, "stars": stars, "description": description}
+            )
+            self.db.commit()
+            self.db.refresh(service)
+            self.db.refresh(hotel)
+            return service, hotel
+        except Exception as e:
+            self.db.rollback()
+            raise ValueError(f"Failed to create hotel: {str(e)}")
 
     def update_hotel(self, hotel_id: int, hotel_data: HotelUpdate):
         """Update an existing hotel"""

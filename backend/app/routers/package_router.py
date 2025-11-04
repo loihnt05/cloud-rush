@@ -115,3 +115,49 @@ def remove_place_from_package(
         return {"message": "Place removed from package successfully"}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+# Factory Pattern Endpoints
+@router.post("/factory/create")
+def create_package_with_factory(
+    service_name: str,
+    service_price: float,
+    package_name: str,
+    total_price: float,
+    hotel_id: int = None,
+    car_rental_id: int = None,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(verify_jwt)
+):
+    """
+    Create a package using the Factory Pattern.
+    This endpoint demonstrates the factory pattern implementation.
+    """
+    try:
+        service, package = PackageService(db).create_package_with_service(
+            service_name=service_name,
+            service_price=service_price,
+            package_name=package_name,
+            total_price=total_price,
+            hotel_id=hotel_id,
+            car_rental_id=car_rental_id
+        )
+        return {
+            "message": "Package created successfully using Factory Pattern",
+            "service": {
+                "service_id": service.service_id,
+                "name": service.name,
+                "type": service.type,
+                "price": float(service.price)
+            },
+            "package": {
+                "package_id": package.package_id,
+                "service_id": package.service_id,
+                "name": package.name,
+                "total_price": float(package.total_price),
+                "hotel_id": package.hotel_id,
+                "car_rental_id": package.car_rental_id
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

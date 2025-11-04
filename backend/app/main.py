@@ -7,11 +7,13 @@ from app.routers import (
     airport_router, flight_seat_router, passenger_router, emergency_contact_router
 )
 from app.core.database import create_tables
+from app.factories import initialize_factories
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     create_tables()
+    initialize_factories()  # Initialize Factory Pattern
     yield
     # Shutdown
     pass

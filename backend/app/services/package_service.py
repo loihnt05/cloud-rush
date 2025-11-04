@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from app.models.package import BookingPackage, PackagePlace
 from app.repositories import package_repository
 from app.schemas.package_schema import PackageCreate, PackageUpdate, PackagePlaceCreate
+from app.factories import get_service_factory
+from typing import Optional
 
 
 class PackageService:
@@ -20,7 +22,7 @@ class PackageService:
         return package_repository.get_all_packages(self.db, skip, limit)
 
     def create_package(self, package_data: PackageCreate):
-        """Create a new package with places"""
+        """Create a new package with places (traditional way - kept for backward compatibility)"""
         # Extract places data
         places_data = package_data.places if package_data.places else []
         package_dict = package_data.model_dump(exclude={'places'})
@@ -42,6 +44,44 @@ class PackageService:
         # Refresh to get updated relationships
         self.db.refresh(created_package)
         return created_package
+    
+    def create_package_with_service(self, service_name: str, service_price: float, package_name: str,
+                                    total_price: float, hotel_id: Optional[int] = None, 
+                                    car_rental_id: Optional[int] = None):
+        """
+        Create a package using the Factory Pattern.
+        This is the recommended way to create packages.
+        
+        Args:
+            service_name: Service name
+            service_price: Service price
+            package_name: Package name
+            total_price: Total package price
+            hotel_id: Optional hotel ID
+            car_rental_id: Optional car rental ID
+            
+        Returns:
+            Tuple of (Service, BookingPackage)
+        """
+        try:
+            factory = get_service_factory("package")
+            service, package = factory.create_service_with_details(
+                self.db,
+                service_data={"name": service_name, "price": service_price},
+                details_data={
+                    "name": package_name,
+                    "total_price": total_price,
+                    "hotel_id": hotel_id,
+                    "car_rental_id": car_rental_id
+                }
+            )
+            self.db.commit()
+            self.db.refresh(service)
+            self.db.refresh(package)
+            return service, package
+        except Exception as e:
+            self.db.rollback()
+            raise ValueError(f"Failed to create package: {str(e)}")
 
     def update_package(self, package_id: int, package_data: PackageUpdate):
         """Update an existing package"""
