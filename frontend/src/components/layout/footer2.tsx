@@ -27,15 +27,6 @@ interface Footer7Props {
 
 const defaultSections = [
   {
-    title: "Product",
-    links: [
-      { name: "Overview", href: "#" },
-      { name: "Pricing", href: "#" },
-      { name: "Marketplace", href: "#" },
-      { name: "Features", href: "#" },
-    ],
-  },
-  {
     title: "Company",
     links: [
       { name: "About", href: "#" },
@@ -72,17 +63,17 @@ const Footer7 = ({
     url: "https://www.shadcnblocks.com",
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
     alt: "logo",
-    title: "Shadcnblocks.com",
+    title: "CloudRush",
   },
   sections = defaultSections,
   description = "A collection of components for your startup business or side project.",
   socialLinks = defaultSocialLinks,
-  copyright = "© 2024 Shadcnblocks.com. All rights reserved.",
+  copyright = "© 2024 CloudRush. All rights reserved.",
   legalLinks = defaultLegalLinks,
 }: Footer7Props) => {
   return (
-    <section className="py-32 ">
-      <div className="container bg-white">
+    <section className="py-32">
+      <div className="bg-white flex flex-col px-25 pt-10">
         <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start lg:text-left">
           <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
             {/* Logo */}
@@ -95,9 +86,9 @@ const Footer7 = ({
                   className="h-8"
                 />
               </a>
-              <h2 className="text-xl font-semibold">{logo.title}</h2>
-            </div>
-            <p className="text-muted-foreground max-w-[70%] text-sm">
+              <h2 className="text-2xl font-semibold">{logo.title}</h2>
+            </div> 
+            <p className="text-muted-foreground max-w-[70%] text-lg">
               {description}
             </p>
             <ul className="text-muted-foreground flex items-center space-x-6">
@@ -110,11 +101,11 @@ const Footer7 = ({
               ))}
             </ul> 
           </div>
-          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">    
+          <div className="grid w-full gap-6 md:grid-cols-2 lg:gap-20">    
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>
-                <h3 className="mb-4 font-bold">{section.title}</h3>
-                <ul className="text-muted-foreground space-y-3 text-sm">
+                <h3 className="mb-4 font-bold text-xl">{section.title}</h3>
+                <ul className="text-muted-foreground font-semibold space-y-3 text-lg">
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}
