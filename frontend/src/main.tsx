@@ -64,11 +64,10 @@ createRoot(document.getElementById("root")!).render(
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route path="/home" element={<App />} />
-                <Route path="/flight" element={<Flight></Flight>} />
+                <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
-
                 <Route path="/flight/search" element={<FlightSearch />} />
-                <Route  
+                <Route
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
