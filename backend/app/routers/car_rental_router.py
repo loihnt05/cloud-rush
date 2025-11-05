@@ -90,3 +90,49 @@ def delete_car_rental(
         return {"message": "Car rental deleted successfully"}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+# Factory Pattern Endpoints
+@router.post("/factory/create")
+def create_car_rental_with_factory(
+    name: str,
+    price: float,
+    car_model: str,
+    brand: str,
+    daily_rate: float,
+    available: bool = True,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(verify_jwt)
+):
+    """
+    Create a car rental using the Factory Pattern.
+    This endpoint demonstrates the factory pattern implementation.
+    """
+    try:
+        service, car_rental = CarRentalService(db).create_car_rental_with_service(
+            name=name,
+            price=price,
+            car_model=car_model,
+            brand=brand,
+            daily_rate=daily_rate,
+            available=available
+        )
+        return {
+            "message": "Car rental created successfully using Factory Pattern",
+            "service": {
+                "service_id": service.service_id,
+                "name": service.name,
+                "type": service.type,
+                "price": float(service.price)
+            },
+            "car_rental": {
+                "car_rental_id": car_rental.car_rental_id,
+                "service_id": car_rental.service_id,
+                "car_model": car_rental.car_model,
+                "brand": car_rental.brand,
+                "daily_rate": float(car_rental.daily_rate),
+                "available": car_rental.available
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

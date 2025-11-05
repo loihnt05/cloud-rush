@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.car_rental import CarRental
 from app.repositories import car_rental_repository
 from app.schemas.car_rental_schema import CarRentalCreate, CarRentalUpdate
+from app.factories import get_service_factory
 
 
 class CarRentalService:
@@ -28,10 +29,47 @@ class CarRentalService:
         return car_rental_repository.get_car_rentals_by_brand(self.db, brand)
 
     def create_car_rental(self, car_rental_data: CarRentalCreate):
-        """Create a new car rental"""
+        """Create a new car rental (traditional way - kept for backward compatibility)"""
         car_rental_dict = car_rental_data.model_dump()
         car_rental = CarRental(**car_rental_dict)
         return car_rental_repository.create_car_rental(self.db, car_rental)
+    
+    def create_car_rental_with_service(self, name: str, price: float, car_model: str, brand: str, 
+                                       daily_rate: float, available: bool = True):
+        """
+        Create a car rental using the Factory Pattern.
+        This is the recommended way to create car rentals.
+        
+        Args:
+            name: Service name
+            price: Service price
+            car_model: Car model
+            brand: Car brand
+            daily_rate: Daily rental rate
+            available: Availability status
+            
+        Returns:
+            Tuple of (Service, CarRental)
+        """
+        try:
+            factory = get_service_factory("rental_car")
+            service, car_rental = factory.create_service_with_details(
+                self.db,
+                service_data={"name": name, "price": price},
+                details_data={
+                    "car_model": car_model,
+                    "brand": brand,
+                    "daily_rate": daily_rate,
+                    "available": available
+                }
+            )
+            self.db.commit()
+            self.db.refresh(service)
+            self.db.refresh(car_rental)
+            return service, car_rental
+        except Exception as e:
+            self.db.rollback()
+            raise ValueError(f"Failed to create car rental: {str(e)}")
 
     def update_car_rental(self, car_rental_id: int, car_rental_data: CarRentalUpdate):
         """Update an existing car rental"""

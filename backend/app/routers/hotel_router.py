@@ -84,3 +84,46 @@ def delete_hotel(
         return {"message": "Hotel deleted successfully"}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+# Factory Pattern Endpoints
+@router.post("/factory/create")
+def create_hotel_with_factory(
+    name: str,
+    price: float,
+    location: str,
+    stars: int,
+    description: str = None,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(verify_jwt)
+):
+    """
+    Create a hotel using the Factory Pattern.
+    This endpoint demonstrates the factory pattern implementation.
+    """
+    try:
+        service, hotel = HotelService(db).create_hotel_with_service(
+            name=name,
+            price=price,
+            location=location,
+            stars=stars,
+            description=description
+        )
+        return {
+            "message": "Hotel created successfully using Factory Pattern",
+            "service": {
+                "service_id": service.service_id,
+                "name": service.name,
+                "type": service.type,
+                "price": float(service.price)
+            },
+            "hotel": {
+                "hotel_id": hotel.hotel_id,
+                "service_id": hotel.service_id,
+                "location": hotel.location,
+                "stars": hotel.stars,
+                "description": hotel.description
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
