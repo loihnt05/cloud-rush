@@ -16,9 +16,9 @@ export default function Layout() {
         <div className="flex flex-col w-full bg-white p-5 h-full">
             <Outlet />  
         </div>
-              <Footer7></Footer7>
-      </SidebarInset>
 
+        <Footer7 />
+      </SidebarInset>
     </SidebarProvider>
   );
 }

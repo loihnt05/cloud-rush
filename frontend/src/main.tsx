@@ -15,6 +15,8 @@ import Places from "./pages/Places.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
 import FlightSearch from "./pages/flight/flight-search.tsx";
+import SeatSelection from "./pages/SeatSelection.tsx";
+import Payment from "./pages/Payment.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -66,13 +68,15 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/about" element={<About />} />
 
                 <Route path="/flight/search" element={<FlightSearch />} />
-                <Route
+                <Route  
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
                 <Route path="/packages" element={<Packages />} />
                 <Route path="/places" element={<Places />} />
                 <Route path="/test" element={<TempPackages />} />
+                <Route path="/payment" element={<Payment />} />
+                <Route path="/seat-selection" element={<SeatSelection />} />
               </Route>
             </Routes>
           </QueryClientProvider>
