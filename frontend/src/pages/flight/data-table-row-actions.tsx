@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Flight } from "@/types/flight";
 import type { Row } from "@tanstack/react-table";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { Minus, Plus } from "lucide-react";
 
 interface DataTableRowActionsProps {
   row: Row<Flight>;
@@ -20,6 +23,16 @@ interface DataTableRowActionsProps {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const flight = row.original;
+  const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get passenger count from URL params and set as initial state
+  const initialAdults = Number.parseInt(searchParams.get("adults") || "1", 10);
+  const initialChildren = Number.parseInt(searchParams.get("children") || "0", 10);
+  
+  const [adults, setAdults] = useState(initialAdults);
+  const [children, setChildren] = useState(initialChildren);
+  const totalPassengers = adults + children;
 
   return (
     <Dialog>
@@ -76,8 +89,84 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               {flight.status}
             </Badge>
           </div>
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">Passengers</span>
+              <Badge variant="secondary">
+                {totalPassengers} {totalPassengers === 1 ? "Passenger" : "Passengers"}
+              </Badge>
+            </div>
+            
+            {/* Adults Counter */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Adults</span>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAdults(Math.max(1, adults - 1));
+                  }}
+                  disabled={adults <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="w-8 text-center font-medium">{adults}</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAdults(adults + 1);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Children Counter */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Children</span>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setChildren(Math.max(0, children - 1));
+                  }}
+                  disabled={children <= 0}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="w-8 text-center font-medium">{children}</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setChildren(children + 1);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-        <Button>Book Now</Button>
+        <Button
+          className="hover:cursor-pointer"
+          onClick={() => nav(`/passenger-information?flightId=${row.id}&adults=${adults}&children=${children}`)}
+        >
+          Book Now
+        </Button>
       </DialogContent>
     </Dialog>
   );

@@ -68,7 +68,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/home" element={<App />} />
                 <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/flight/search" element={<FlightSearch />} />
+                <Route path="/flights/search" element={<FlightSearch />} />
                 <Route
                   path="/passenger-information"
                   element={<PassengerInformation />}

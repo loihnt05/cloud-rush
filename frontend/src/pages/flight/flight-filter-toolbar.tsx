@@ -209,9 +209,6 @@ export function FlightFilterToolbar({
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="boarding">Boarding</SelectItem>
-              <SelectItem value="departed">Departed</SelectItem>
-              <SelectItem value="arrived">Arrived</SelectItem>
               <SelectItem value="delayed">Delayed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>

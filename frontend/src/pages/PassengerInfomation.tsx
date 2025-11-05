@@ -1,338 +1,313 @@
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { FaPlane, FaClock, FaCalendarAlt, FaUsers, FaUser, FaPhone, FaEnvelope, FaBirthdayCake, FaIdCard } from "react-icons/fa";
-import { MdFlightTakeoff, MdFlightLand, MdLuggage, MdContactPhone } from "react-icons/md";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { getFlight } from "@/api/flight";
+import { getAirportById } from "@/api/airport";
+import { createBooking, createPassenger, createEmergencyContact } from "@/api/booking";
+import type { PassengerCreate, EmergencyContactCreate, PassengerType } from "@/types/booking";
+import { useAuth0 } from "@auth0/auth0-react";
+import PassengerForm from "@/components/passenger/passenger-form";
+import EmergencyContactForm from "@/components/passenger/emergency-contact-form";
+import FlightSummaryCard from "@/components/passenger/flight-summary-card";
+
+interface PassengerFormData {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  suffix: string;
+  dateOfBirth: string;
+  email: string;
+  phoneNumber: string;
+  passengerType: PassengerType;
+}
 
 export default function PassengerInformation() {
-    const [CountBag, setCountBag] = useState(1);
+  const [searchParams] = useSearchParams();
+  const flightId = searchParams.get("flightId");
+  const adultsParam = searchParams.get("adults");
+  const childrenParam = searchParams.get("children");
+  const infantsParam = searchParams.get("infants");
+  const navigate = useNavigate();
+  const { user } = useAuth0(); // Will be used for booking creation with user_id
 
-    // Sample flight data - replace with actual data from props or API
-    const flightInfo = {
-        airline: "Vietnam Airlines",
-        flightNumber: "VN123",
-        departure: {
-            city: "Ho Chi Minh City",
-            airport: "SGN",
-            time: "10:30 AM",
-            date: "Nov 15, 2025"
-        },
-        arrival: {
-            city: "Hanoi",
-            airport: "HAN",
-            time: "12:45 PM",
-            date: "Nov 15, 2025"
-        },
-        duration: "2h 15m",
-        passengers: 1,
-        class: "Economy",
-        price: 250
+  // Parse passenger counts from URL
+  const adultsCount = adultsParam ? parseInt(adultsParam, 10) : 1;
+  const childrenCount = childrenParam ? parseInt(childrenParam, 10) : 0;
+  const infantsCount = infantsParam ? parseInt(infantsParam, 10) : 0;
+  const totalPassengers = adultsCount + childrenCount + infantsCount;
+
+  // Number of passengers
+  const [passengerCount, setPassengerCount] = useState(totalPassengers);
+
+  // Form state for multiple passengers
+  const [passengerForms, setPassengerForms] = useState<PassengerFormData[]>([]);
+
+  // Initialize passenger forms based on URL parameters
+  useEffect(() => {
+    const initialForms: PassengerFormData[] = [];
+    
+    // Add adult forms
+    for (let i = 0; i < adultsCount; i++) {
+      initialForms.push({
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        suffix: "",
+        dateOfBirth: "",
+        email: "",
+        phoneNumber: "",
+        passengerType: "adult",
+      });
+    }
+    
+    // Add children forms
+    for (let i = 0; i < childrenCount; i++) {
+      initialForms.push({
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        suffix: "",
+        dateOfBirth: "",
+        email: "",
+        phoneNumber: "",
+        passengerType: "child",
+      });
+    }
+    
+    // Add infant forms
+    for (let i = 0; i < infantsCount; i++) {
+      initialForms.push({
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        suffix: "",
+        dateOfBirth: "",
+        email: "",
+        phoneNumber: "",
+        passengerType: "infant",
+      });
+    }
+    
+    setPassengerForms(initialForms);
+    setPassengerCount(initialForms.length);
+  }, [adultsCount, childrenCount, infantsCount]);
+
+  // Form state for emergency contact (only one for all passengers)
+  const [emergencyForm, setEmergencyForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+  });
+
+  // Helper function to update a specific passenger's form
+  const updatePassengerForm = (index: number, field: string, value: string) => {
+    const updatedForms = [...passengerForms];
+    updatedForms[index] = {
+      ...updatedForms[index],
+      [field]: value,
     };
+    setPassengerForms(updatedForms);
+  };
 
+  // Fetch flight data based on flightId
+  const { data: flight, isLoading: isFlightLoading, error: flightError } = useQuery({
+    queryKey: ["flight", flightId],
+    queryFn: async () => {
+      console.log("Fetching flight with ID:", flightId);
+      const result = await getFlight(Number(flightId));
+      console.log("Flight data received:", result);
+      return result;
+    },
+    enabled: !!flightId,
+  });
+
+  // Fetch origin airport data
+  const { data: originAirport } = useQuery({
+    queryKey: ["airport", flight?.origin_airport_id],
+    queryFn: () => getAirportById(flight!.origin_airport_id),
+    enabled: !!flight?.origin_airport_id,
+  });
+
+  // Fetch destination airport data
+  const { data: destinationAirport } = useQuery({
+    queryKey: ["airport", flight?.destination_airport_id],
+    queryFn: () => getAirportById(flight!.destination_airport_id),
+    enabled: !!flight?.destination_airport_id,
+  });
+
+  // Mutation to create booking
+  const createBookingMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const bookingData = {
+        user_id: userId,
+        status: "pending",
+        notes: `Flight ${flightId}`
+      };
+      return createBooking(bookingData);
+    },
+    onSuccess: async (booking) => {
+      console.log("Booking created successfully:", booking);
+      
+      // Create all passengers sequentially
+      try {
+        const passengerIds: number[] = [];
+        
+        for (let i = 0; i < passengerForms.length; i++) {
+          const passenger = passengerForms[i];
+          const passengerData: PassengerCreate = {
+            booking_id: booking.booking_id,
+            passenger_type: passenger.passengerType,
+            first_name: passenger.firstName,
+            middle_name: passenger.middleName || undefined,
+            last_name: passenger.lastName,
+            suffix: passenger.suffix || undefined,
+            date_of_birth: passenger.dateOfBirth,
+            email: passenger.email,
+            phone_number: passenger.phoneNumber,
+          };
+          
+          const createdPassenger = await createPassenger(passengerData);
+          passengerIds.push(createdPassenger.passenger_id);
+          console.log(`Passenger ${i + 1} (${passenger.passengerType}) created:`, createdPassenger);
+        }
+        
+        // Create emergency contact for the first passenger
+        if (passengerIds.length > 0) {
+          const emergencyContact: EmergencyContactCreate = {
+            passenger_id: passengerIds[0],
+            first_name: emergencyForm.firstName,
+            last_name: emergencyForm.lastName,
+            email: emergencyForm.email || undefined,
+            phone_number: emergencyForm.phoneNumber,
+          };
+          
+          await createEmergencyContact(emergencyContact);
+          console.log("Emergency contact created successfully");
+        }
+        
+        // Navigate to payment page
+        navigate(`/payment/${booking.booking_id}`);
+      } catch (error) {
+        console.error("Error creating passengers or emergency contact:", error);
+        alert("Failed to create passenger information. Please try again.");
+      }
+    },
+    onError: (error) => {
+      console.error("Error creating booking:", error);
+      alert("Failed to create booking. Please try again.");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate all passenger forms
+    for (let i = 0; i < passengerForms.length; i++) {
+      const passenger = passengerForms[i];
+      if (!passenger.firstName || !passenger.lastName || !passenger.dateOfBirth || 
+          !passenger.email || !passenger.phoneNumber) {
+        alert(`Please fill in all required fields for Passenger ${i + 1}`);
+        return;
+      }
+    }
+
+    // Validate emergency contact
+    if (!emergencyForm.firstName || !emergencyForm.lastName || !emergencyForm.phoneNumber || 
+        !emergencyForm.email) {
+      alert("Please fill in all required emergency contact fields");
+      return;
+    }
+
+    if (!user?.sub) {
+      alert("User not authenticated. Please log in.");
+      return;
+    }
+
+    // Create booking first, then passengers, then emergency contact
+    createBookingMutation.mutate(user.sub);
+  };
+
+  if (!flightId) {
     return (
-        <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-8 min-h-screen bg-linear-to-br from-[#07401F]/5 via-[#224A33]/5 to-[#357D52]/5">
-            {/* Left side - Form (w-3/5) */}
-            <div className="w-full lg:w-3/5 space-y-6">
-                {/* Passenger Information Section */}
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-lg">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <FaUser className="text-primary text-lg" />
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-bold text-foreground">Passenger Information</h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Enter the required information for each traveler and be sure that it exactly matches the government-issued ID presented at the airport.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-6 grid-cols-1 gap-4 mt-6">
-                        <div className="md:col-span-2">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaIdCard className="text-primary" />
-                                First name<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="Enter first name" 
-                                type="text"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="text-sm font-medium text-foreground mb-2 block">
-                                Middle name
-                            </label>
-                            <Input 
-                                placeholder="Enter middle name" 
-                                type="text"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaIdCard className="text-primary" />
-                                Last name<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="Enter last name" 
-                                type="text"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 block">
-                                Suffix
-                            </label>
-                            <Input 
-                                placeholder="Jr., Sr., III, etc." 
-                                type="text"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaBirthdayCake className="text-primary" />
-                                Date of birth<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="MM/DD/YYYY" 
-                                type="date"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaEnvelope className="text-primary" />
-                                Email address<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="example@email.com" 
-                                type="email"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaPhone className="text-primary" />
-                                Phone number<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="+1 (555) 000-0000" 
-                                type="tel"
-                                className="mt-1"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Emergency Contact Section */}
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-lg">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-                            <MdContactPhone className="text-accent text-xl" />
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-bold text-foreground">Emergency Contact</h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Provide contact information for someone we can reach in case of emergency.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-6 grid-cols-1 gap-4 mt-6">
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaUser className="text-accent" />
-                                First name<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="Enter first name" 
-                                type="text"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaUser className="text-accent" />
-                                Last name<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="Enter last name" 
-                                type="text"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaEnvelope className="text-accent" />
-                                Email address<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="example@email.com" 
-                                type="email"
-                                className="mt-1"
-                            />
-                        </div>
-                        <div className="md:col-span-3">
-                            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                                <FaPhone className="text-accent" />
-                                Phone number<span className="text-red-500">*</span>
-                            </label>
-                            <Input 
-                                placeholder="+1 (555) 000-0000" 
-                                type="tel"
-                                className="mt-1"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bag Information Section */}
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-lg">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                            <MdLuggage className="text-secondary text-xl" />
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-bold text-foreground">Bag Information</h2>
-                        </div>
-                    </div>
-
-                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
-                        <p className="text-sm text-foreground leading-relaxed">
-                            ✈️ Each passenger is allowed <span className="font-semibold text-primary">one free carry-on bag</span> and one personal item. 
-                            First checked bag for each passenger is also <span className="font-semibold text-primary">free</span>. 
-                            Second bag check fees are waived for loyalty program members. 
-                            <a href="#" className="text-primary hover:underline ml-1">See the full bag policy</a>.
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 grid-cols-1 gap-6">
-                        <div className="bg-muted/30 rounded-lg p-4 border border-border">
-                            <label className="text-sm font-medium text-muted-foreground mb-2 block">Passenger</label>
-                            <p className="text-lg font-semibold text-foreground">First Seat</p>
-                        </div>
-                        <div className="bg-muted/30 rounded-lg p-4 border border-border">
-                            <label className="text-sm font-medium text-muted-foreground mb-2 block">Checked Bags</label>
-                            <div className="flex items-center gap-3">
-                                <button 
-                                    onClick={() => setCountBag(c => Math.max(0, c - 1))}
-                                    className="w-10 h-10 rounded-lg bg-muted hover:bg-accent/20 border border-border flex items-center justify-center font-bold text-foreground transition-all"
-                                >
-                                    −
-                                </button>
-                                <div className="flex-1 text-center">
-                                    <span className="text-2xl font-bold text-primary">{CountBag}</span>
-                                    <span className="text-sm text-muted-foreground ml-2">bag{CountBag !== 1 ? 's' : ''}</span>
-                                </div>
-                                <button 
-                                    onClick={() => setCountBag(c => c + 1)}
-                                    className="w-10 h-10 rounded-lg bg-primary hover:bg-accent text-primary-foreground border border-primary flex items-center justify-center font-bold transition-all"
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right side - Flight Information (w-2/5) */}
-            <div className="w-full lg:w-2/5">
-                <div className="bg-card border border-border rounded-2xl p-6 sticky top-4 shadow-lg">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-foreground">Flight Details</h3>
-                        <FaPlane className="text-primary text-2xl" />
-                    </div>
-
-                    {/* Flight Number & Airline */}
-                    <div className="mb-6">
-                        <p className="text-sm text-muted-foreground">Flight</p>
-                        <p className="text-lg font-semibold text-foreground">
-                            {flightInfo.airline} {flightInfo.flightNumber}
-                        </p>
-                    </div>
-
-                    {/* Route */}
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between">
-                            {/* Departure */}
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <MdFlightTakeoff className="text-primary" />
-                                    <span className="text-sm font-medium text-foreground">{flightInfo.departure.airport}</span>
-                                </div>
-                                <p className="text-2xl font-bold text-foreground">{flightInfo.departure.time}</p>
-                                <p className="text-sm text-muted-foreground">{flightInfo.departure.city}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    <FaCalendarAlt className="inline mr-1" />
-                                    {flightInfo.departure.date}
-                                </p>
-                            </div>
-
-                            {/* Duration */}
-                            <div className="flex flex-col items-center px-4">
-                                <FaClock className="text-muted-foreground mb-1" />
-                                <p className="text-xs text-muted-foreground whitespace-nowrap">{flightInfo.duration}</p>
-                                <div className="w-16 h-0.5 bg-border my-2"></div>
-                            </div>
-
-                            {/* Arrival */}
-                            <div className="flex-1 text-right">
-                                <div className="flex items-center gap-2 mb-2 justify-end">
-                                    <span className="text-sm font-medium text-foreground">{flightInfo.arrival.airport}</span>
-                                    <MdFlightLand className="text-primary" />
-                                </div>
-                                <p className="text-2xl font-bold text-foreground">{flightInfo.arrival.time}</p>
-                                <p className="text-sm text-muted-foreground">{flightInfo.arrival.city}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    <FaCalendarAlt className="inline mr-1" />
-                                    {flightInfo.arrival.date}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-border my-6"></div>
-
-                    {/* Additional Info */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground flex items-center gap-2">
-                                <FaUsers />
-                                Passengers
-                            </span>
-                            <span className="text-sm font-semibold text-foreground">{flightInfo.passengers}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Class</span>
-                            <span className="text-sm font-semibold text-foreground">{flightInfo.class}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Checked Bags</span>
-                            <span className="text-sm font-semibold text-foreground">{CountBag}</span>
-                        </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-border my-6"></div>
-
-                    {/* Price */}
-                    <div className="flex items-center justify-between">
-                        <span className="text-lg font-semibold text-foreground">Total Price</span>
-                        <span className="text-2xl font-bold text-primary">${flightInfo.price}</span>
-                    </div>
-
-                    {/* Continue Button */}
-                    <button className="w-full mt-6 bg-primary hover:bg-accent text-primary-foreground font-semibold py-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-xl">
-                        Continue to Payment
-                    </button>
-                </div>
-            </div>
+      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+        <div className="text-xl text-red-500">No Flight ID provided</div>
+        <div className="text-sm text-muted-foreground">
+          Please select a flight from the flights page
         </div>
+        <button
+          onClick={() => navigate("/flights/search")}
+          className="mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-accent"
+        >
+          Go to Flights
+        </button>
+      </div>
     );
+  }
+
+  if (isFlightLoading) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+        <div className="text-xl">Loading flight information...</div>
+        <div className="text-sm text-muted-foreground">Flight ID: {flightId}</div>
+      </div>
+    );
+  }
+
+  if (flightError) {
+    console.error("Flight error:", flightError);
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+        <div className="text-xl text-red-500">Error loading flight information</div>
+        <div className="text-sm text-muted-foreground">
+          {flightError instanceof Error ? flightError.message : "Unknown error"}
+        </div>
+        <div className="text-sm text-muted-foreground">Flight ID: {flightId}</div>
+      </div>
+    );
+  }
+
+  if (!flight) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+        <div className="text-xl">No flight data found</div>
+        <div className="text-sm text-muted-foreground">Flight ID: {flightId}</div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-6 p-4 lg:p-8 min-h-screen bg-linear-to-br from-[#07401F]/5 via-[#224A33]/5 to-[#357D52]/5">
+      {/* Left side - Form (w-3/5) */}
+      <div className="w-full lg:w-3/5 space-y-6">
+        {/* Passenger Information Sections - Loop through all passengers */}
+        {passengerForms.map((passenger, index) => (
+          <PassengerForm
+            key={index}
+            index={index}
+            passenger={passenger}
+            onUpdate={updatePassengerForm}
+          />
+        ))}
+
+        {/* Emergency Contact Section */}
+        <EmergencyContactForm
+          emergencyContact={emergencyForm}
+          onChange={(field, value) => setEmergencyForm({ ...emergencyForm, [field]: value })}
+        />
+      </div>
+
+      {/* Right side - Flight Information (w-2/5) */}
+      <div className="w-full lg:w-2/5">
+        <FlightSummaryCard
+          flight={flight}
+          originAirport={originAirport}
+          destinationAirport={destinationAirport}
+          passengerCount={passengerCount}
+          isProcessing={createBookingMutation.isPending}
+          onContinue={handleSubmit}
+        />
+      </div>
+    </form>
+  );
 }
