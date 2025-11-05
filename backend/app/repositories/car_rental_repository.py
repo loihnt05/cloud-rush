@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.car_rental import CarRental
 
 
@@ -8,7 +8,7 @@ def get_car_rental_by_id(db: Session, car_rental_id: int):
 
 
 def get_all_car_rentals(db: Session, skip: int = 0, limit: int = 100):
-    """Get all car rentals with pagination"""
+    """Get all car rentals with pagination - no eager loading to avoid unnecessary joins"""
     return db.query(CarRental).offset(skip).limit(limit).all()
 
 

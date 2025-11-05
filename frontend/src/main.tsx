@@ -7,16 +7,18 @@ import App from "./App.tsx";
 import authConfig from "./auth-config.ts";
 import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
-import Flight from "./pages/Flight.tsx";
-import Packages from "./pages/Packages.tsx";
+import Flight from "./pages/flight/Flight.tsx";
+import Packages from "./pages/services/Packages.tsx";
 import TempPackages from "./pages/tempPackages.tsx";
 import PassengerInformation from "./pages/PassengerInfomation.tsx";
-import Places from "./pages/Places.tsx";
+import Places from "./pages/services/Places.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
 import FlightSearch from "./pages/flight/flight-search.tsx";
 import SeatSelection from "./pages/SeatSelection.tsx";
 import Payment from "./pages/Payment.tsx";
+import CarRentals from "./pages/services/car-rental.tsx";
+import Hotels from "./pages/services/hotels.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -76,6 +78,9 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/seat-selection" element={<SeatSelection />} />
+
+                <Route path="/car-rentals" element={<CarRentals />} />
+                <Route path="/hotels" element={<Hotels />} />
               </Route>
             </Routes>
           </QueryClientProvider>

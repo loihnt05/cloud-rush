@@ -12,7 +12,8 @@ def get_engine():
 
     for attempt in range(max_retries):
         try:
-            engine = create_engine(DATABASE_URL, echo=True)
+            # echo=False disables SQL query logging for better performance
+            engine = create_engine(DATABASE_URL, echo=False)
             # Test the connection
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
