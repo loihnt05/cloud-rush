@@ -163,9 +163,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </div>
         <Button
           className="hover:cursor-pointer"
-          onClick={() => nav(`/passenger-information?flightId=${row.id}&adults=${adults}&children=${children}`)}
+          // onClick={() => nav(`/passenger-information?flightId=${row.id}&adults=${adults}&children=${children}`)}
+          onClick={() => nav(`/flights/seat-selection?flightId=${flight.flight_id}&adults=${adults}&children=${children}`)}
         >
-          Book Now
+          Select seats
         </Button>
       </DialogContent>
     </Dialog>
