@@ -8,7 +8,9 @@ def get_payment_by_booking(db: Session, booking_id: int):
 def get_all_payments(db: Session):
     return db.query(Payment).all()
     
-def create_payment(db: Session, payment: Payment):
+def create_payment(db: Session, payment_data: dict):
+    """Create a new payment from dictionary data"""
+    payment = Payment(**payment_data)
     db.add(payment)
     db.commit()
     db.refresh(payment)

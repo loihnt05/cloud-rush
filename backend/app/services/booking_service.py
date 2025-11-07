@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.repositories import booking_repository, flight_repository, flight_seat_repository, payment_repository, passenger_repository
-from app.models.booking import Booking, Payment
+from app.models.booking import Booking
 from app.schemas.booking_schema import BookingCreate, BookingUpdate
 from datetime import datetime
 import random
@@ -145,15 +145,15 @@ class BookingService:
         self.calculate_and_update_total(booking_id)
         booking = booking_repository.get_booking_by_id(self.db, booking_id)
         
-        # Create payment
-        payment = Payment(
-            booking_id=booking.booking_id,
-            amount=booking.total_amount or 0,
-            payment_date=datetime.now(),
-            method="credit_card",
-            status="success"
-        )
-        payment_repository.create_payment(self.db, payment)
+        # Create payment (pass as dictionary)
+        payment_data = {
+            "booking_id": booking.booking_id,
+            "amount": booking.total_amount or 0,
+            "payment_date": datetime.now(),
+            "method": "credit_card",
+            "status": "success"
+        }
+        payment_repository.create_payment(self.db, payment_data)
         
         # Update booking status to confirmed
         booking_repository.update_booking_status(self.db, booking.booking_id, "confirmed")

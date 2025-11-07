@@ -1,16 +1,16 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { getFlight } from "@/api/flight";
 import { getAirportById } from "@/api/airport";
-import { getFlightSeatsWithDetails } from "@/api/seat";
-import { createBooking, createPassenger, createEmergencyContact } from "@/api/booking";
-import type { PassengerCreate, EmergencyContactCreate, PassengerType } from "@/types/booking";
-import type { SeatWithStatus } from "@/types/seat";
-import { useAuth0 } from "@auth0/auth0-react";
-import PassengerForm from "@/components/passenger/passenger-form";
+import { createBooking, createEmergencyContact, createPassenger, getUserBookings, getPassengersByBooking } from "@/api/booking";
+import { getFlight } from "@/api/flight";
+import { getFlightSeatsWithDetails, getFlightSeatDetails } from "@/api/seat";
 import EmergencyContactForm from "@/components/passenger/emergency-contact-form";
 import FlightSummaryCard from "@/components/passenger/flight-summary-card";
+import PassengerForm from "@/components/passenger/passenger-form";
+import type { EmergencyContactCreate, PassengerCreate, PassengerType } from "@/types/booking";
+import type { SeatWithStatus } from "@/types/seat";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface PassengerFormData {
   firstName: string;
@@ -152,7 +152,7 @@ export default function PassengerInformation() {
   });
 
   // Fetch seat details
-  const { data: seatsData } = useQuery({
+  useQuery({
     queryKey: ["seats", flightId, flightSeatIdsParam],
     queryFn: async () => {
       if (!flight) return [];
@@ -165,6 +165,59 @@ export default function PassengerInformation() {
     },
     enabled: !!flight && !!flightId && !!flightSeatIdsParam,
   });
+
+  // Check if user already has a booking for this flight with these seats
+  useEffect(() => {
+    const checkExistingBooking = async () => {
+      if (!user?.sub || !flightId || !flightSeatIdsParam) {
+        return;
+      }
+
+      try {
+        // Get all user bookings
+        const userBookings = await getUserBookings(user.sub);
+        
+        if (userBookings.length === 0) {
+          return;
+        }
+
+        // Parse the requested flight seat IDs
+        const requestedSeatIds = flightSeatIdsParam.split(',').map(Number).sort();
+
+        // Check each booking to see if it matches this flight and seats
+        for (const booking of userBookings) {
+          // Get passengers for this booking
+          const passengers = await getPassengersByBooking(booking.booking_id);
+          
+          // Get flight seat IDs from passengers
+          const bookingSeatIds = passengers
+            .map(p => p.flight_seat_id)
+            .filter((id): id is number => id !== undefined)
+            .sort();
+
+          // Check if the seat IDs match
+          const seatsMatch = JSON.stringify(bookingSeatIds) === JSON.stringify(requestedSeatIds);
+
+          if (seatsMatch && bookingSeatIds.length > 0) {
+            // Verify these seats belong to the requested flight
+            const firstSeat = await getFlightSeatDetails(bookingSeatIds[0]);
+            
+            if (firstSeat.flight_id === Number(flightId)) {
+              // This booking is for the same flight and same seats - redirect to payment
+              console.log("Existing booking found:", booking.booking_id);
+              navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flightId}`, { replace: true });
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking existing bookings:", error);
+        // Continue with normal flow if check fails
+      }
+    };
+
+    checkExistingBooking();
+  }, [user?.sub, flightId, flightSeatIdsParam, navigate]);
 
   // Mutation to create booking
   const createBookingMutation = useMutation({
@@ -212,6 +265,9 @@ export default function PassengerInformation() {
           
           await createEmergencyContact(emergencyContact);
         }
+        
+        // // Confirm the booking immediately after creating passengers
+        // await confirmBooking(booking.booking_id);
         
         // Navigate to payment page with booking ID
         navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flightId}`);

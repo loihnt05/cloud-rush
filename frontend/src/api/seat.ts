@@ -39,6 +39,14 @@ export const getSeatDetails = async (seatId: number): Promise<Seat> => {
   return response.data;
 };
 
+export const getFlightSeatDetails = async (flightSeatId: number): Promise<FlightSeat> => {
+  const response = await appAxios.get<FlightSeat>(`/flight-seats/${flightSeatId}`);
+  if (!response.data) {
+    throw new Error("Failed to fetch flight seat details");
+  }
+  return response.data;
+};
+
 export const getSeatsForFlight = async (
   airplaneId: number
 ): Promise<Seat[]> => {

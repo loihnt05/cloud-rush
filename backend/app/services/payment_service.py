@@ -21,15 +21,19 @@ class PaymentService:
     
     def create_payment(self, payment_data: PaymentCreate):
         """Create a new payment"""
-        # Convert Pydantic model to dict
-        payment_dict = payment_data.model_dump()
-        payment_dict['payment_date'] = datetime.now()
-        
-        # Set status to success by default (can be overridden)
-        # if payment_dict.get('status') == 'pending':
-        #     payment_dict['status'] = 'success'
-        
-        return payment_repository.create_payment(self.db, payment_dict)
+        try:
+            # Convert Pydantic model to dict
+            payment_dict = payment_data.model_dump()
+            payment_dict['payment_date'] = datetime.now()
+            
+            # Set status to success by default (can be overridden)
+            # if payment_dict.get('status') == 'pending':
+            #     payment_dict['status'] = 'success'
+            
+            return payment_repository.create_payment(self.db, payment_dict)
+        except Exception as e:
+            print(f"Error creating payment: {e}")
+            raise ValueError(f"Failed to create payment: {str(e)}")
     def update_payment_status(self, payment_id: int, status: str):
         """Update payment status"""
         payment = payment_repository.update_payment_status(self.db, payment_id, status)
