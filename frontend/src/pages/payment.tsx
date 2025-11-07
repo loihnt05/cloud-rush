@@ -14,14 +14,14 @@ import { Button } from "@/components/ui/button";
 import useSettingStore from "@/stores/setting-store";
 
 // Import refactored components
-import PaymentMethodSelector from "@/components/payment/PaymentMethodSelector";
-import CreditCardForm from "@/components/payment/CreditCardForm";
-import PayPalInfo from "@/components/payment/PayPalInfo";
-import BookingSummary from "@/components/payment/BookingSummary";
-import PaymentSuccess from "@/components/payment/PaymentSuccess";
-import ErrorDisplay from "@/components/payment/ErrorDisplay";
-import SecurityNotice from "@/components/payment/SecurityNotice";
-import { LoadingSpinner, ProcessingPayment } from "@/components/payment/LoadingStates";
+import PaymentMethodSelector from "@/components/payment/payment-method-selector";
+import CreditCardForm from "@/components/payment/credit-card-form";
+import PayPalInfo from "@/components/payment/paypal-info";
+import BookingSummary from "@/components/payment/booking-summary";
+import PaymentSuccess from "@/components/payment/payment-success";
+import ErrorDisplay from "@/components/payment/error-display";
+import SecurityNotice from "@/components/payment/security-notice";
+import { LoadingSpinner, ProcessingPayment } from "@/components/payment/loading-states";
 
 export default function Payment() {
     const [searchParams] = useSearchParams();
