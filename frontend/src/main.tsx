@@ -7,16 +7,18 @@ import App from "./App.tsx";
 import authConfig from "./auth-config.ts";
 import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
-import Flight from "./pages/Flight.tsx";
-import Packages from "./pages/Packages.tsx";
+import FlightSearch from "./pages/flight/flight-search.tsx";
+import Flight from "./pages/flight/flight.tsx";
+import PassengerInformation from "./pages/passenger-infomation.tsx";
+import Payment from "./pages/payment.tsx";
+import SeatSelection from "./pages/seat-selection.tsx";
+import CarRentals from "./pages/services/car-rental.tsx";
+import Hotels from "./pages/services/hotels.tsx";
+import Packages from "./pages/services/packages.tsx";
+import Places from "./pages/services/places.tsx";
 import TempPackages from "./pages/tempPackages.tsx";
-import PassengerInformation from "./pages/PassengerInfomation.tsx";
-import Places from "./pages/Places.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
-import FlightSearch from "./pages/flight/flight-search.tsx";
-import SeatSelection from "./pages/SeatSelection.tsx";
-import Payment from "./pages/Payment.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -64,11 +66,10 @@ createRoot(document.getElementById("root")!).render(
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route path="/home" element={<App />} />
-                <Route path="/flight" element={<Flight></Flight>} />
+                <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
-
-                <Route path="/flight/search" element={<FlightSearch />} />
-                <Route  
+                <Route path="/flights/search" element={<FlightSearch />} />
+                <Route
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
@@ -76,7 +77,10 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/places" element={<Places />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
-                <Route path="/seat-selection" element={<SeatSelection />} />
+                <Route path="/flights/seat-selection" element={<SeatSelection />} />
+
+                <Route path="/car-rentals" element={<CarRentals />} />
+                <Route path="/hotels" element={<Hotels />} />
               </Route>
             </Routes>
           </QueryClientProvider>
