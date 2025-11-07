@@ -8,8 +8,10 @@ import {
 import {
   MdFlightTakeoff,
   MdFlightLand,
+  MdAirlineSeatReclineNormal,
 } from "react-icons/md";
 import type { Airport } from "@/types/airport";
+import type { SeatWithStatus } from "@/types/seat";
 
 interface Flight {
   flight_id: number;
@@ -27,6 +29,7 @@ interface FlightSummaryCardProps {
   originAirport?: Airport;
   destinationAirport?: Airport;
   passengerCount: number;
+  selectedSeats?: SeatWithStatus[];
   isProcessing: boolean;
   onContinue: (e: React.FormEvent) => void;
 }
@@ -36,6 +39,7 @@ export default function FlightSummaryCard({
   originAirport,
   destinationAirport,
   passengerCount,
+  selectedSeats = [],
   isProcessing,
   onContinue,
 }: FlightSummaryCardProps) {
@@ -63,6 +67,17 @@ export default function FlightSummaryCard({
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
+
+  // Calculate pricing breakdown
+  const basePrice = typeof flight.base_price === "string" 
+    ? parseFloat(flight.base_price) 
+    : flight.base_price;
+  
+  const baseFare = basePrice * passengerCount;
+  const seatUpgrades = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+  const subtotal = baseFare + seatUpgrades;
+  const taxesAndFees = subtotal * 0.15; // 15% tax
+  const total = subtotal + taxesAndFees;
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6 sticky top-4 shadow-lg">
@@ -160,17 +175,67 @@ export default function FlightSummaryCard({
       {/* Divider */}
       <div className="border-t border-border my-6"></div>
 
-      {/* Price */}
-      <div className="flex items-center justify-between">
-        <span className="text-lg font-semibold text-foreground">
-          Base Price
-        </span>
-        <span className="text-2xl font-bold text-primary">
-          $
-          {typeof flight.base_price === "string"
-            ? flight.base_price
-            : flight.base_price.toFixed(2)}
-        </span>
+      {/* Selected Seats */}
+      {selectedSeats.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <MdAirlineSeatReclineNormal className="text-primary" />
+            <span className="text-sm font-semibold text-foreground">Selected Seats</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedSeats.map((seat, idx) => (
+              <div
+                key={idx}
+                className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-xs font-semibold text-primary"
+              >
+                {seat.seat_number}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Price Breakdown */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Base Fare ({passengerCount}x ${basePrice.toFixed(2)})
+          </span>
+          <span className="text-sm font-semibold text-foreground">
+            ${baseFare.toFixed(2)}
+          </span>
+        </div>
+
+        {seatUpgrades > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Seat Upgrades ({selectedSeats.length})
+            </span>
+            <span className="text-sm font-semibold text-foreground">
+              ${seatUpgrades.toFixed(2)}
+            </span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Taxes & Fees (15%)
+          </span>
+          <span className="text-sm font-semibold text-foreground">
+            ${taxesAndFees.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="border-t border-border pt-3"></div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-bold text-foreground">
+            Total
+          </span>
+          <span className="text-2xl font-bold text-primary">
+            ${total.toFixed(2)}
+          </span>
+        </div>
       </div>
 
       {/* Continue Button */}

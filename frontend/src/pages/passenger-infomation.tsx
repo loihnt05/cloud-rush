@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getFlight } from "@/api/flight";
 import { getAirportById } from "@/api/airport";
+import { getFlightSeatsWithDetails } from "@/api/seat";
 import { createBooking, createPassenger, createEmergencyContact } from "@/api/booking";
 import type { PassengerCreate, EmergencyContactCreate, PassengerType } from "@/types/booking";
+import type { SeatWithStatus } from "@/types/seat";
 import { useAuth0 } from "@auth0/auth0-react";
 import PassengerForm from "@/components/passenger/passenger-form";
 import EmergencyContactForm from "@/components/passenger/emergency-contact-form";
@@ -19,6 +21,7 @@ interface PassengerFormData {
   email: string;
   phoneNumber: string;
   passengerType: PassengerType;
+  flightSeatId?: number;
 }
 
 export default function PassengerInformation() {
@@ -27,6 +30,7 @@ export default function PassengerInformation() {
   const adultsParam = searchParams.get("adults");
   const childrenParam = searchParams.get("children");
   const infantsParam = searchParams.get("infants");
+  const flightSeatIdsParam = searchParams.get("flightSeatIds");
   const navigate = useNavigate();
   const { user } = useAuth0(); // Will be used for booking creation with user_id
 
@@ -41,10 +45,17 @@ export default function PassengerInformation() {
 
   // Form state for multiple passengers
   const [passengerForms, setPassengerForms] = useState<PassengerFormData[]>([]);
+  
+  // Selected seats information
+  const [selectedSeats, setSelectedSeats] = useState<SeatWithStatus[]>([]);
 
   // Initialize passenger forms based on URL parameters
   useEffect(() => {
+    // Parse flight seat IDs inside useEffect
+    const flightSeatIds = flightSeatIdsParam ? flightSeatIdsParam.split(',').map(Number) : [];
+    
     const initialForms: PassengerFormData[] = [];
+    let seatIndex = 0;
     
     // Add adult forms
     for (let i = 0; i < adultsCount; i++) {
@@ -57,7 +68,9 @@ export default function PassengerInformation() {
         email: "",
         phoneNumber: "",
         passengerType: "adult",
+        flightSeatId: flightSeatIds[seatIndex] || undefined,
       });
+      seatIndex++;
     }
     
     // Add children forms
@@ -71,7 +84,9 @@ export default function PassengerInformation() {
         email: "",
         phoneNumber: "",
         passengerType: "child",
+        flightSeatId: flightSeatIds[seatIndex] || undefined,
       });
+      seatIndex++;
     }
     
     // Add infant forms
@@ -85,12 +100,14 @@ export default function PassengerInformation() {
         email: "",
         phoneNumber: "",
         passengerType: "infant",
+        flightSeatId: flightSeatIds[seatIndex] || undefined,
       });
+      seatIndex++;
     }
     
     setPassengerForms(initialForms);
     setPassengerCount(initialForms.length);
-  }, [adultsCount, childrenCount, infantsCount]);
+  }, [adultsCount, childrenCount, infantsCount, flightSeatIdsParam]);
 
   // Form state for emergency contact (only one for all passengers)
   const [emergencyForm, setEmergencyForm] = useState({
@@ -114,9 +131,7 @@ export default function PassengerInformation() {
   const { data: flight, isLoading: isFlightLoading, error: flightError } = useQuery({
     queryKey: ["flight", flightId],
     queryFn: async () => {
-      console.log("Fetching flight with ID:", flightId);
       const result = await getFlight(Number(flightId));
-      console.log("Flight data received:", result);
       return result;
     },
     enabled: !!flightId,
@@ -136,6 +151,21 @@ export default function PassengerInformation() {
     enabled: !!flight?.destination_airport_id,
   });
 
+  // Fetch seat details
+  const { data: seatsData } = useQuery({
+    queryKey: ["seats", flightId, flightSeatIdsParam],
+    queryFn: async () => {
+      if (!flight) return [];
+      const allSeats = await getFlightSeatsWithDetails(Number(flightId), flight);
+      const flightSeatIds = flightSeatIdsParam ? flightSeatIdsParam.split(',').map(Number) : [];
+      // Filter to only selected seats
+      const selected = allSeats.filter(seat => flightSeatIds.includes(seat.flight_seat_id));
+      setSelectedSeats(selected);
+      return selected;
+    },
+    enabled: !!flight && !!flightId && !!flightSeatIdsParam,
+  });
+
   // Mutation to create booking
   const createBookingMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -147,8 +177,6 @@ export default function PassengerInformation() {
       return createBooking(bookingData);
     },
     onSuccess: async (booking) => {
-      console.log("Booking created successfully:", booking);
-      
       // Create all passengers sequentially
       try {
         const passengerIds: number[] = [];
@@ -165,11 +193,11 @@ export default function PassengerInformation() {
             date_of_birth: passenger.dateOfBirth,
             email: passenger.email,
             phone_number: passenger.phoneNumber,
+            flight_seat_id: passenger.flightSeatId,
           };
           
           const createdPassenger = await createPassenger(passengerData);
           passengerIds.push(createdPassenger.passenger_id);
-          console.log(`Passenger ${i + 1} (${passenger.passengerType}) created:`, createdPassenger);
         }
         
         // Create emergency contact for the first passenger
@@ -183,11 +211,10 @@ export default function PassengerInformation() {
           };
           
           await createEmergencyContact(emergencyContact);
-          console.log("Emergency contact created successfully");
         }
         
-        // Navigate to payment page
-        navigate(`/payment/${booking.booking_id}`);
+        // Navigate to payment page with booking ID
+        navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flightId}`);
       } catch (error) {
         console.error("Error creating passengers or emergency contact:", error);
         alert("Failed to create passenger information. Please try again.");
@@ -304,6 +331,7 @@ export default function PassengerInformation() {
           originAirport={originAirport}
           destinationAirport={destinationAirport}
           passengerCount={passengerCount}
+          selectedSeats={selectedSeats}
           isProcessing={createBookingMutation.isPending}
           onContinue={handleSubmit}
         />

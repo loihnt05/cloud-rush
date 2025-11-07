@@ -42,8 +42,6 @@ export default function FlightSearch() {
         ]);
         setFlights(flightsResult);
         setAirports(airportsResult);
-        console.log("Flights:", flightsResult);
-        console.log("Airports:", airportsResult);
       } catch (error) {
         console.error(error);
       } finally {

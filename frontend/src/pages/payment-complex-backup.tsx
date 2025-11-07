@@ -1,14 +1,29 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
-import { FaPlane, FaCreditCard, FaCheck, FaLock, FaCalendarAlt, FaUser } from "react-icons/fa";
-import { MdAirlineSeatReclineNormal } from "react-icons/md";
-import { BsCheckCircleFill } from "react-icons/bs";
+import { createBooking, createPassenger } from "@/api/booking";
 import { getFlight } from "@/api/flight";
-import { getBooking, getPassengersByBooking } from "@/api/booking";
 import { createPayment } from "@/api/payment";
+import { getFlightSeatsWithDetails } from "@/api/seat";
+import { PassengerForm } from "@/components/passenger";
 import type { Flight } from "@/types/flight";
-import type { Booking, Passenger } from "@/types/booking";
+import type { SeatWithStatus } from "@/types/seat";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useEffect, useState } from "react";
+import { BsCheckCircleFill } from "react-icons/bs";
+import { FaCalendarAlt, FaCheck, FaCreditCard, FaLock, FaPlane, FaUser } from "react-icons/fa";
+import { MdAirlineSeatReclineNormal } from "react-icons/md";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+interface PassengerFormData {
+    firstName: string;
+    middleName: string;
+    lastName: string;
+    suffix: string;
+    dateOfBirth: string;
+    email: string;
+    phoneNumber: string;
+    passengerType: "adult" | "child" | "infant";
+    flightSeatId: number;
+    seatNumber: string;
+}
 
 export default function Payment() {
     const [searchParams] = useSearchParams();
@@ -16,47 +31,91 @@ export default function Payment() {
     const { user } = useAuth0();
     
     // Get URL parameters
-    const bookingId = searchParams.get("bookingId");
     const flightId = searchParams.get("flightId");
+    const adults = parseInt(searchParams.get("adults") || "1");
+    const children = parseInt(searchParams.get("children") || "0");
+    const flightSeatIdsParam = searchParams.get("flightSeatIds");
+    const flightSeatIds = flightSeatIdsParam ? flightSeatIdsParam.split(',').map(Number) : [];
     
-    const [paymentStep, setPaymentStep] = useState<"payment" | "processing" | "success">("payment");
+    const [paymentStep, setPaymentStep] = useState<"passenger" | "payment" | "processing" | "success">("passenger");
     const [paymentMethod, setPaymentMethod] = useState<"credit" | "debit" | "paypal">("credit");
     const [cardNumber, setCardNumber] = useState("");
     const [cardName, setCardName] = useState("");
     const [expiryDate, setExpiryDate] = useState("");
     const [cvv, setCvv] = useState("");
     
-    // Data
+    // Flight and seat data
     const [flight, setFlight] = useState<Flight | null>(null);
-    const [booking, setBooking] = useState<Booking | null>(null);
-    const [passengers, setPassengers] = useState<Passenger[]>([]);
+    const [selectedSeats, setSelectedSeats] = useState<SeatWithStatus[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    // Load booking, flight, and passenger data
+    // Passenger data
+    const [passengers, setPassengers] = useState<PassengerFormData[]>([]);
+    
+    // Booking reference for success page
+    const [bookingReference, setBookingReference] = useState<string>("");
+    const [bookingId, setBookingId] = useState<number | null>(null);
+    
+    // Load flight and seat data
     useEffect(() => {
         const loadData = async () => {
-            if (!bookingId || !flightId) {
-                setError("Missing booking or flight information");
+            if (!flightId) {
+                setError("No flight ID provided");
+                setLoading(false);
+                return;
+            }
+
+            if (flightSeatIds.length === 0) {
+                setError("No seats selected");
                 setLoading(false);
                 return;
             }
 
             try {
                 setLoading(true);
-                
-                // Load booking
-                const bookingData = await getBooking(parseInt(bookingId));
-                setBooking(bookingData);
-
-                // Load flight
                 const flightData = await getFlight(parseInt(flightId));
                 setFlight(flightData);
 
-                // Load passengers
-                const passengersData = await getPassengersByBooking(parseInt(bookingId));
-                setPassengers(passengersData);
+                const seatsData = await getFlightSeatsWithDetails(parseInt(flightId), flightData);
 
+                // Filter selected seats based on flightSeatIds
+                const selected = seatsData.filter(seat => 
+                    flightSeatIds.includes(seat.flight_seat_id)
+                );
+                setSelectedSeats(selected);
+
+                // Initialize passenger forms
+                const passengerForms: PassengerFormData[] = [];
+                for (let i = 0; i < adults; i++) {
+                    passengerForms.push({
+                        firstName: "",
+                        middleName: "",
+                        lastName: "",
+                        suffix: "",
+                        dateOfBirth: "",
+                        email: "",
+                        phoneNumber: "",
+                        passengerType: "adult",
+                        flightSeatId: selected[i]?.flight_seat_id || 0,
+                        seatNumber: selected[i]?.seat_number || "",
+                    });
+                }
+                for (let i = 0; i < children; i++) {
+                    passengerForms.push({
+                        firstName: "",
+                        middleName: "",
+                        lastName: "",
+                        suffix: "",
+                        dateOfBirth: "",
+                        email: "",
+                        phoneNumber: "",
+                        passengerType: "child",
+                        flightSeatId: selected[adults + i]?.flight_seat_id || 0,
+                        seatNumber: selected[adults + i]?.seat_number || "",
+                    });
+                }
+                setPassengers(passengerForms);
                 setLoading(false);
             } catch (err) {
                 console.error("Error loading data:", err);
@@ -66,41 +125,85 @@ export default function Payment() {
         };
 
         loadData();
-    }, [bookingId, flightId]);
+    }, [flightId]);
+
+    const updatePassenger = (index: number, field: string, value: string) => {
+        setPassengers(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    };
 
     const calculateTotal = () => {
-        if (!flight || !booking?.total_amount) {
-            // If no total_amount, calculate it
-            if (!flight) return 0;
-            const basePrice = typeof flight.base_price === 'string' 
-                ? parseFloat(flight.base_price) 
-                : flight.base_price;
-            const baseFare = basePrice * passengers.length;
-            const taxes = baseFare * 0.15; // 15% tax
-            return baseFare + taxes;
+        if (!flight) return 0;
+        const basePrice = typeof flight.base_price === 'string' 
+            ? parseFloat(flight.base_price) 
+            : flight.base_price;
+        const baseFare = basePrice * passengers.length;
+        const seatUpgrades = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+        const taxes = (baseFare + seatUpgrades) * 0.15; // 15% tax
+        return baseFare + seatUpgrades + taxes;
+    };
+
+    const validatePassengers = () => {
+        for (const passenger of passengers) {
+            if (!passenger.firstName || !passenger.lastName || !passenger.dateOfBirth || !passenger.email || !passenger.phoneNumber) {
+                return false;
+            }
         }
-        
-        const total = typeof booking.total_amount === 'string' 
-            ? parseFloat(booking.total_amount)
-            : booking.total_amount;
-        return total;
+        return true;
+    };
+
+    const handleContinueToPayment = () => {
+        if (!validatePassengers()) {
+            alert("Please fill in all required passenger information");
+            return;
+        }
+        setPaymentStep("payment");
     };
 
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!user?.sub || !bookingId) {
-            alert("Missing authentication or booking information");
+        if (!user?.sub) {
+            alert("Please log in to complete your booking");
             return;
         }
 
         try {
             setPaymentStep("processing");
 
-            // Create payment
+            // Step 1: Create booking
+            const bookingData = await createBooking({
+                user_id: user.sub,
+                notes: `Flight ${flight?.flight_number} - ${passengers.length} passengers`,
+            });
+
+            const createdBookingId = bookingData.booking_id;
+            setBookingId(createdBookingId);
+            setBookingReference(bookingData.booking_reference);
+
+            // Step 2: Create passengers
+            for (const passenger of passengers) {
+                await createPassenger({
+                    booking_id: createdBookingId,
+                    passenger_type: passenger.passengerType,
+                    first_name: passenger.firstName,
+                    middle_name: passenger.middleName || undefined,
+                    last_name: passenger.lastName,
+                    suffix: passenger.suffix || undefined,
+                    date_of_birth: passenger.dateOfBirth,
+                    email: passenger.email,
+                    phone_number: passenger.phoneNumber,
+                    flight_seat_id: passenger.flightSeatId,
+                });
+            }
+
+            // Step 3: Create payment
             const total = calculateTotal();
             await createPayment({
-                booking_id: parseInt(bookingId),
+                booking_id: createdBookingId,
                 amount: total,
                 method: paymentMethod === "credit" ? "credit_card" : paymentMethod,
                 status: "completed",
@@ -109,7 +212,7 @@ export default function Payment() {
             // Success!
             setPaymentStep("success");
         } catch (err) {
-            console.error("Error processing payment:", err);
+            console.error("Error creating booking:", err);
             alert("Failed to process payment. Please try again.");
             setPaymentStep("payment");
         }
@@ -151,20 +254,20 @@ export default function Payment() {
             <div className="min-h-screen bg-linear-to-br from-[#07401F]/5 via-[#224A33]/5 to-[#357D52]/5 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading payment information...</p>
+                    <p className="text-muted-foreground">Loading booking information...</p>
                 </div>
             </div>
         );
     }
 
     // Error state
-    if (error || !flight || !booking) {
+    if (error || !flight) {
         return (
             <div className="min-h-screen bg-linear-to-br from-[#07401F]/5 via-[#224A33]/5 to-[#357D52]/5 flex items-center justify-center p-4">
                 <div className="bg-card border border-border rounded-2xl p-8 max-w-md text-center">
                     <div className="text-red-500 text-5xl mb-4">⚠️</div>
                     <h2 className="text-2xl font-bold text-foreground mb-2">Error</h2>
-                    <p className="text-muted-foreground mb-6">{error || "Booking or flight not found"}</p>
+                    <p className="text-muted-foreground mb-6">{error || "Flight not found"}</p>
                     <button
                         onClick={() => navigate(-1)}
                         className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-accent transition-all"
@@ -192,7 +295,7 @@ export default function Payment() {
 
                         <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-6">
                             <p className="text-sm text-muted-foreground mb-2">Booking Reference</p>
-                            <p className="text-3xl font-bold text-primary tracking-wider">{booking.booking_reference}</p>
+                            <p className="text-3xl font-bold text-primary tracking-wider">{bookingReference}</p>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -218,15 +321,13 @@ export default function Payment() {
                             <div className="bg-muted/30 border border-border rounded-xl p-6">
                                 <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
                                     <MdAirlineSeatReclineNormal className="text-primary" />
-                                    Passengers
+                                    Passenger & Seats
                                 </h3>
                                 <div className="space-y-2 text-sm">
                                     <p className="text-muted-foreground">{passengers.length} Passenger(s)</p>
-                                    {passengers.map((p, idx) => (
-                                        <p key={idx} className="font-semibold text-foreground">
-                                            {p.first_name} {p.last_name}
-                                        </p>
-                                    ))}
+                                    <p className="font-semibold text-foreground">
+                                        Seats: {selectedSeats.map(s => s.seat_number).join(", ")}
+                                    </p>
                                     <p className="text-xl font-bold text-primary mt-3">
                                         Total: ${calculateTotal().toFixed(2)}
                                     </p>
@@ -261,7 +362,94 @@ export default function Payment() {
                 <div className="bg-card border border-border rounded-2xl p-8 text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
                     <h2 className="text-2xl font-bold text-foreground mb-2">Processing Payment</h2>
-                    <p className="text-muted-foreground">Please wait while we process your payment...</p>
+                    <p className="text-muted-foreground">Please wait while we process your booking...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Passenger Information Step
+    if (paymentStep === "passenger") {
+        return (
+            <div className="min-h-screen bg-linear-to-br from-[#07401F]/5 via-[#224A33]/5 to-[#357D52]/5 p-4 lg:p-8">
+                <div className="max-w-6xl mx-auto">
+                    {/* Header */}
+                    <div className="bg-card border border-border rounded-2xl p-6 shadow-lg mb-6">
+                        <h1 className="text-3xl font-bold text-foreground">Passenger Information</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Please provide details for all passengers
+                        </p>
+                    </div>
+
+                    <div className="grid lg:grid-cols-3 gap-6">
+                        {/* Passenger Forms */}
+                        <div className="lg:col-span-2 space-y-6">
+                            {passengers.map((passenger, index) => (
+                                <PassengerForm
+                                    key={index}
+                                    index={index}
+                                    passenger={passenger}
+                                    onUpdate={updatePassenger}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Summary */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-card border border-border rounded-2xl p-6 shadow-lg sticky top-4">
+                                <h3 className="text-xl font-bold text-foreground mb-4">Booking Summary</h3>
+
+                                <div className="space-y-3 mb-6">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Flight</span>
+                                        <span className="font-semibold text-foreground">{flight.flight_number}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Passengers</span>
+                                        <span className="font-semibold text-foreground">{passengers.length}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Seats</span>
+                                        <span className="font-semibold text-foreground">
+                                            {selectedSeats.map(s => s.seat_number).join(", ")}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-border pt-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Base Fare</span>
+                                        <span className="text-sm font-semibold text-foreground">
+                                            ${((typeof flight.base_price === 'string' ? parseFloat(flight.base_price) : flight.base_price) * passengers.length).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Seat Upgrades</span>
+                                        <span className="text-sm font-semibold text-foreground">
+                                            ${selectedSeats.reduce((sum, s) => sum + s.price, 0).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-muted-foreground">Taxes & Fees</span>
+                                        <span className="text-sm font-semibold text-foreground">
+                                            ${(calculateTotal() * 0.15).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="border-t border-border pt-3 flex items-center justify-between">
+                                        <span className="text-lg font-bold text-foreground">Total</span>
+                                        <span className="text-2xl font-bold text-primary">${calculateTotal().toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleContinueToPayment}
+                                    className="w-full mt-6 bg-primary hover:bg-accent text-primary-foreground font-bold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+                                >
+                                    Continue to Payment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -410,7 +598,7 @@ export default function Payment() {
                             <div className="flex gap-4">
                                 <button
                                     type="button"
-                                    onClick={() => navigate(-1)}
+                                    onClick={() => setPaymentStep("passenger")}
                                     className="flex-1 bg-muted hover:bg-muted/80 text-foreground font-bold py-4 rounded-xl transition-all duration-300"
                                 >
                                     Back
@@ -450,16 +638,36 @@ export default function Payment() {
 
                             <div className="mb-6 pb-6 border-b border-border space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground">Booking Reference</span>
-                                    <span className="text-sm font-semibold text-foreground">{booking.booking_reference}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Passengers</span>
                                     <span className="text-sm font-semibold text-foreground">{passengers.length}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Seats</span>
+                                    <span className="text-sm font-semibold text-foreground">
+                                        {selectedSeats.map(s => s.seat_number).join(", ")}
+                                    </span>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Base Fare</span>
+                                    <span className="text-sm font-semibold text-foreground">
+                                        ${((typeof flight.base_price === 'string' ? parseFloat(flight.base_price) : flight.base_price) * passengers.length).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Seat Selection</span>
+                                    <span className="text-sm font-semibold text-foreground">
+                                        ${selectedSeats.reduce((sum, s) => sum + s.price, 0).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Taxes & Fees</span>
+                                    <span className="text-sm font-semibold text-foreground">
+                                        ${(calculateTotal() * 0.15).toFixed(2)}
+                                    </span>
+                                </div>
                                 <div className="border-t border-border pt-3 flex items-center justify-between">
                                     <span className="text-lg font-bold text-foreground">Total</span>
                                     <span className="text-2xl font-bold text-primary">${calculateTotal().toFixed(2)}</span>

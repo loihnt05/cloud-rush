@@ -31,17 +31,6 @@ export function SelectionSummary({
         const selectedSeatsInfo = getSelectedSeatsInfo();
         const total = selectedSeatsInfo.reduce((sum, seat) => sum + seat.price, 0);
         
-        // Debug logging
-        console.log('💰 getTotalPrice Debug:', {
-            selectedSeats: selectedSeatsInfo.map(s => ({
-                id: s.id,
-                seat_id: s.seat_id,
-                type: s.type,
-                price: s.price
-            })),
-            total: total
-        });
-        
         return total;
     };
 

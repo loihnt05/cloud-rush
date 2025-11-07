@@ -91,9 +91,6 @@ export const getFlightSeatsWithDetails = async (
     // First class (multiplier 2.0): upgrade = base * 1.0
     const upgradePrice = basePrice * (priceMultiplier - 1);
 
-    if (flight.flight_id === 4 && seat.seat_id === 1544) {
-        console.log(basePrice, priceMultiplier, upgradePrice);
-    }
     return {
       ...seat,
       flight_seat_id: flightSeat.flight_seat_id,

@@ -37,7 +37,6 @@ export const useCreateAirplane = () => {
     onSuccess: () => {
       // Invalidate and refetch airplanes list
       queryClient.invalidateQueries({ queryKey: airplaneKeys.lists() });
-      console.log("Airplane created successfully!");
     },
     onError: (error: unknown) => {
       console.error("Failed to create airplane:", error);
@@ -56,7 +55,6 @@ export const useUpdateAirplane = () => {
       // Invalidate both the list and the specific airplane detail
       queryClient.invalidateQueries({ queryKey: airplaneKeys.lists() });
       queryClient.invalidateQueries({ queryKey: airplaneKeys.detail(variables.id) });
-      console.log("Airplane updated successfully!");
     },
     onError: (error: unknown) => {
       console.error("Failed to update airplane:", error);
@@ -72,7 +70,6 @@ export const useDeleteAirplane = () => {
     mutationFn: airplaneApi.deleteAirplane,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: airplaneKeys.lists() });
-      console.log("Airplane deleted successfully!");
     },
     onError: (error: unknown) => {
       console.error("Failed to delete airplane:", error);

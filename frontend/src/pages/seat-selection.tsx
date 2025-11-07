@@ -38,7 +38,21 @@ export default function SeatSelection() {
 
     // Handle continue
     const onContinue = () => {
-        navigate("/payment");
+        // Get the flight_seat_ids for the selected seats
+        const selectedSeatDetails = selectedSeats
+            .map(seatId => seats.find(s => s.id === seatId))
+            .filter(Boolean);
+        
+        const flightSeatIds = selectedSeatDetails
+            .map(seat => seat!.flight_seat_id)
+            .join(',');
+        
+        // Create URL with all parameters including selected flight seat IDs
+        const params = new URLSearchParams(searchParams);
+        params.set('flightSeatIds', flightSeatIds);
+
+        // Navigate to passenger information page first
+        navigate(`/passenger-information?${params.toString()}`);
     };
 
     if (loading) {

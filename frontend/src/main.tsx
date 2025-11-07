@@ -19,6 +19,7 @@ import SeatSelection from "./pages/seat-selection.tsx";
 import Payment from "./pages/payment.tsx";
 import CarRentals from "./pages/services/car-rental.tsx";
 import Hotels from "./pages/services/hotels.tsx";
+import PaymentOld from "./pages/payment-old.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -77,6 +78,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/places" element={<Places />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/payment-old" element={<PaymentOld />} />
                 <Route path="/flights/seat-selection" element={<SeatSelection />} />
 
                 <Route path="/car-rentals" element={<CarRentals />} />
