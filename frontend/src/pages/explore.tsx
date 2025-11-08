@@ -216,7 +216,6 @@ export default function ExplorePage() {
           </p>
         </div>
 
-        {/* Loading State */}
         {exploresLoading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {([0, 1, 2, 3, 4, 5] as const).map((i) => (
@@ -237,18 +236,6 @@ export default function ExplorePage() {
             ))}
           </div>
         )}
-
-        {/* Error State */}
-        {exploresError && (
-          <div className="text-center py-12">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-              <p className="text-red-600 font-semibold">
-                Failed to load explore entries. Please try again later.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Explores Grid */}
         {!exploresLoading && !exploresError && explores.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
