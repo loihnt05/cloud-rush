@@ -12,6 +12,10 @@ class ExploreService:
         """Get all explores"""
         return explore_repository.get_explores(self.db)
 
+    def get_random_explores(self, limit: int = 10):
+        """Get random explores"""
+        return explore_repository.get_random_explores(self.db, limit)
+
     def get_explores_by_place(self, place_id: int):
         """Get explores filtered by place"""
         return explore_repository.get_explores_by_place(self.db, place_id)

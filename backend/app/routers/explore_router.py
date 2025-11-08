@@ -34,6 +34,16 @@ def list_explores(
     return ExploreService(db).get_all_explores()
 
 
+@router.get("/explores/random", response_model=list[ExploreResponse])
+def get_random_explores(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(verify_jwt)
+):
+    """Get random explores from the database"""
+    return ExploreService(db).get_random_explores(limit)
+
+
 @router.get("/explores/place/{place_id}", response_model=ExploreResponse)
 def get_explores_by_place(
     place_id: int,
