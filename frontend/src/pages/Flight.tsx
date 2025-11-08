@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { UserTestimonials } from "@/components/user-testimonials";
 import { useState } from "react";
 import { FaCalendarAlt, FaMapMarkerAlt, FaPlane, FaQuoteLeft, FaStar, FaUsers } from "react-icons/fa";
 import { MdFlightLand, MdFlightTakeoff } from "react-icons/md";
@@ -255,7 +256,10 @@ function Flight() {
             <div className="max-w-7xl mx-auto px-4 py-16">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h2 className="text-3xl font-bold text-[#07401F]">Featured Flight Deals</h2>
+                        <h2 className="text-3xl font-bold text-[#07401F] flex items-center gap-3">
+                            <span className="w-2 h-10 bg-linear-to-b from-[#148C56] to-[#357D52] rounded-full"></span>
+                            Featured Flight Deals
+                        </h2>
                         <p className="text-gray-600 mt-2">
                             Find your next adventure with these{" "}
                             <span className="text-[#148C56] font-semibold">exciting flight deals</span>
@@ -336,11 +340,14 @@ function Flight() {
             </div>
 
             {/* Featured Places to Stay */}
-            <div className="bg-[#07401F]/5 py-16">
+            <div className="relative py-16">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-3xl font-bold text-[#07401F]">Places to Stay</h2>
+                            <h2 className="text-3xl font-bold text-[#07401F] flex items-center gap-3">
+                                <span className="w-2 h-10 bg-linear-to-b from-[#148C56] to-[#357D52] rounded-full"></span>
+                                Places to Stay
+                            </h2>
                             <p className="text-gray-600 mt-2">
                                 Explore unique{" "}
                                 <span className="text-[#148C56] font-semibold">places to stay</span>
@@ -351,7 +358,7 @@ function Flight() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-rows-2 lg:grid-rows-4 gap-6">
                         {places.map((place) => (
                             <div
                                 key={place.id}
@@ -389,52 +396,8 @@ function Flight() {
                         ))}
                     </div>
                 </div>
-            </div>
-
-            {/* User Testimonials */}
-            <div className="max-w-7xl mx-auto px-4 py-16">
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl font-bold text-[#07401F] mb-4">
-                        What CloudRush Users Are Saying
-                    </h2>
-                    <p className="text-gray-600 text-lg">Real experiences from our travelers</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {testimonials.map((testimonial) => (
-                        <div
-                            key={testimonial.id}
-                            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
-                        >
-                            {/* Quote Icon */}
-                            <FaQuoteLeft className="text-[#148C56] text-3xl mb-4 opacity-50" />
-
-                            {/* Comment */}
-                            <p className="text-gray-700 mb-6 italic">{testimonial.comment}</p>
-
-                            {/* Rating */}
-                            <div className="flex items-center gap-1 mb-4">
-                                {[...Array(testimonial.rating)].map((_, i) => (
-                                    <FaStar key={i} className="text-[#148C56]" />
-                                ))}
-                            </div>
-
-                            {/* User Info */}
-                            <div className="flex items-center gap-4">
-                                <img
-                                    src={testimonial.avatar}
-                                    alt={testimonial.name}
-                                    className="w-12 h-12 rounded-full object-cover border-2 border-[#148C56]"
-                                />
-                                <div>
-                                    <p className="font-bold text-[#07401F]">{testimonial.name}</p>
-                                    <p className="text-sm text-gray-500">Verified Traveler</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            </div>  
+            <UserTestimonials></UserTestimonials>
         </div>
     );
 }

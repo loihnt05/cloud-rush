@@ -80,8 +80,8 @@ export default function Packages() {
                 </p>
             </div>
             {/* Package */}
-            <div className=" grid grid-cols-4 gap-10 m-15 ">
-                {packages.slice(0, 4).map(pack => (
+            <div className=" grid md:grid-cols-3 gap-10 m-10 "> 
+                {packages.slice(0, 3).map(pack => (
                     <div key={pack.id}
                         className=" group bg-white hover:shadow-xl rounded-2xl overflow-hidden">
                         {/* img */}

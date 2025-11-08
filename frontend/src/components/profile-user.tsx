@@ -29,7 +29,7 @@ const Profile = () => {
           className="mr-5 z-50"
           sideOffset={8}
         >
-          <div className="bg-card border-2 border-primary/20 rounded-2xl shadow-2xl overflow-hidden w-80">
+          <div className="bg-card border-2 border-primary/20 rounded-2xl shadow-2xl overflow-hidden w-95">
             {/* Header with gradient background */}
             <div className="bg-linear-to-br from-[#07401F] via-[#224A33] to-[#357D52] p-6">
               <div className="flex items-center gap-4">
