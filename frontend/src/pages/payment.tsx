@@ -53,7 +53,8 @@ export default function Payment() {
     const [passengerSeats, setPassengerSeats] = useState<Map<number, { seat: Seat; flightSeat: FlightSeat }>>(new Map());
     
     // Data - Service booking
-    const [serviceData, setServiceData] = useState<any>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    const [, setServiceData] = useState<any>(null);
     const [serviceName, setServiceName] = useState<string>("");
     const [servicePrice, setServicePrice] = useState<number>(0);
     
