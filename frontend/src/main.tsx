@@ -21,6 +21,7 @@ import Hotels from "./pages/services/hotels.tsx";
 import Packages from "./pages/services/packages.tsx";
 import Places from "./pages/services/places.tsx";
 import TempPackages from "./pages/tempPackages.tsx";
+import RevenueForecasting from "./pages/admin/revenue-forecasting.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
 
@@ -96,6 +97,9 @@ createRoot(document.getElementById("root")!).render(
 
                 <Route path="/car-rentals" element={<CarRentals />} />
                 <Route path="/hotels" element={<Hotels />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin/revenue-forecasting" element={<RevenueForecasting />} />
               </Route>
             </Routes>
           </QueryClientProvider>

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.booking_schema import BookingCreate, BookingResponse, BookingUpdate, BookingDetailResponse
 from app.services.booking_service import BookingService
-from app.dependencies import verify_jwt
+from app.dependencies import verify_jwt, get_user_roles
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -14,8 +14,28 @@ def create_booking(
     db: Session = Depends(get_db),
     payload: dict = Depends(verify_jwt)
 ):
-    """Create a new booking (group-level, passengers added separately)"""
+    """Create a new booking (group-level, passengers added separately)
+    
+    - Regular users can only book for themselves (user_id must match their auth token)
+    - Agents and admins can book for any user (traveler)
+    """
     try:
+        # Get the authenticated user's ID from the JWT token
+        authenticated_user_id = payload.get("sub")
+        
+        # Get user roles
+        roles = payload.get("http://localhost:8000/roles", [])
+        is_agent_or_admin = "agent" in roles or "admin" in roles
+        
+        # Validate that user can create booking for the specified user_id
+        if booking.user_id != authenticated_user_id:
+            # If trying to book for someone else, must be agent or admin
+            if not is_agent_or_admin:
+                raise HTTPException(
+                    status_code=403,
+                    detail="You can only create bookings for yourself. Agents or admins can book for others."
+                )
+        
         return BookingService(db).create_booking(booking)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

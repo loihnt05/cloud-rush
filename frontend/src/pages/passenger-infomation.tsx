@@ -11,6 +11,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 interface PassengerFormData {
   firstName: string;
@@ -33,12 +34,17 @@ export default function PassengerInformation() {
   const flightSeatIdsParam = searchParams.get("flightSeatIds");
   const navigate = useNavigate();
   const { user } = useAuth0(); // Will be used for booking creation with user_id
+  const { isAgentOrAdmin } = useUserRoles(); // Check if user is agent or admin
 
   // Parse passenger counts from URL
   const adultsCount = adultsParam ? parseInt(adultsParam, 10) : 1;
   const childrenCount = childrenParam ? parseInt(childrenParam, 10) : 0;
   const infantsCount = infantsParam ? parseInt(infantsParam, 10) : 0;
   const totalPassengers = adultsCount + childrenCount + infantsCount;
+
+  // State for traveler userId (for agents booking on behalf of travelers)
+  const [travelerUserId, setTravelerUserId] = useState<string>("");
+  const [isBookingForOthers, setIsBookingForOthers] = useState<boolean>(false);
 
   // Number of passengers
   const [passengerCount, setPassengerCount] = useState(totalPassengers);
@@ -223,7 +229,7 @@ export default function PassengerInformation() {
   const createBookingMutation = useMutation({
     mutationFn: async (userId: string) => {
       const bookingData = {
-        user_id: userId,
+        user_id: userId, // This will be traveler's ID if agent is booking for someone else
         status: "pending",
         notes: `Flight ${flightId}`
       };
@@ -307,8 +313,18 @@ export default function PassengerInformation() {
       return;
     }
 
-    // Create booking first, then passengers, then emergency contact
-    createBookingMutation.mutate(user.sub);
+    // If agent is booking for someone else, validate traveler userId
+    if (isBookingForOthers && isAgentOrAdmin) {
+      if (!travelerUserId.trim()) {
+        alert("Please enter the traveler's User ID");
+        return;
+      }
+      // Create booking with traveler's ID
+      createBookingMutation.mutate(travelerUserId.trim());
+    } else {
+      // Create booking with authenticated user's ID
+      createBookingMutation.mutate(user.sub);
+    }
   };
 
   if (!flightId) {
@@ -363,6 +379,56 @@ export default function PassengerInformation() {
     <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-6 p-4 lg:p-8 min-h-screen bg-linear-to-br from-[#07401F]/5 via-[#224A33]/5 to-[#357D52]/5">
       {/* Left side - Form (w-3/5) */}
       <div className="w-full lg:w-3/5 space-y-6">
+        {/* Agent/Admin: Booking for another traveler section */}
+        {isAgentOrAdmin && (
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              Agent Booking Options
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="bookingForOthers"
+                  checked={isBookingForOthers}
+                  onChange={(e) => {
+                    setIsBookingForOthers(e.target.checked);
+                    if (!e.target.checked) {
+                      setTravelerUserId("");
+                    }
+                  }}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="bookingForOthers" className="text-sm font-medium text-gray-700">
+                  I am booking on behalf of another traveler
+                </label>
+              </div>
+
+              {isBookingForOthers && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+                  <label htmlFor="travelerUserId" className="block text-sm font-medium text-gray-700 mb-2">
+                    Traveler's User ID <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="travelerUserId"
+                    value={travelerUserId}
+                    onChange={(e) => setTravelerUserId(e.target.value)}
+                    placeholder="Enter the traveler's Auth0 User ID (e.g., auth0|...)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required={isBookingForOthers}
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Enter the complete Auth0 User ID of the traveler you're booking for. 
+                    This ID typically starts with "auth0|" or "google-oauth2|".
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Passenger Information Sections - Loop through all passengers */}
         {passengerForms.map((passenger, index) => (
           <PassengerForm
