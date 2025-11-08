@@ -2,13 +2,16 @@ import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import App from "./App.tsx";
 import authConfig from "./auth-config.ts";
 import Layout from "./components/layout/layout.tsx";
 import About from "./pages/about.tsx";
+import BookingDetails from "./pages/booking-details.tsx";
+import ETicket from "./pages/e-ticket.tsx";
 import FlightSearch from "./pages/flight/flight-search.tsx";
 import Flight from "./pages/flight/flight.tsx";
+import MyBookings from "./pages/my-bookings.tsx";
 import PassengerInformation from "./pages/passenger-infomation.tsx";
 import Payment from "./pages/payment.tsx";
 import SeatSelection from "./pages/seat-selection.tsx";
@@ -65,6 +68,7 @@ createRoot(document.getElementById("root")!).render(
           <QueryClientProvider client={queryClient}>
             <Routes>
               <Route path="/" element={<Layout />}>
+                <Route index element={<Navigate to="/home" replace />} />
                 <Route path="/home" element={<App />} />
                 <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
@@ -77,6 +81,9 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/places" element={<Places />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/my-bookings" element={<MyBookings />} />
+                <Route path="/my-bookings/:bookingId" element={<BookingDetails />} />
+                <Route path="/e-ticket/:bookingId" element={<ETicket />} />
                 <Route path="/flights/seat-selection" element={<SeatSelection />} />
 
                 <Route path="/car-rentals" element={<CarRentals />} />

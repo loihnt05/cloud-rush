@@ -9,6 +9,7 @@ import {
   Home,
   Inbox,
   MessageCircleQuestion,
+  Ticket,
   Search,
   Settings2,
   Sparkles,
@@ -60,6 +61,11 @@ const data = {
       url: "/home",
       icon: Home,
       isActive: true,
+    },
+    {
+      title: "My Bookings",
+      url: "/my-bookings",
+      icon: Ticket,
     },
     {
       title: "About",

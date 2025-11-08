@@ -41,6 +41,22 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
   return response.data;
 };
 
+// Get booking with flight information (by getting passengers and extracting flight from flight_seat)
+export const getBookingFlightId = async (bookingId: number): Promise<number | null> => {
+  try {
+    const passengers = await getPassengersByBooking(bookingId);
+    if (passengers.length > 0 && passengers[0].flight_seat_id) {
+      // We have a flight seat ID, but we need to get the flight ID from the backend
+      // For now, return null and handle this in the component
+      return null;
+    }
+    return null;
+  } catch (err) {
+    console.error("Error getting flight ID for booking:", err);
+    return null;
+  }
+};
+
 export const confirmBooking = async (bookingId: number): Promise<Booking> => {
   const response = await appAxios.post<Booking>(`/bookings/${bookingId}/confirm`);
   if (!response.data) {
