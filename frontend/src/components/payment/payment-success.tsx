@@ -1,11 +1,11 @@
-import { useNavigate } from "react-router-dom";
-import { FaPlane, FaHotel, FaCar } from "react-icons/fa";
-import { MdAirlineSeatReclineNormal, MdCardTravel } from "react-icons/md";
-import { BsCheckCircleFill } from "react-icons/bs";
 import { Button } from "@/components/ui/button";
-import type { Flight } from "@/types/flight";
 import type { Booking, Passenger } from "@/types/booking";
+import type { Flight } from "@/types/flight";
 import type { Payment } from "@/types/payment";
+import { BsCheckCircleFill } from "react-icons/bs";
+import { FaCar, FaHotel, FaPlane } from "react-icons/fa";
+import { MdAirlineSeatReclineNormal, MdCardTravel } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 interface PaymentSuccessProps {
     flight: Flight | null;
@@ -28,7 +28,6 @@ export default function PaymentSuccess({
 }: PaymentSuccessProps) {
     const navigate = useNavigate();
 
-    const isFlightBooking = !!flight;
     const isServiceBooking = !!serviceType;
 
     const getServiceIcon = () => {

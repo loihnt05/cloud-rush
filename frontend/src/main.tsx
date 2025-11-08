@@ -12,6 +12,7 @@ import Explore from "./pages/explore.tsx";
 import FlightSearch from "./pages/flight/flight-search.tsx";
 import Flight from "./pages/flight/flight.tsx";
 import MyBookings from "./pages/my-bookings.tsx";
+import MyServiceBookings from "./pages/my-service-bookings.tsx";
 import PassengerInformation from "./pages/passenger-infomation.tsx";
 import Payment from "./pages/payment.tsx";
 import SeatSelection from "./pages/seat-selection.tsx";
@@ -68,7 +69,7 @@ createRoot(document.getElementById("root")!).render(
           <QueryClientProvider client={queryClient}>
             <Routes>
               <Route path="/" element={<Layout />}>
-                <Route index element={<Navigate to="/home" replace />} />
+                <Route index element={<Navigate to="/flight" replace />} />
                 <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/flights/search" element={<FlightSearch />} />
@@ -82,6 +83,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
+                <Route path="/my-service-bookings" element={<MyServiceBookings />} />
                 <Route
                   path="/my-bookings/:bookingId"
                   element={<BookingDetails />}

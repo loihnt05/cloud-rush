@@ -1,31 +1,30 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
-import { FaCreditCard, FaCheck } from "react-icons/fa";
+import { confirmBooking, getBooking, getPassengersByBooking } from "@/api/booking";
+import { carRentalsApi } from "@/api/car-rentals";
 import { getFlight } from "@/api/flight";
-import { getBooking, getPassengersByBooking, confirmBooking } from "@/api/booking";
-import { createPayment, getPaymentByBooking } from "@/api/payment";
-import { getFlightSeatDetails, getSeatDetails } from "@/api/seat";
-import { bookingServiceApi } from "@/api/booking-service";
 import { hotelsApi } from "@/api/hotels";
 import { packagesApi } from "@/api/packages";
-import { carRentalsApi } from "@/api/car-rentals";
-import type { Flight } from "@/types/flight";
-import type { Booking, Passenger } from "@/types/booking";
-import type { Payment } from "@/types/payment";
-import type { FlightSeat, Seat } from "@/types/seat";
+import { createPayment, getPaymentByBooking } from "@/api/payment";
+import { getFlightSeatDetails, getSeatDetails } from "@/api/seat";
 import { Button } from "@/components/ui/button";
 import useSettingStore from "@/stores/setting-store";
+import type { Booking, Passenger } from "@/types/booking";
+import type { Flight } from "@/types/flight";
+import type { Payment } from "@/types/payment";
+import type { FlightSeat, Seat } from "@/types/seat";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useEffect, useState } from "react";
+import { FaCheck, FaCreditCard } from "react-icons/fa";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Import refactored components
-import PaymentMethodSelector from "@/components/payment/payment-method-selector";
-import CreditCardForm from "@/components/payment/credit-card-form";
-import PayPalInfo from "@/components/payment/paypal-info";
 import BookingSummary from "@/components/payment/booking-summary";
-import PaymentSuccess from "@/components/payment/payment-success";
+import CreditCardForm from "@/components/payment/credit-card-form";
 import ErrorDisplay from "@/components/payment/error-display";
-import SecurityNotice from "@/components/payment/security-notice";
 import { LoadingSpinner, ProcessingPayment } from "@/components/payment/loading-states";
+import PaymentMethodSelector from "@/components/payment/payment-method-selector";
+import PaymentSuccess from "@/components/payment/payment-success";
+import PayPalInfo from "@/components/payment/paypal-info";
+import SecurityNotice from "@/components/payment/security-notice";
 
 export default function Payment() {
     const [searchParams] = useSearchParams();
@@ -184,12 +183,18 @@ export default function Payment() {
                             case "package":
                                 service = await packagesApi.getPackageById(parseInt(serviceId));
                                 name = service.name || `Package ${service.package_id}`;
-                                price = service.total_price || 0;
+                                // Convert to number if it's a string
+                                price = typeof service.total_price === 'string' 
+                                    ? parseFloat(service.total_price) 
+                                    : (service.total_price || 0);
                                 break;
                             case "car_rental":
                                 service = await carRentalsApi.getCarRentalById(parseInt(serviceId));
                                 name = `${service.brand} ${service.car_model}`;
-                                price = service.daily_rate || 0;
+                                // Convert to number if it's a string
+                                price = typeof service.daily_rate === 'string' 
+                                    ? parseFloat(service.daily_rate) 
+                                    : (service.daily_rate || 0);
                                 break;
                             default:
                                 throw new Error(`Unknown service type: ${serviceType}`);
@@ -233,12 +238,16 @@ export default function Payment() {
         loadData();
     }, [bookingId, flightId, serviceType, serviceId, user, authLoading, isAuthenticated, accessToken, isFlightBooking, isServiceBooking]);
 
-    const calculateTotal = () => {
+    const calculateTotal = (): number => {
         // For service bookings, use the service price
-        if (isServiceBooking && servicePrice > 0) {
-            const subtotal = servicePrice;
-            const taxes = subtotal * 0.15;
-            return subtotal + taxes;
+        if (isServiceBooking) {
+            if (servicePrice > 0) {
+                const subtotal = servicePrice;
+                const taxes = subtotal * 0.15;
+                return subtotal + taxes;
+            }
+            // Service price not loaded yet
+            return 0;
         }
 
         // For flight bookings, calculate based on passengers and seats
@@ -329,14 +338,13 @@ export default function Payment() {
         }
 
         try {
-            setPaymentStep("processing");
-            await confirmBooking(parseInt(bookingId));
-            alert("Booking confirmed successfully!");
+            // Don't confirm the booking - just keep it as "pending" so user can pay later
+            // The booking already exists with "pending" status from the service booking creation
+            alert("Booking saved! You can complete payment later from My Bookings.");
             navigate("/my-bookings");
         } catch (err) {
-            console.error("Error confirming booking:", err);
-            alert("Failed to confirm booking. Please try again.");
-            setPaymentStep("payment");
+            console.error("Error saving booking:", err);
+            alert("Failed to save booking. Please try again.");
         }
     };
 

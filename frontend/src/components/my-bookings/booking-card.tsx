@@ -77,7 +77,14 @@ export default function BookingCard({ bookingDetail }: BookingCardProps) {
   };
 
   const handleCompletePayment = () => {
-    navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flight.flight_id}`);
+    // For flight bookings, include flightId
+    if (flight?.flight_id) {
+      navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flight.flight_id}`);
+    } else {
+      // For service bookings, navigate without flightId
+      // The payment page will detect it's a service booking from booking_services
+      navigate(`/payment?bookingId=${booking.booking_id}`);
+    }
   };
 
   return (

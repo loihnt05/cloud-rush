@@ -1,14 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
-import { FaMapMarkerAlt, FaParking, FaWifi, FaHotel, FaCar } from "react-icons/fa";
-import { MdRestaurant } from "react-icons/md";
-import { packagesApi, type Package as ApiPackage } from "@/api/packages";
-import { createBooking } from "@/api/booking";
+import { createBooking, getUserBookings } from "@/api/booking";
 import { bookingServiceApi } from "@/api/booking-service";
-import { getRandomPackageImage } from "@/lib/image-utils";
-import useSettingStore from "@/stores/setting-store";
+import { packagesApi, type Package as ApiPackage } from "@/api/packages";
+import { getPaymentByBooking } from "@/api/payment";
 import {
   Pagination,
   PaginationContent,
@@ -18,6 +11,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { getRandomPackageImage } from "@/lib/image-utils";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaCar, FaHotel, FaMapMarkerAlt, FaParking, FaWifi } from "react-icons/fa";
+import { MdRestaurant } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 type PackageDisplay = {
   id: number;
@@ -89,7 +89,6 @@ export default function Packages() {
   const itemsPerPage = 4;
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth0();
-  const { accessToken } = useSettingStore();
   const [bookingInProgress, setBookingInProgress] = useState<number | null>(null);
 
   // Fetch packages using useQuery with caching
@@ -154,6 +153,52 @@ export default function Packages() {
     if (!isAuthenticated || !user?.sub) {
       alert("Please log in to book a package");
       return;
+    }
+
+    // Check for existing pending service bookings
+    try {
+      console.log("Checking for pending bookings...");
+      const userBookings = await getUserBookings(user.sub);
+      
+      // Check if any booking has pending service bookings
+      for (const booking of userBookings) {
+        try {
+          // Get booking services for this booking
+          const bookingServices = await bookingServiceApi.getBookingServices(booking.booking_id);
+          
+          if (bookingServices.length > 0) {
+            // This is a service booking, check if it's pending
+            const isPending = booking.status !== "confirmed";
+            
+            // Also check payment status
+            let hasUnpaidPayment = false;
+            try {
+              const payment = await getPaymentByBooking(booking.booking_id);
+              hasUnpaidPayment = payment.status !== "success";
+            } catch {
+              // No payment found, so it's unpaid
+              hasUnpaidPayment = true;
+            }
+
+            if (isPending || hasUnpaidPayment) {
+              console.log("Found pending service booking:", booking.booking_id);
+              const goToBookings = confirm(
+                "You have pending service bookings that need payment. Please complete payment before booking another service.\n\n" +
+                "Click OK to view your pending bookings, or Cancel to stay here."
+              );
+              if (goToBookings) {
+                navigate("/my-service-bookings");
+              }
+              return;
+            }
+          }
+        } catch {
+          // No booking services found, skip
+        }
+      }
+    } catch (error) {
+      console.error("Error checking for pending bookings:", error);
+      // Continue with booking if check fails
     }
 
     try {
