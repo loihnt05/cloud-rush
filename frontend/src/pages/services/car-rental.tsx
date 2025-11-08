@@ -1,9 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 import { FaCar, FaGasPump, FaUsers } from "react-icons/fa";
 import { MdAirlineSeatReclineNormal } from "react-icons/md";
 import { carRentalsApi, type CarRental as ApiCarRental } from "@/api/car-rentals";
+import { createBooking } from "@/api/booking";
+import { bookingServiceApi } from "@/api/booking-service";
 import { getRandomCarImage } from "@/lib/image-utils";
+import useSettingStore from "@/stores/setting-store";
 import {
   Pagination,
   PaginationContent,
@@ -16,6 +21,7 @@ import {
 
 type CarRentalDisplay = {
   id: number;
+  serviceId: number; // Add service_id
   name: string;
   brand: string;
   model: string;
@@ -82,6 +88,10 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
 export default function CarRentals() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth0();
+  const { accessToken } = useSettingStore();
+  const [bookingInProgress, setBookingInProgress] = useState<number | null>(null);
 
   // Fetch car rentals using useQuery with caching
   const {
@@ -98,6 +108,7 @@ export default function CarRentals() {
       const transformedCarRentals: CarRentalDisplay[] = data.map(
         (car: ApiCarRental) => ({
           id: car.car_rental_id,
+          serviceId: car.service_id, // Include service_id
           name: `${car.brand || 'Premium'} ${car.car_model || 'Vehicle'}`,
           brand: car.brand || "Premium Brand",
           model: car.car_model || "Luxury Model",
@@ -132,6 +143,46 @@ export default function CarRentals() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRentCar = async (car: CarRentalDisplay) => {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user?.sub) {
+      alert("Please log in to rent a car");
+      return;
+    }
+
+    // Check if car is available
+    if (!car.available) {
+      alert("This car is not currently available");
+      return;
+    }
+
+    try {
+      setBookingInProgress(car.id);
+
+      // Create a booking
+      const booking = await createBooking({
+        user_id: user.sub,
+        status: "pending",
+        notes: `Car rental booking for ${car.name}`,
+      });
+
+      // Add car rental service to booking
+      await bookingServiceApi.addServiceToBooking({
+        booking_id: booking.booking_id,
+        service_id: car.serviceId, // Use the car rental's service_id
+        quantity: 1,
+      });
+
+      // Navigate to payment page with booking ID and service type
+      navigate(`/payment?bookingId=${booking.booking_id}&serviceType=car_rental&serviceId=${car.id}`);
+    } catch (error) {
+      console.error("Error renting car:", error);
+      alert("Failed to create booking. Please try again.");
+    } finally {
+      setBookingInProgress(null);
+    }
   };
 
   return (
@@ -258,15 +309,20 @@ export default function CarRentals() {
                     </div>
                   </div>
                   <button
+                    onClick={() => handleRentCar(car)}
+                    disabled={!car.available || bookingInProgress === car.id}
                     className={`ml-auto text-white font-bold transition-all duration-300
                       hover:scale-105 rounded-full px-10 py-2 mt-2 ${
-                        car.available
+                        car.available && bookingInProgress !== car.id
                           ? "bg-linear-to-r from-[#07401F] to-[#148C56] hover:from-[#148C56] hover:to-[#148C11]"
                           : "bg-gray-400 cursor-not-allowed"
                       }`}
-                    disabled={!car.available}
                   >
-                    {car.available ? "Rent Now" : "Not Available"}
+                    {bookingInProgress === car.id 
+                      ? "Booking..." 
+                      : car.available 
+                        ? "Rent Now" 
+                        : "Not Available"}
                   </button>
                 </div>
               </div>
