@@ -25,6 +25,9 @@ import {
 } from "react-icons/fa";
 import { MdFlightLand, MdFlightTakeoff } from "react-icons/md";
 import { getAirports } from "@/api/airport";
+import { getFlights } from "@/api/flight";
+import { hotelsApi } from "@/api/hotels";
+import { placesApi } from "@/api/places";
 import type { Airport } from "@/types/airport";
 import { Button } from "@/components/ui/button";
 
@@ -38,14 +41,6 @@ type Flight = {
   destination: string;
   rating?: number;
   duration?: string;
-};
-
-type Place = {
-  id: number;
-  description: string;
-  name: string;
-  imgUrl: string;
-  location?: string;
 };
 
 type Testimonial = {
@@ -72,6 +67,27 @@ function Flight() {
     queryKey: ["airports"],
     queryFn: getAirports,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch flights from database
+  const { data: flightsData = [], isLoading: isLoadingFlights } = useQuery({
+    queryKey: ["flights"],
+    queryFn: getFlights,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch hotels from database
+  const { data: hotelsData = [], isLoading: isLoadingHotels } = useQuery({
+    queryKey: ["hotels"],
+    queryFn: hotelsApi.getHotels,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch places from database
+  const { data: placesData = [], isLoading: isLoadingPlaces } = useQuery({
+    queryKey: ["places"],
+    queryFn: placesApi.getPlaces,
+    staleTime: 5 * 60 * 1000,
   });
 
   const handleSearchFlights = () => {
@@ -101,91 +117,80 @@ function Flight() {
       airport.country.toLowerCase().includes(toSearch.toLowerCase())
   );
 
-  const flights: Flight[] = [
-    {
-      id: 1,
-      name: "Direct Flight to Hanoi",
-      description: "Comfortable direct flight with premium amenities",
-      price: 250,
-      imageUrl:
-        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1470&q=80",
-      departure: "Ho Chi Minh City",
-      destination: "Hanoi",
-      rating: 4.8,
-      duration: "2h 15m",
-    },
-    {
-      id: 2,
-      name: "Direct Flight to Hanoi",
-      description: "Comfortable direct flight with premium amenities",
-      price: 250,
-      imageUrl:
-        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1470&q=80",
-      departure: "Ho Chi Minh City",
-      destination: "Hanoi",
-      rating: 4.8,
-      duration: "2h 15m",
-    },
-    {
-      id: 3,
-      name: "Direct Flight to Hanoi",
-      description: "Comfortable direct flight with premium amenities",
-      price: 250,
-      imageUrl:
-        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1470&q=80",
-      departure: "Ho Chi Minh City",
-      destination: "Hanoi",
-      rating: 4.8,
-      duration: "2h 15m",
-    },
-    {
-      id: 4,
-      name: "Direct Flight to Hanoi",
-      description: "Comfortable direct flight with premium amenities",
-      price: 250,
-      imageUrl:
-        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1470&q=80",
-      departure: "Ho Chi Minh City",
-      destination: "Hanoi",
-      rating: 4.8,
-      duration: "2h 15m",
-    },
-  ];
+  // Random image generator for variety
+  const getRandomFlightImage = () => {
+    const images = [
+      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1470&q=80",
+      "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=1470&q=80",
+      "https://images.unsplash.com/photo-1583946099379-f9c9cb8bc030?w=1470&q=80",
+      "https://images.unsplash.com/photo-1542296332-2e4473faf563?w=1470&q=80",
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  };
 
-  const places: Place[] = [
-    {
-      id: 1,
-      name: "Sofitel Legend Metropole Hanoi",
-      description: "Historic luxury hotel in the heart of Hanoi since 1901",
-      imgUrl:
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
-      location: "Hanoi, Vietnam",
-    },
-    {
-      id: 2,
-      name: "Sofitel Legend Metropole Hanoi",
-      description: "Historic luxury hotel in the heart of Hanoi since 1901",
-      imgUrl:
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
-      location: "Hanoi, Vietnam",
-    },
-    {
-      id: 3,
-      name: "Sofitel Legend Metropole Hanoi",
-      description: "Historic luxury hotel in the heart of Hanoi since 1901",
-      imgUrl:
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
-      location: "Hanoi, Vietnam",
-    },
-    {
-      id: 4,
-      name: "Sofitel Legend Metropole Hanoi",
-      description: "Historic luxury hotel in the heart of Hanoi since 1901",
-      imgUrl:
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
-      location: "Hanoi, Vietnam",
-    },
-  ];
+  const getRandomHotelImage = () => {
+    const images = [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1470&q=80",
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1470&q=80",
+      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1470&q=80",
+      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1470&q=80",
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  };
+
+  const getRandomPlaceImage = () => {
+    const images = [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1470&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1470&q=80",
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1470&q=80",
+      "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=1470&q=80",
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  };
+
+  // Transform database flights into display format - limit to 4 items
+  const flights = (flightsData || []).slice(0, 4).map(flight => {
+    const departureDate = new Date(flight.departure_time);
+    const arrivalDate = new Date(flight.arrival_time);
+    const durationMs = arrivalDate.getTime() - departureDate.getTime();
+    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    const price = typeof flight.base_price === 'string' 
+      ? parseFloat(flight.base_price) 
+      : flight.base_price;
+    
+    return {
+      id: flight.flight_id,
+      name: `Flight ${flight.flight_number}`,
+      description: `${flight.status} flight with premium amenities`,
+      price: Math.round(price),
+      imageUrl: getRandomFlightImage(),
+      departure: flight.origin || `Airport ${flight.origin_airport_id}`,
+      destination: flight.destination || `Airport ${flight.destination_airport_id}`,
+      rating: 4.5,
+      duration: `${hours}h ${minutes}m`,
+    };
+  });
+
+  // Transform hotels data - limit to 4 items
+  const hotels = (hotelsData || []).slice(0, 4).map(hotel => ({
+    id: hotel.hotel_id,
+    name: `${hotel.stars || 3}-Star Hotel`,
+    description: hotel.description || "Luxury accommodation with excellent amenities",
+    imgUrl: getRandomHotelImage(),
+    location: hotel.location || "Premium Location",
+    stars: hotel.stars || 3,
+  }));
+
+  // Transform places data - limit to 4 items
+  const places = (placesData || []).slice(0, 4).map(place => ({
+    id: place.place_id,
+    name: place.name,
+    description: place.description || "Explore this amazing destination",
+    imgUrl: getRandomPlaceImage(),
+    location: `${place.city || ''}${place.city && place.country ? ', ' : ''}${place.country || ''}`.trim() || "Beautiful Location",
+  }));
 
   const testimonials: Testimonial[] = [
     {
@@ -447,12 +452,24 @@ function Flight() {
               </span>
             </p>
           </div>
-          <button className="px-6 py-2 border-2 border-[#148C56] text-[#148C56] font-semibold rounded-lg hover:bg-[#148C56] hover:text-white transition-all duration-300">
+          <button onClick={() => {}} className="px-6 py-2 border-2 border-[#148C56] text-[#148C56] font-semibold rounded-lg hover:bg-[#148C56] hover:text-white transition-all duration-300">
             View All
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {isLoadingFlights ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#148C56]"></div>
+              <p className="mt-4 text-gray-600">Loading flights...</p>
+            </div>
+          </div>
+        ) : flights.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-600 text-lg">No flights available at the moment.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {flights.map((flight) => (
             <div
               key={flight.id}
@@ -524,7 +541,8 @@ function Flight() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Featured Places to Stay */}
@@ -547,6 +565,101 @@ function Flight() {
             </button>
           </div>
 
+          {isLoadingHotels ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#148C56]"></div>
+                <p className="mt-4 text-gray-600">Loading hotels...</p>
+              </div>
+            </div>
+          ) : hotels.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-600 text-lg">No hotels available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {hotels.map((hotel) => (
+                <div
+                  key={hotel.id}
+                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                >
+                  {/* Image */}
+                  <div className="relative h-56 overflow-hidden">
+                    <img
+                      src={hotel.imgUrl}
+                      alt={hotel.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    {hotel.stars && (
+                      <div className="absolute top-4 right-4 bg-[#148C56] text-white px-3 py-1 rounded-full shadow-lg font-bold flex items-center gap-1">
+                        {[...Array(hotel.stars)].map((_, i) => (
+                          <FaStar key={i} className="text-xs" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-5 space-y-3">
+                    {hotel.location && (
+                      <div className="flex items-center gap-2 text-[#357D52]">
+                        <FaMapMarkerAlt className="text-[#148C56]" />
+                        <span className="text-sm font-medium">
+                          {hotel.location}
+                        </span>
+                      </div>
+                    )}
+
+                    <h3 className="text-lg font-bold text-[#07401F] line-clamp-2 group-hover:text-[#148C56] transition-colors">
+                      {hotel.name}
+                    </h3>
+
+                    <p className="text-gray-600 text-sm line-clamp-2">
+                      {hotel.description}
+                    </p>
+
+                    <button className="w-full bg-white border-2 border-[#357D52] text-[#357D52] font-semibold py-3 rounded-lg hover:bg-[#357D52] hover:text-white transition-all duration-300">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Featured Places to Explore */}
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-[#07401F]">
+              Places to Explore
+            </h2>
+            <p className="text-gray-600 mt-2">
+              Discover amazing{" "}
+              <span className="text-[#148C56] font-semibold">
+                destinations
+              </span>
+            </p>
+          </div>
+          <button className="px-6 py-2 border-2 border-[#148C56] text-[#148C56] font-semibold rounded-lg hover:bg-[#148C56] hover:text-white transition-all duration-300">
+            View All
+          </button>
+        </div>
+
+        {isLoadingPlaces ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#148C56]"></div>
+              <p className="mt-4 text-gray-600">Loading places...</p>
+            </div>
+          </div>
+        ) : places.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-600 text-lg">No places available at the moment.</p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {places.map((place) => (
               <div
@@ -588,7 +701,7 @@ function Flight() {
               </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* User Testimonials */}

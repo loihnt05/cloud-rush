@@ -1,9 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { FaMapMarkerAlt, FaParking, FaWifi, FaStar } from "react-icons/fa";
-import { MdRestaurant, MdPool } from "react-icons/md";
+import { createBooking, getUserBookings } from "@/api/booking";
+import { bookingServiceApi } from "@/api/booking-service";
 import { hotelsApi, type Hotel as ApiHotel } from "@/api/hotels";
-import { getRandomHotelImage } from "@/lib/image-utils";
+import { getPaymentByBooking } from "@/api/payment";
 import {
   Pagination,
   PaginationContent,
@@ -13,9 +11,17 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { getRandomHotelImage } from "@/lib/image-utils";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaMapMarkerAlt, FaParking, FaStar, FaWifi } from "react-icons/fa";
+import { MdPool, MdRestaurant } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 type HotelDisplay = {
   id: number;
+  serviceId: number; // Add service_id
   name: string;
   price: number;
   description: string;
@@ -81,6 +87,9 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
 export default function Hotels() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth0();
+  const [bookingInProgress, setBookingInProgress] = useState<number | null>(null);
 
   // Fetch hotels using useQuery with caching and automatic refetching
   const {
@@ -97,6 +106,7 @@ export default function Hotels() {
       const transformedHotels: HotelDisplay[] = data.map(
         (hotel: ApiHotel) => ({
           id: hotel.hotel_id,
+          serviceId: hotel.service_id, // Include service_id
           name: `Hotel ${hotel.hotel_id}`, // You might want to get actual name from service
           price: Math.floor(Math.random() * 400) + 150, // Random price between 150-550
           description:
@@ -131,6 +141,86 @@ export default function Hotels() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBookHotel = async (hotel: HotelDisplay) => {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user?.sub) {
+      alert("Please log in to book a hotel");
+      return;
+    }
+
+    // Check for existing pending service bookings
+    try {
+      console.log("Checking for pending bookings...");
+      const userBookings = await getUserBookings(user.sub);
+      
+      // Check if any booking has pending service bookings
+      for (const booking of userBookings) {
+        try {
+          // Get booking services for this booking
+          const bookingServices = await bookingServiceApi.getBookingServices(booking.booking_id);
+          
+          if (bookingServices.length > 0) {
+            // This is a service booking, check if it's pending
+            const isPending = booking.status !== "confirmed";
+            
+            // Also check payment status
+            let hasUnpaidPayment = false;
+            try {
+              const payment = await getPaymentByBooking(booking.booking_id);
+              hasUnpaidPayment = payment.status !== "success";
+            } catch {
+              // No payment found, so it's unpaid
+              hasUnpaidPayment = true;
+            }
+
+            if (isPending || hasUnpaidPayment) {
+              console.log("Found pending service booking:", booking.booking_id);
+              const goToBookings = confirm(
+                "You have pending service bookings that need payment. Please complete payment before booking another service.\n\n" +
+                "Click OK to view your pending bookings, or Cancel to stay here."
+              );
+              if (goToBookings) {
+                navigate("/my-service-bookings");
+              }
+              return;
+            }
+          }
+        } catch {
+          // No booking services found, skip
+        }
+      }
+    } catch (error) {
+      console.error("Error checking for pending bookings:", error);
+      // Continue with booking if check fails
+    }
+
+    try {
+      setBookingInProgress(hotel.id);
+
+      // Create a booking
+      const booking = await createBooking({
+        user_id: user.sub,
+        status: "pending",
+        notes: `Hotel booking for ${hotel.name}`,
+      });
+
+      // Add hotel service to booking
+      await bookingServiceApi.addServiceToBooking({
+        booking_id: booking.booking_id,
+        service_id: hotel.serviceId, // Use the hotel's service_id
+        quantity: 1,
+      });
+
+      // Navigate to payment page with booking ID and service type
+      navigate(`/payment?bookingId=${booking.booking_id}&serviceType=hotel&serviceId=${hotel.id}`);
+    } catch (error) {
+      console.error("Error booking hotel:", error);
+      alert("Failed to create booking. Please try again.");
+    } finally {
+      setBookingInProgress(null);
+    }
   };
 
   return (
@@ -253,11 +343,13 @@ export default function Hotels() {
                     </div>
                   </div>
                   <button
+                    onClick={() => handleBookHotel(hotel)}
+                    disabled={bookingInProgress === hotel.id}
                     className="ml-auto bg-linear-to-r from-[#07401F] to-[#148C56] text-white
                       font-bold hover:from-[#148C56] hover:to-[#148C11] transition-all duration-300
-                      hover:scale-105 rounded-full px-10 py-2 mt-2"
+                      hover:scale-105 rounded-full px-10 py-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Book Now
+                    {bookingInProgress === hotel.id ? "Booking..." : "Book Now"}
                   </button>
                 </div>
               </div>

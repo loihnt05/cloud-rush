@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.models.place import Explore
 
 def get_explores_by_place(db: Session, place_id: int):
@@ -6,6 +7,10 @@ def get_explores_by_place(db: Session, place_id: int):
 
 def get_explores(db: Session):
     return db.query(Explore).all()
+
+def get_random_explores(db: Session, limit: int = 10):
+    """Get random explore entries from the database"""
+    return db.query(Explore).order_by(func.random()).limit(limit).all()
     
 def create_explore(db: Session, data: Explore):
     db.add(data)

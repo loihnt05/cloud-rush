@@ -34,6 +34,9 @@ function Header() {
             <Link to="/places" className="hover:text-blue-500">
               Places
             </Link>
+            <Link to="/explore" className="hover:text-blue-500">
+              Explore
+            </Link>
             {isAuthenticated ? <Profile></Profile> : <LoginButton />}
           </ul>
         </div>

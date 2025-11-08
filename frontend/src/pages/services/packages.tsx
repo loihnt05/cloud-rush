@@ -1,9 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { FaMapMarkerAlt, FaParking, FaWifi, FaHotel, FaCar } from "react-icons/fa";
-import { MdRestaurant } from "react-icons/md";
+import { createBooking, getUserBookings } from "@/api/booking";
+import { bookingServiceApi } from "@/api/booking-service";
 import { packagesApi, type Package as ApiPackage } from "@/api/packages";
-import { getRandomPackageImage } from "@/lib/image-utils";
+import { getPaymentByBooking } from "@/api/payment";
 import {
   Pagination,
   PaginationContent,
@@ -13,9 +11,17 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { getRandomPackageImage } from "@/lib/image-utils";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaCar, FaHotel, FaMapMarkerAlt, FaParking, FaWifi } from "react-icons/fa";
+import { MdRestaurant } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 type PackageDisplay = {
   id: number;
+  serviceId: number; // Add service_id
   name: string;
   price: number;
   description: string;
@@ -81,6 +87,9 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
 export default function Packages() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth0();
+  const [bookingInProgress, setBookingInProgress] = useState<number | null>(null);
 
   // Fetch packages using useQuery with caching
   const {
@@ -102,6 +111,7 @@ export default function Packages() {
           
           return {
             id: pkg.package_id,
+            serviceId: pkg.service_id, // Include service_id
             name: pkg.name || `Adventure Package ${pkg.package_id}`,
             price: pkg.total_price || Math.floor(Math.random() * 1500) + 500,
             description: "A complete travel package with all-inclusive amenities for the perfect vacation experience",
@@ -136,6 +146,86 @@ export default function Packages() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBookPackage = async (pkg: PackageDisplay) => {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user?.sub) {
+      alert("Please log in to book a package");
+      return;
+    }
+
+    // Check for existing pending service bookings
+    try {
+      console.log("Checking for pending bookings...");
+      const userBookings = await getUserBookings(user.sub);
+      
+      // Check if any booking has pending service bookings
+      for (const booking of userBookings) {
+        try {
+          // Get booking services for this booking
+          const bookingServices = await bookingServiceApi.getBookingServices(booking.booking_id);
+          
+          if (bookingServices.length > 0) {
+            // This is a service booking, check if it's pending
+            const isPending = booking.status !== "confirmed";
+            
+            // Also check payment status
+            let hasUnpaidPayment = false;
+            try {
+              const payment = await getPaymentByBooking(booking.booking_id);
+              hasUnpaidPayment = payment.status !== "success";
+            } catch {
+              // No payment found, so it's unpaid
+              hasUnpaidPayment = true;
+            }
+
+            if (isPending || hasUnpaidPayment) {
+              console.log("Found pending service booking:", booking.booking_id);
+              const goToBookings = confirm(
+                "You have pending service bookings that need payment. Please complete payment before booking another service.\n\n" +
+                "Click OK to view your pending bookings, or Cancel to stay here."
+              );
+              if (goToBookings) {
+                navigate("/my-service-bookings");
+              }
+              return;
+            }
+          }
+        } catch {
+          // No booking services found, skip
+        }
+      }
+    } catch (error) {
+      console.error("Error checking for pending bookings:", error);
+      // Continue with booking if check fails
+    }
+
+    try {
+      setBookingInProgress(pkg.id);
+
+      // Create a booking
+      const booking = await createBooking({
+        user_id: user.sub,
+        status: "pending",
+        notes: `Package booking for ${pkg.name}`,
+      });
+
+      // Add package service to booking
+      await bookingServiceApi.addServiceToBooking({
+        booking_id: booking.booking_id,
+        service_id: pkg.serviceId, // Use the package's service_id
+        quantity: 1,
+      });
+
+      // Navigate to payment page with booking ID and service type
+      navigate(`/payment?bookingId=${booking.booking_id}&serviceType=package&serviceId=${pkg.id}`);
+    } catch (error) {
+      console.error("Error booking package:", error);
+      alert("Failed to create booking. Please try again.");
+    } finally {
+      setBookingInProgress(null);
+    }
   };
 
   return (
@@ -269,11 +359,13 @@ export default function Packages() {
                     </div>
                   </div>
                   <button
+                    onClick={() => handleBookPackage(pkg)}
+                    disabled={bookingInProgress === pkg.id}
                     className="ml-auto bg-linear-to-r from-[#07401F] to-[#148C56] text-white
                       font-bold hover:from-[#148C56] hover:to-[#148C11] transition-all duration-300
-                      hover:scale-105 rounded-full px-10 py-2 mt-2"
+                      hover:scale-105 rounded-full px-10 py-2 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Book Package
+                    {bookingInProgress === pkg.id ? "Booking..." : "Book Package"}
                   </button>
                 </div>
               </div>
