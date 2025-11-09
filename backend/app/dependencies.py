@@ -56,3 +56,30 @@ def get_mgmt_token():
         "grant_type": "client_credentials"
     })
     return res.json()["access_token"]
+
+def verify_admin(payload: dict = Depends(verify_jwt)):
+    """Verify that the user has admin role"""
+    # Check if user has admin role in their Auth0 token
+    roles = payload.get("http://localhost:8000/roles", [])
+    if "admin" not in roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return payload
+
+def verify_agent_or_admin(payload: dict = Depends(verify_jwt)):
+    """Verify that the user has agent or admin role"""
+    # Check if user has agent or admin role in their Auth0 token
+    roles = payload.get("http://localhost:8000/roles", [])
+    if "agent" not in roles and "admin" not in roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Agent or Admin access required"
+        )
+    return payload
+
+def get_user_roles(payload: dict = Depends(verify_jwt)):
+    """Extract user roles from JWT payload"""
+    roles = payload.get("http://localhost:8000/roles", [])
+    return roles

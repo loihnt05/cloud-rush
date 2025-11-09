@@ -14,7 +14,9 @@ import {
   Settings2,
   Sparkles,
   Trash2,
+  ChartLine,
 } from "lucide-react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -263,11 +265,65 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth0();
+  
+  // Check if user has admin role
+  const isAdmin = React.useMemo(() => {
+    if (!user) return false;
+    const userWithRoles = user as Record<string, unknown>;
+    const roles = (userWithRoles["http://localhost:8000/roles"] as string[]) || [];
+    return roles.includes("admin");
+  }, [user]);
+
+  // Build navigation items based on user role
+  const navMainItems = React.useMemo(() => {
+    const baseItems = [
+      {
+        title: "Search",
+        url: "#",
+        icon: Search,
+      },
+      {
+        title: "Ask AI",
+        url: "#",
+        icon: Sparkles,
+      },
+      {
+        title: "Home",
+        url: "/home",
+        icon: Home,
+        isActive: true,
+      },
+      {
+        title: "My Bookings",
+        url: "/my-bookings",
+        icon: Ticket,
+      },
+      {
+        title: "About",
+        url: "/about",
+        icon: Inbox,
+        badge: "10",
+      },
+    ];
+
+    // Add admin-only items
+    if (isAdmin) {
+      baseItems.push({
+        title: "Revenue Forecasting",
+        url: "/admin/revenue-forecasting",
+        icon: ChartLine,
+      });
+    }
+
+    return baseItems;
+  }, [isAdmin]);
+
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
-        <NavMain items={data.navMain} />
+        <NavMain items={navMainItems} />
       </SidebarHeader>
       <SidebarContent>
         {/* <NavFavorites favorites={data.favorites} /> */}

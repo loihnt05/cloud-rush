@@ -5,7 +5,7 @@ from decimal import Decimal
 
 
 class BookingCreate(BaseModel):
-    user_id: str
+    user_id: str  # For regular users: their own ID. For agents: the traveler's user ID
     notes: Optional[str] = None
     status: Optional[str] = "pending"
 
