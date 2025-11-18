@@ -58,7 +58,7 @@ const defaultLegalLinks = [
   { name: "Privacy Policy", href: "#" },
 ];
 
-const Footer7 = ({
+const Footer = ({
   logo = {
     url: "https://www.shadcnblocks.com",
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
@@ -134,4 +134,4 @@ const Footer7 = ({
   );
 };
 
-export { Footer7 };
+export { Footer };

@@ -1,0 +1,32 @@
+import Home from "@/pages/home";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const location = useLocation();
+  const isHomePage = location.pathname === "/" || location.pathname === "/home";
+
+  useEffect(() => {
+    // If not authenticated and not on home page, redirect to login
+    if (!isAuthenticated && !isHomePage) {
+      loginWithRedirect({
+        appState: { returnTo: location.pathname }
+      });
+    }
+  }, [isAuthenticated, isHomePage, location.pathname, loginWithRedirect]);
+  
+  // For non-authenticated users on home page, show landing page
+  if (!isAuthenticated && isHomePage) {
+    return <Home />;
+  }
+
+  // For non-authenticated users on other pages, show nothing (they'll be redirected by useEffect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // For authenticated users, render the protected content
+  return <>{children}</>;
+}

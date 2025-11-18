@@ -24,6 +24,7 @@ import TempPackages from "./pages/tempPackages.tsx";
 import RevenueForecasting from "./pages/admin/revenue-forecasting.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
+import ProtectedRoute from "./components/layout/protected-route.tsx";
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -69,8 +70,9 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <QueryClientProvider client={queryClient}>
             <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Navigate to="/flight" replace />} />
+              <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                <Route index element={<Navigate to="/home" replace />} />
+                <Route path="/home" element={<Navigate to="/flight" replace />} />
                 <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/flights/search" element={<FlightSearch />} />

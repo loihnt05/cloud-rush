@@ -24,9 +24,14 @@ import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import Profile from "./profile-user";
+import LoginButton from "./login-button";
+import { NavFavorites } from "./nav-favorites";
+import { NavWorkspaces } from "./nav-workspaces";
 
 // This is sample data.
 const data = {
@@ -265,7 +270,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth0();
+  const { user, isAuthenticated } = useAuth0();
   
   // Check if user has admin role
   const isAdmin = React.useMemo(() => {
@@ -322,14 +327,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        {/* <TeamSwitcher teams={data.teams} /> */}
         <NavMain items={navMainItems} />
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavFavorites favorites={data.favorites} /> */}
-        {/* <NavWorkspaces workspaces={data.workspaces} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavFavorites favorites={data.favorites} />
+        <NavWorkspaces workspaces={data.workspaces} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
+      <SidebarFooter>
+        <div className="flex items-center gap-2 p-2 border-t border-sidebar-border group-data-[collapsible=icon]:justify-center">
+          {isAuthenticated ? (
+            <>
+              <Profile />
+              <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                <p className="text-sm font-semibold text-sidebar-foreground truncate">
+                  {user?.name || "Guest User"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email || ""}
+                </p>
+              </div>
+            </>
+            ):(
+              <div></div>
+            )}
+        </div>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
