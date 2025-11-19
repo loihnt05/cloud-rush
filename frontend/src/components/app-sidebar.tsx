@@ -2,271 +2,31 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
-  Blocks,
-  Calendar,
-  Command,
-  Home,
-  Inbox,
-  MessageCircleQuestion,
+  Plane,
+  Package,
+  MapPin,
+  Compass,
   Ticket,
-  Search,
-  Settings2,
-  Sparkles,
-  Trash2,
+  Inbox,
   ChartLine,
 } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
-// This is sample data.
-const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: Command,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Search",
-      url: "#",
-      icon: Search,
-    },
-    {
-      title: "Ask AI",
-      url: "#",
-      icon: Sparkles,
-    },
-    {
-      title: "Home",
-      url: "/home",
-      icon: Home,
-      isActive: true,
-    },
-    {
-      title: "My Bookings",
-      url: "/my-bookings",
-      icon: Ticket,
-    },
-    {
-      title: "About",
-      url: "/about",
-      icon: Inbox,
-      badge: "10",
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Calendar",
-      url: "#",
-      icon: Calendar,
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-    },
-    {
-      title: "Templates",
-      url: "#",
-      icon: Blocks,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
-    },
-    {
-      title: "Help",
-      url: "#",
-      icon: MessageCircleQuestion,
-    },
-  ],
-  favorites: [
-    {
-      name: "Project Management & Task Tracking",
-      url: "#",
-      emoji: "📊",
-    },
-    {
-      name: "Family Recipe Collection & Meal Planning",
-      url: "#",
-      emoji: "🍳",
-    },
-    {
-      name: "Fitness Tracker & Workout Routines",
-      url: "#",
-      emoji: "💪",
-    },
-    {
-      name: "Book Notes & Reading List",
-      url: "#",
-      emoji: "📚",
-    },
-    {
-      name: "Sustainable Gardening Tips & Plant Care",
-      url: "#",
-      emoji: "🌱",
-    },
-    {
-      name: "Language Learning Progress & Resources",
-      url: "#",
-      emoji: "🗣️",
-    },
-    {
-      name: "Home Renovation Ideas & Budget Tracker",
-      url: "#",
-      emoji: "🏠",
-    },
-    {
-      name: "Personal Finance & Investment Portfolio",
-      url: "#",
-      emoji: "💰",
-    },
-    {
-      name: "Movie & TV Show Watchlist with Reviews",
-      url: "#",
-      emoji: "🎬",
-    },
-    {
-      name: "Daily Habit Tracker & Goal Setting",
-      url: "#",
-      emoji: "✅",
-    },
-  ],
-  workspaces: [
-    {
-      name: "Personal Life Management",
-      emoji: "🏠",
-      pages: [
-        {
-          name: "Daily Journal & Reflection",
-          url: "#",
-          emoji: "📔",
-        },
-        {
-          name: "Health & Wellness Tracker",
-          url: "#",
-          emoji: "🍏",
-        },
-        {
-          name: "Personal Growth & Learning Goals",
-          url: "#",
-          emoji: "🌟",
-        },
-      ],
-    },
-    {
-      name: "Professional Development",
-      emoji: "💼",
-      pages: [
-        {
-          name: "Career Objectives & Milestones",
-          url: "#",
-          emoji: "🎯",
-        },
-        {
-          name: "Skill Acquisition & Training Log",
-          url: "#",
-          emoji: "🧠",
-        },
-        {
-          name: "Networking Contacts & Events",
-          url: "#",
-          emoji: "🤝",
-        },
-      ],
-    },
-    {
-      name: "Creative Projects",
-      emoji: "🎨",
-      pages: [
-        {
-          name: "Writing Ideas & Story Outlines",
-          url: "#",
-          emoji: "✍️",
-        },
-        {
-          name: "Art & Design Portfolio",
-          url: "#",
-          emoji: "🖼️",
-        },
-        {
-          name: "Music Composition & Practice Log",
-          url: "#",
-          emoji: "🎵",
-        },
-      ],
-    },
-    {
-      name: "Home Management",
-      emoji: "🏡",
-      pages: [
-        {
-          name: "Household Budget & Expense Tracking",
-          url: "#",
-          emoji: "💰",
-        },
-        {
-          name: "Home Maintenance Schedule & Tasks",
-          url: "#",
-          emoji: "🔧",
-        },
-        {
-          name: "Family Calendar & Event Planning",
-          url: "#",
-          emoji: "📅",
-        },
-      ],
-    },
-    {
-      name: "Travel & Adventure",
-      emoji: "🧳",
-      pages: [
-        {
-          name: "Trip Planning & Itineraries",
-          url: "#",
-          emoji: "🗺️",
-        },
-        {
-          name: "Travel Bucket List & Inspiration",
-          url: "#",
-          emoji: "🌎",
-        },
-        {
-          name: "Travel Journal & Photo Gallery",
-          url: "#",
-          emoji: "📸",
-        },
-      ],
-    },
-  ],
-};
+import Profile from "./profile-user";
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth0();
-  
+  const { user, isAuthenticated } = useAuth0();
+  const navigate = useNavigate();
   // Check if user has admin role
   const isAdmin = React.useMemo(() => {
     if (!user) return false;
@@ -279,20 +39,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navMainItems = React.useMemo(() => {
     const baseItems = [
       {
-        title: "Search",
-        url: "#",
-        icon: Search,
+        title: "Flight",
+        url: "/flight",
+        icon: Plane,
       },
       {
-        title: "Ask AI",
-        url: "#",
-        icon: Sparkles,
+        title: "Packages",
+        url: "/packages",
+        icon: Package,
       },
       {
-        title: "Home",
-        url: "/home",
-        icon: Home,
-        isActive: true,
+        title: "Places",
+        url: "/places",
+        icon: MapPin,
+      },
+      {
+        title: "Explore",
+        url: "/explore",
+        icon: Compass,
       },
       {
         title: "My Bookings",
@@ -303,7 +67,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "About",
         url: "/about",
         icon: Inbox,
-        badge: "10",
       },
     ];
 
@@ -322,14 +85,48 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <div className="flex flex-row items-center gap-5 mt-1 ">
+          <Button className="w-8 h-8 flex items-center rounded-full p-0 cursor-pointer group-data-[collabisble=icon]:justify-center"
+            variant={"outline"} onClick={() => navigate("/flight")}>
+            <img
+              src="https://pub-08202a6e0a0e4f88a0b3f667d3b8ff4d.r2.dev/Gemini_Generated_Image_rwuccfrwuccfrwuc.png"
+              alt="CloudRush Logo"
+              className="w-6 h-6 rounded-full"
+            />
+          </Button>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <p className="font-semibold text-sidebar-foreground">CloudRush</p>
+            <p className="text-xs text-muted-foreground">Time to travel</p>
+          </div>
+        </div>
+        
+        {/* Navigation Items */}
         <NavMain items={navMainItems} />
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavFavorites favorites={data.favorites} /> */}
-        {/* <NavWorkspaces workspaces={data.workspaces} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavFavorites favorites={data.favorites} />
+        <NavWorkspaces workspaces={data.workspaces} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
+      <SidebarFooter>
+        <div className="flex items-center gap-2 p-2 border-t border-sidebar-border group-data-[collapsible=icon]:justify-center">
+          {isAuthenticated ? (
+            <>
+              <Profile />
+              <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                <p className="text-sm font-semibold text-sidebar-foreground truncate">
+                  {user?.name || "Guest User"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email || ""}
+                </p>
+              </div>
+            </>
+            ):(
+              <div></div>
+            )}
+        </div>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

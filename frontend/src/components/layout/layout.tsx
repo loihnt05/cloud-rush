@@ -4,21 +4,18 @@ import {
   SidebarProvider
 } from "@/components/ui/sidebar";
 import { Outlet } from "react-router-dom";
-import Header from "./Header";
-import { Footer7 } from "./footer2";
+import { Footer } from "./footer";
 
 export default function Layout() {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <Header />
-        <div className="flex flex-col w-full bg-white p-5 h-full">
-            <Outlet />  
-        </div>
-
-        <Footer7 />
-      </SidebarInset>
+      <AppSidebar collapsible="icon" />
+        <SidebarInset>
+          <div className="flex flex-col w-full bg-white p-5 h-full">
+            <Outlet />
+          </div>
+          <Footer />
+        </SidebarInset>
     </SidebarProvider>
   );
-}
+};

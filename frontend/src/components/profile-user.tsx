@@ -15,12 +15,12 @@ const Profile = () => {
         {/* asChild lets the trigger use the native element (img/span) instead of Radix wrapping it */}
         <TooltipTrigger asChild>
           {isLoading ? (
-            <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+            <div className="w-5 h-5 rounded-full bg-muted animate-pulse" />
           ) : user?.picture ? (
-            <img src={user.picture} alt={user.name ?? "Profile"} className="w-10 h-10 rounded-full object-cover" />
+            <img src={user.picture} alt={user.name ?? "Profile"} className="w-4 h-4 rounded-full object-cover" />
           ) : (
             // fallback: initials avatar
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
               {user?.name ? user.name.split(" ").map(n => n[0]).slice(0, 2).join("") : "U"}
             </div>
           )}
@@ -29,7 +29,7 @@ const Profile = () => {
           className="mr-5 z-50"
           sideOffset={8}
         >
-          <div className="bg-card border-2 border-primary/20 rounded-2xl shadow-2xl overflow-hidden w-80">
+          <div className="bg-card border-2 border-primary/20 rounded-2xl shadow-2xl overflow-hidden w-100">
             {/* Header with gradient background */}
             <div className="bg-linear-to-br from-[#07401F] via-[#224A33] to-[#357D52] p-6">
               <div className="flex items-center gap-4">
