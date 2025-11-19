@@ -80,13 +80,13 @@ createRoot(document.getElementById("root")!).render(
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
+                <Route path="/my-service-bookings" element={<MyServiceBookings />} />
                 <Route path="/packages" element={<Packages />} />
                 <Route path="/places" element={<Places />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
-                <Route path="/my-service-bookings" element={<MyServiceBookings />} />
                 <Route
                   path="/my-bookings/:bookingId"
                   element={<BookingDetails />}

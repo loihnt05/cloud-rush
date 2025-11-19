@@ -64,6 +64,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Ticket,
       },
       {
+        title: "My Service Bookings",
+        url: "/my-service-bookings",
+        icon: Ticket,
+      },
+      {
         title: "About",
         url: "/about",
         icon: Inbox,
