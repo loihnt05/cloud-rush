@@ -4,7 +4,7 @@ import {
   SidebarProvider
 } from "@/components/ui/sidebar";
 import { Outlet } from "react-router-dom";
-import { Footer } from "./Footer";
+import { Footer } from "./footer";
 
 export default function Layout() {
   return (

@@ -21,10 +21,12 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import Profile from "./profile-user";
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isAuthenticated } = useAuth0();
-  
+  const navigate = useNavigate();
   // Check if user has admin role
   const isAdmin = React.useMemo(() => {
     if (!user) return false;
@@ -83,20 +85,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        {/* Logo and Brand */}
-        <div className="flex items-center gap-3 px-2 py-4 border-b border-sidebar-border group-data-[collapsible=icon]:justify-center">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-br from-sky-500 to-blue-600 shrink-0">
+        <div className="flex flex-row items-center gap-5 mt-1 ">
+          <Button className="w-8 h-8 flex items-center rounded-full p-0 cursor-pointer group-data-[collabisble=icon]:justify-center"
+            variant={"outline"} onClick={() => navigate("/flight")}>
             <img
               src="https://pub-08202a6e0a0e4f88a0b3f667d3b8ff4d.r2.dev/Gemini_Generated_Image_rwuccfrwuccfrwuc.png"
               alt="CloudRush Logo"
-              className="w-8 h-8 rounded-full"
+              className="w-6 h-6 rounded-full"
             />
-          </div>
-          <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-            <h1 className="text-lg font-bold bg-linear-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
-              CloudRush
-            </h1>
-            <p className="text-xs text-muted-foreground">Travel Management</p>
+          </Button>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <p className="font-semibold text-sidebar-foreground">CloudRush</p>
+            <p className="text-xs text-muted-foreground">Time to travel</p>
           </div>
         </div>
         
