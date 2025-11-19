@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   FaPlane, 
@@ -8,13 +9,15 @@ import {
   FaUser,
   FaChair,
   FaCreditCard,
-  FaTicketAlt
+  FaTicketAlt,
+  FaBan
 } from "react-icons/fa";
 import type { Booking, Passenger } from "@/types/booking";
 import type { Payment } from "@/types/payment";
 import type { Flight } from "@/types/flight";
 import type { Airport } from "@/types/airport";
 import { Button } from "@/components/ui/button";
+import CancelBookingDialog from "./cancel-booking-dialog";
 
 interface BookingWithDetails {
   booking: Booking;
@@ -27,14 +30,17 @@ interface BookingWithDetails {
 
 interface BookingCardProps {
   bookingDetail: BookingWithDetails;
+  onRefresh?: () => void;
 }
 
-export default function BookingCard({ bookingDetail }: BookingCardProps) {
+export default function BookingCard({ bookingDetail, onRefresh }: BookingCardProps) {
   const navigate = useNavigate();
   const { booking, flight, passengers, payment, originAirport, destinationAirport } = bookingDetail;
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const isConfirmed = booking.status === "confirmed" && payment?.status === "success";
   const isPending = !isConfirmed;
+  const isCancelled = booking.status === "cancelled";
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -87,18 +93,34 @@ export default function BookingCard({ bookingDetail }: BookingCardProps) {
     }
   };
 
+  const handleCancelSuccess = () => {
+    // Refresh the bookings list
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
   return (
     <div className="bg-card border border-border rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
       {/* Status Banner */}
       <div
         className={`px-6 py-3 flex items-center justify-between ${
-          isConfirmed
+          isCancelled
+            ? "bg-red-500/10 border-b border-red-500/20"
+            : isConfirmed
             ? "bg-green-500/10 border-b border-green-500/20"
             : "bg-yellow-500/10 border-b border-yellow-500/20"
         }`}
       >
         <div className="flex items-center gap-2">
-          {isConfirmed ? (
+          {isCancelled ? (
+            <>
+              <FaBan className="text-red-500" />
+              <span className="font-medium text-red-700 dark:text-red-400">
+                Cancelled
+              </span>
+            </>
+          ) : isConfirmed ? (
             <>
               <FaCheckCircle className="text-green-500" />
               <span className="font-medium text-green-700 dark:text-green-400">
@@ -254,6 +276,16 @@ export default function BookingCard({ bookingDetail }: BookingCardProps) {
                 E-Ticket
               </Button>
             )}
+            {!isCancelled && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowCancelDialog(true)}
+                className="flex-1 sm:flex-initial flex items-center gap-2"
+              >
+                <FaBan />
+                Cancel
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => navigate(`/my-bookings/${booking.booking_id}`)}
@@ -273,6 +305,15 @@ export default function BookingCard({ bookingDetail }: BookingCardProps) {
           </div>
         )}
       </div>
+
+      {/* Cancel Booking Dialog */}
+      <CancelBookingDialog
+        isOpen={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        bookingId={booking.booking_id}
+        bookingReference={booking.booking_reference}
+        onSuccess={handleCancelSuccess}
+      />
     </div>
   );
 }

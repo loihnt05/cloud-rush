@@ -34,115 +34,115 @@ export default function MyBookings() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "confirmed" | "pending">("all");
 
-  useEffect(() => {
-    const loadBookings = async () => {
-      console.log("=== My Bookings Page Debug ===");
-      console.log("authLoading:", authLoading);
-      console.log("isAuthenticated:", isAuthenticated);
-      console.log("user:", user);
-      console.log("accessToken:", accessToken ? "Present" : "Missing");
+  const loadBookings = async () => {
+    console.log("=== My Bookings Page Debug ===");
+    console.log("authLoading:", authLoading);
+    console.log("isAuthenticated:", isAuthenticated);
+    console.log("user:", user);
+    console.log("accessToken:", accessToken ? "Present" : "Missing");
 
-      if (authLoading) {
-        console.log("Waiting for authentication...");
-        return;
-      }
+    if (authLoading) {
+      console.log("Waiting for authentication...");
+      return;
+    }
 
-      if (!isAuthenticated || !user?.sub) {
-        console.error("User not authenticated");
-        setError("Please log in to view your bookings");
+    if (!isAuthenticated || !user?.sub) {
+      console.error("User not authenticated");
+      setError("Please log in to view your bookings");
+      setLoading(false);
+      return;
+    }
+
+    if (!accessToken) {
+      console.error("Access token not available yet, waiting...");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log("Fetching bookings for user:", user.sub);
+
+      const userBookings = await getUserBookings(user.sub);
+      console.log("User bookings:", userBookings);
+
+      if (userBookings.length === 0) {
+        setBookings([]);
         setLoading(false);
         return;
       }
 
-      if (!accessToken) {
-        console.error("Access token not available yet, waiting...");
-        return;
-      }
+      // Load details for each booking
+      const bookingsWithDetails = await Promise.all(
+        userBookings.map(async (booking) => {
+          try {
+            // Get passengers
+            const passengers = await getPassengersByBooking(booking.booking_id);
+            
+            // Find the flight from the first passenger's flight seat
+            let flight: Flight | null = null;
+            let originAirport: Airport | null = null;
+            let destinationAirport: Airport | null = null;
 
-      try {
-        setLoading(true);
-        console.log("Fetching bookings for user:", user.sub);
-
-        const userBookings = await getUserBookings(user.sub);
-        console.log("User bookings:", userBookings);
-
-        if (userBookings.length === 0) {
-          setBookings([]);
-          setLoading(false);
-          return;
-        }
-
-        // Load details for each booking
-        const bookingsWithDetails = await Promise.all(
-          userBookings.map(async (booking) => {
-            try {
-              // Get passengers
-              const passengers = await getPassengersByBooking(booking.booking_id);
-              
-              // Find the flight from the first passenger's flight seat
-              let flight: Flight | null = null;
-              let originAirport: Airport | null = null;
-              let destinationAirport: Airport | null = null;
-
-              if (passengers.length > 0 && passengers[0].flight_seat_id) {
-                try {
-                  // Get flight seat details to get the flight ID
-                  const flightSeat = await getFlightSeatDetails(passengers[0].flight_seat_id);
-                  const flightId = flightSeat.flight_id;
-                  
-                  flight = await getFlight(flightId);
-                  
-                  if (flight) {
-                    originAirport = await getAirportById(flight.origin_airport_id);
-                    destinationAirport = await getAirportById(flight.destination_airport_id);
-                  }
-                } catch (err) {
-                  console.error("Failed to load flight for booking:", booking.booking_id, err);
-                }
-              }
-
-              // Get payment info
-              let payment: Payment | null = null;
+            if (passengers.length > 0 && passengers[0].flight_seat_id) {
               try {
-                payment = await getPaymentByBooking(booking.booking_id);
-              } catch {
-                console.log("No payment found for booking:", booking.booking_id);
+                // Get flight seat details to get the flight ID
+                const flightSeat = await getFlightSeatDetails(passengers[0].flight_seat_id);
+                const flightId = flightSeat.flight_id;
+                
+                flight = await getFlight(flightId);
+                
+                if (flight) {
+                  originAirport = await getAirportById(flight.origin_airport_id);
+                  destinationAirport = await getAirportById(flight.destination_airport_id);
+                }
+              } catch (err) {
+                console.error("Failed to load flight for booking:", booking.booking_id, err);
               }
-
-              // Only return bookings that have valid flight data
-              if (flight && originAirport && destinationAirport) {
-                return {
-                  booking,
-                  flight,
-                  passengers,
-                  payment,
-                  originAirport,
-                  destinationAirport,
-                };
-              }
-              return null;
-            } catch (err) {
-              console.error("Error loading details for booking:", booking.booking_id, err);
-              return null;
             }
-          })
-        );
 
-        // Filter out null entries
-        const validBookings = bookingsWithDetails.filter(
-          (b): b is BookingWithDetails => b !== null
-        );
+            // Get payment info
+            let payment: Payment | null = null;
+            try {
+              payment = await getPaymentByBooking(booking.booking_id);
+            } catch {
+              console.log("No payment found for booking:", booking.booking_id);
+            }
 
-        console.log("Bookings with details:", validBookings);
-        setBookings(validBookings);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error loading bookings:", err);
-        setError(err instanceof Error ? err.message : "Failed to load bookings");
-        setLoading(false);
-      }
-    };
+            // Only return bookings that have valid flight data
+            if (flight && originAirport && destinationAirport) {
+              return {
+                booking,
+                flight,
+                passengers,
+                payment,
+                originAirport,
+                destinationAirport,
+              };
+            }
+            return null;
+          } catch (err) {
+            console.error("Error loading details for booking:", booking.booking_id, err);
+            return null;
+          }
+        })
+      );
 
+      // Filter out null entries
+      const validBookings = bookingsWithDetails.filter(
+        (b): b is BookingWithDetails => b !== null
+      );
+
+      console.log("Bookings with details:", validBookings);
+      setBookings(validBookings);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error loading bookings:", err);
+      setError(err instanceof Error ? err.message : "Failed to load bookings");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadBookings();
   }, [user, authLoading, isAuthenticated, accessToken]);
 
@@ -305,6 +305,7 @@ export default function MyBookings() {
               <BookingCard
                 key={bookingDetail.booking.booking_id}
                 bookingDetail={bookingDetail}
+                onRefresh={loadBookings}
               />
             ))}
           </div>

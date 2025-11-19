@@ -5,6 +5,7 @@ import { FaChartLine, FaCalendar, FaDollarSign, FaCog } from "react-icons/fa";
 import { getAllForecasts } from "@/api/revenue";
 import type { RevenueForecast } from "@/types/revenue";
 import useSettingStore from "@/stores/setting-store";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -47,30 +48,15 @@ export default function RevenueForecastingPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth0();
   const { accessToken } = useSettingStore();
+  const { isAdmin } = useUserRoles();
 
   const [forecasts, setForecasts] = useState<RevenueForecast[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  // Check if user is admin
-  useEffect(() => {
-    if (user) {
-      const userWithRoles = user as Record<string, unknown>;
-      const roles = (userWithRoles["http://localhost:8000/roles"] as string[]) || [];
-      const hasAdminRole = roles.includes("admin");
-      setIsAdmin(hasAdminRole);
-      
-      if (!hasAdminRole) {
-        setError("Access Denied: Admin privileges required");
-        setLoading(false);
-      }
-    }
-  }, [user]);
 
   useEffect(() => {
     const loadForecasts = async () => {
@@ -80,6 +66,7 @@ export default function RevenueForecastingPage() {
       console.log("user:", user);
       console.log("accessToken:", accessToken ? "Present" : "Missing");
       console.log("isAdmin:", isAdmin);
+      console.log("Backend URL:", useSettingStore.getState().backendUrl);
 
       if (authLoading) {
         console.log("Waiting for authentication...");
@@ -117,13 +104,27 @@ export default function RevenueForecastingPage() {
       } catch (err: unknown) {
         console.error("Error loading revenue forecasts:", err);
         
-        // Check if it's an authorization error
-        const error = err as { response?: { status?: number }; message?: string };
-        if (error.response?.status === 403) {
-          setError("Access Denied: Admin privileges required");
+        // Type guard for axios error
+        const error = err as { 
+          response?: { status?: number; data?: { detail?: string } }; 
+          message?: string;
+          code?: string;
+        };
+        
+        // Check for network errors
+        if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+          setError("Network Error: Cannot connect to backend server. Please check if the backend is running.");
+        } else if (error.response?.status === 403) {
+          const detail = error.response.data?.detail || "Admin privileges required";
+          setError(`Access Denied: ${detail}`);
         } else if (error.response?.status === 401) {
           setError("Authentication failed. Please log in again.");
+        } else if (error.response?.status) {
+          // Other HTTP errors
+          const detail = error.response.data?.detail || error.message || "Unknown error";
+          setError(`Server Error (${error.response.status}): ${detail}`);
         } else {
+          // Unknown errors
           setError(error.message || "Failed to load revenue forecasts");
         }
       } finally {
@@ -205,15 +206,27 @@ export default function RevenueForecastingPage() {
   }
 
   if (error) {
+    const isNetworkError = error.includes('Network Error') || error.includes('Cannot connect');
+    const isAccessDenied = error.includes('Access Denied') || error.includes('Admin privileges');
+    
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto px-4">
           <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
             <FaChartLine className="text-destructive text-2xl" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            {isNetworkError ? "Connection Error" : isAccessDenied ? "Access Denied" : "Error"}
+          </h2>
           <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => navigate("/")}>Go to Home</Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => navigate("/")}>Go to Home</Button>
+            {isNetworkError && (
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
