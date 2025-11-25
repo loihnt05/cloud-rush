@@ -6,13 +6,11 @@ import {
 } from "@radix-ui/react-tooltip";
 import {
   FaEnvelope,
-  FaPalette,
   FaQuestionCircle,
   FaSignOutAlt,
   FaUser,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { ModeToggle } from "./mode-toggle";
 
 const Profile = () => {
   const nav = useNavigate();

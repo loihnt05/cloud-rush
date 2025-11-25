@@ -25,7 +25,7 @@ type PlaceDisplay = {
   amenities?: string[];
 };
 
-// Lazy Loading Image Component
+// Lazy Loading Image Component with optimizations
 function LazyImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
@@ -44,7 +44,8 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
         });
       },
       {
-        rootMargin: "50px",
+        rootMargin: "100px", // Increased margin to preload images earlier
+        threshold: 0.01,
       }
     );
 
@@ -58,20 +59,22 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
       {isInView && (
         <>
           {!isLoaded && (
-            <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
-              <span className="text-gray-400">Loading...</span>
+            <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+              <span className="text-muted-foreground">Loading...</span>
             </div>
           )}
           <img
             src={src}
             alt={alt}
+            loading="lazy"
+            decoding="async"
             onLoad={() => setIsLoaded(true)}
             className={`${className} ${!isLoaded ? "hidden" : ""}`}
           />
         </>
       )}
       {!isInView && (
-        <div className="w-full h-full bg-gray-200 animate-pulse" />
+        <div className="w-full h-full bg-muted animate-pulse" />
       )}
     </div>
   );
@@ -92,7 +95,7 @@ export default function Places() {
     queryFn: async () => {
       const data = await placesApi.getPlaces();
 
-      // Transform backend data to display format with random images
+      // Transform backend data to display format with optimized images
       const transformedPlaces: PlaceDisplay[] = data.map(
         (place: ApiPlace) => ({
           id: place.place_id,
@@ -100,7 +103,8 @@ export default function Places() {
           price: Math.floor(Math.random() * 300) + 100,
           description:
             place.description || "Discover this amazing destination",
-          imageUrl: getRandomPlaceImage(place.place_id, 1470, 1000),
+          // Reduced image size for faster loading (800x600 instead of 1470x1000)
+          imageUrl: getRandomPlaceImage(place.place_id, 800, 600),
           rating: Number((Math.random() * 1 + 4).toFixed(1)),
           location:
             [place.city, place.country].filter(Boolean).join(", ") ||
@@ -111,9 +115,10 @@ export default function Places() {
 
       return transformedPlaces;
     },
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 minutes - data stays fresh longer
+    cacheTime: 60 * 60 * 1000, // 60 minutes - keep in cache longer
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch if data exists
   });
 
   // Pagination calculations - using useMemo for optimization

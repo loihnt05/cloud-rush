@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import Profile from "../profile-user";
 
 function Header() {
-  const { user, isAuthenticated } = useAuth0();
+  const { isAuthenticated } = useAuth0();
 
   return (
     <div className="bg-background shadow-md">

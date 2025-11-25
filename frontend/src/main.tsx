@@ -30,7 +30,18 @@ import "./styles/index.css";
 // Lazy load Places component
 const Places = lazy(() => import("./pages/services/places.tsx"));
 
-const queryClient = new QueryClient();
+// Configure QueryClient with optimized defaults for better caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes default
+      cacheTime: 10 * 60 * 1000, // 10 minutes cache time
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 export function AccessTokenProvider({
   children,
 }: {
