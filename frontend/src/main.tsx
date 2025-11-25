@@ -21,6 +21,7 @@ import Hotels from "./pages/services/hotels.tsx";
 import Packages from "./pages/services/packages.tsx";
 import TempPackages from "./pages/tempPackages.tsx";
 import RevenueForecasting from "./pages/admin/revenue-forecasting.tsx";
+import Profile from "./pages/profile.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
 import ProtectedRoute from "./components/layout/protected-route.tsx";
@@ -77,6 +78,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/home" element={<Navigate to="/flight" replace />} />
                 <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/flights/search" element={<FlightSearch />} />
                 <Route
                   path="/passenger-information"
