@@ -173,6 +173,7 @@ export default function Places() {
         <div className="max-w-7xl mx-auto px-4 py-12 space-y-6 ">
           {currentPlaces.map((place) => (
             <div
+              key={place.id}
               className="group flex flex-col 
                     md:flex-row bg-white border shadow-xl rounded-2xl overflow-hidden m-10"
             >

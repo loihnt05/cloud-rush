@@ -4,18 +4,23 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
   const location = useLocation();
   const isHomePage = location.pathname === "/" || location.pathname === "/home";
 
   useEffect(() => {
     // If not authenticated and not on home page, redirect to login
-    if (!isAuthenticated && !isHomePage) {
+    if (!isLoading && !isAuthenticated && !isHomePage) {
       loginWithRedirect({
         appState: { returnTo: location.pathname }
       });
     }
-  }, [isAuthenticated, isHomePage, location.pathname, loginWithRedirect]);
+  }, [isLoading, isAuthenticated, isHomePage, location.pathname, loginWithRedirect]);
+  
+  // Show loading state while Auth0 is initializing
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
   
   // For non-authenticated users on home page, show landing page
   if (!isAuthenticated && isHomePage) {

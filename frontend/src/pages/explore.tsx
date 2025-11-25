@@ -155,12 +155,14 @@ export default function ExplorePage() {
                           <SelectContent>
                             <SelectItem value="none">No specific place</SelectItem>
                             {places.map((place) => (
-                              <SelectItem
-                                key={place.place_id}
-                                value={place.place_id.toString()}
-                              >
-                                {place.name} {place.city && place.country && `(${place.city}, ${place.country})`}
-                              </SelectItem>
+                              place.place_id && (
+                                <SelectItem
+                                  key={place.place_id}
+                                  value={place.place_id.toString()}
+                                >
+                                  {place.name} {place.city && place.country && `(${place.city}, ${place.country})`}
+                                </SelectItem>
+                              )
                             ))}
                           </SelectContent>
                         </Select>

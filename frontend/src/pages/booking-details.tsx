@@ -53,15 +53,8 @@ export default function BookingDetails() {
 
   useEffect(() => {
     const loadBookingDetails = async () => {
-      console.log("=== Booking Details Page Debug ===");
-      console.log("bookingId:", bookingId);
-      console.log("authLoading:", authLoading);
-      console.log("isAuthenticated:", isAuthenticated);
-      console.log("user:", user);
-      console.log("accessToken:", accessToken ? "Present" : "Missing");
 
       if (authLoading) {
-        console.log("Waiting for authentication...");
         return;
       }
 
@@ -166,10 +159,8 @@ export default function BookingDetails() {
           console.log("No payment found for booking:", bookingId);
         }
 
-        console.log("✅ All booking details loaded successfully");
         setLoading(false);
       } catch (err) {
-        console.error("❌ Error loading booking details:", err);
         setError(err instanceof Error ? err.message : "Failed to load booking details");
         setLoading(false);
       }

@@ -1,6 +1,6 @@
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { StrictMode, useEffect } from "react";
+import { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import authConfig from "./auth-config.ts";
@@ -19,12 +19,14 @@ import SeatSelection from "./pages/seat-selection.tsx";
 import CarRentals from "./pages/services/car-rental.tsx";
 import Hotels from "./pages/services/hotels.tsx";
 import Packages from "./pages/services/packages.tsx";
-import Places from "./pages/services/places.tsx";
 import TempPackages from "./pages/tempPackages.tsx";
 import RevenueForecasting from "./pages/admin/revenue-forecasting.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
 import ProtectedRoute from "./components/layout/protected-route.tsx";
+
+// Lazy load Places component
+const Places = lazy(() => import("./pages/services/places.tsx"));
 
 const queryClient = new QueryClient();
 export function AccessTokenProvider({
@@ -82,7 +84,11 @@ createRoot(document.getElementById("root")!).render(
                 />
                 <Route path="/my-service-bookings" element={<MyServiceBookings />} />
                 <Route path="/packages" element={<Packages />} />
-                <Route path="/places" element={<Places />} />
+                <Route path="/places" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading Places...</div>}>
+                    <Places />
+                  </Suspense>
+                } />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />

@@ -28,7 +28,6 @@ def list_airports(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
-    payload: dict = Depends(verify_jwt)
 ):
     """Get all airports with pagination"""
     return AirportService(db).get_all_airports(skip, limit)
