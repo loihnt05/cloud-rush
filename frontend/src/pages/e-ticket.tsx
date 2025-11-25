@@ -224,7 +224,6 @@ export default function ETicket() {
       const filename = `e-ticket-${booking?.booking_reference || 'unknown'}.pdf`;
       pdf.save(filename);
       
-      console.log("PDF exported successfully:", filename);
     } catch (error) {
       console.error("Error exporting PDF:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -274,7 +273,6 @@ export default function ETicket() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        console.log("Image downloaded successfully");
         setIsExporting(false);
       }, 'image/png', 1.0);
     } catch (error) {

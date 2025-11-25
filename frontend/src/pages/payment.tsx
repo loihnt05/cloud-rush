@@ -69,19 +69,8 @@ export default function Payment() {
     // Load booking, flight/service, and passenger data
     useEffect(() => {
         const loadData = async () => {
-            console.log("=== Payment Page Debug ===");
-            console.log("bookingId:", bookingId);
-            console.log("flightId:", flightId);
-            console.log("serviceType:", serviceType);
-            console.log("serviceId:", serviceId);
-            console.log("authLoading:", authLoading);
-            console.log("isAuthenticated:", isAuthenticated);
-            console.log("accessToken:", accessToken ? "Present" : "Missing");
-            console.log("user:", user);
-            console.log("user.sub:", user?.sub);
             
             if (authLoading) {
-                console.log("Waiting for authentication to complete...");
                 return;
             }
             
@@ -114,14 +103,9 @@ export default function Payment() {
             try {
                 setLoading(true);
                 
-                console.log("Fetching booking:", bookingId);
                 const bookingData = await getBooking(parseInt(bookingId));
-                console.log("Booking data:", bookingData);
                 
                 // Authorization check
-                console.log("Checking authorization:");
-                console.log("- booking.user_id:", bookingData.user_id);
-                console.log("- user.sub:", user.sub);
                 
                 if (bookingData.user_id !== user.sub) {
                     console.error("Authorization failed: Booking does not belong to user");
@@ -130,20 +114,14 @@ export default function Payment() {
                     return;
                 }
                 
-                console.log("✅ Authorization passed");
                 setBooking(bookingData);
 
                 // Load flight booking data
                 if (isFlightBooking && flightId) {
-                    console.log("Loading flight booking data...");
-                    console.log("Fetching flight:", flightId);
                     const flightData = await getFlight(parseInt(flightId));
-                    console.log("Flight data:", flightData);
                     setFlight(flightData);
 
-                    console.log("Fetching passengers for booking:", bookingId);
                     const passengersData = await getPassengersByBooking(parseInt(bookingId));
-                    console.log("Passengers data:", passengersData);
                     setPassengers(passengersData);
 
                     // Load seat details
@@ -166,8 +144,6 @@ export default function Payment() {
 
                 // Load service booking data
                 if (isServiceBooking && serviceType && serviceId) {
-                    console.log("Loading service booking data...");
-                    console.log("Service type:", serviceType);
                     
                     // Fetch service details based on type
                     try {
@@ -204,7 +180,6 @@ export default function Payment() {
                         setServiceData(service);
                         setServiceName(name);
                         setServicePrice(price);
-                        console.log("Service data loaded:", { service, name, price });
                     } catch (err) {
                         console.error("Error loading service data:", err);
                         throw new Error("Failed to load service details");
@@ -214,7 +189,6 @@ export default function Payment() {
                 // Check for existing payment
                 try {
                     const paymentData = await getPaymentByBooking(parseInt(bookingId));
-                    console.log("Existing payment:", paymentData);
                     if (paymentData && (paymentData.status === 'completed' || paymentData.status === 'success')) {
                         setExistingPayment(paymentData);
                         setPaymentStep("success");
@@ -223,10 +197,8 @@ export default function Payment() {
                     console.log("No existing payment found, proceeding with payment form");
                 }
 
-                console.log("✅ All data loaded successfully");
                 setLoading(false);
             } catch (err) {
-                console.error("❌ Error loading data:", err);
                 console.error("Error details:", {
                     message: err instanceof Error ? err.message : "Unknown error",
                     error: err

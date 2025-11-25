@@ -60,16 +60,8 @@ export default function RevenueForecastingPage() {
 
   useEffect(() => {
     const loadForecasts = async () => {
-      console.log("=== Revenue Forecasting Page Debug ===");
-      console.log("authLoading:", authLoading);
-      console.log("isAuthenticated:", isAuthenticated);
-      console.log("user:", user);
-      console.log("accessToken:", accessToken ? "Present" : "Missing");
-      console.log("isAdmin:", isAdmin);
-      console.log("Backend URL:", useSettingStore.getState().backendUrl);
 
       if (authLoading) {
-        console.log("Waiting for authentication...");
         return;
       }
 
@@ -94,10 +86,8 @@ export default function RevenueForecastingPage() {
 
       try {
         setLoading(true);
-        console.log("Fetching revenue forecasts...");
 
         const data = await getAllForecasts();
-        console.log("Revenue forecasts:", data);
 
         setForecasts(data);
         setError(null);

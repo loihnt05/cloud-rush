@@ -210,7 +210,6 @@ export default function PassengerInformation() {
             
             if (firstSeat.flight_id === Number(flightId)) {
               // This booking is for the same flight and same seats - redirect to payment
-              console.log("Existing booking found:", booking.booking_id);
               navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flightId}`, { replace: true });
               return;
             }

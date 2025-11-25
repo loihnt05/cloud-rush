@@ -152,7 +152,6 @@ export default function Hotels() {
 
     // Check for existing pending service bookings
     try {
-      console.log("Checking for pending bookings...");
       const userBookings = await getUserBookings(user.sub);
       
       // Check if any booking has pending service bookings
@@ -176,7 +175,6 @@ export default function Hotels() {
             }
 
             if (isPending || hasUnpaidPayment) {
-              console.log("Found pending service booking:", booking.booking_id);
               const goToBookings = confirm(
                 "You have pending service bookings that need payment. Please complete payment before booking another service.\n\n" +
                 "Click OK to view your pending bookings, or Cancel to stay here."

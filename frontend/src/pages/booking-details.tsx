@@ -79,9 +79,7 @@ export default function BookingDetails() {
         setLoading(true);
 
         // Fetch booking
-        console.log("Fetching booking:", bookingId);
         const bookingData = await getBooking(parseInt(bookingId));
-        console.log("Booking data:", bookingData);
 
         // Authorization check
         if (bookingData.user_id !== user.sub) {
@@ -95,7 +93,6 @@ export default function BookingDetails() {
 
         // Fetch passengers
         const passengersData = await getPassengersByBooking(parseInt(bookingId));
-        console.log("Passengers data:", passengersData);
 
         // Get flight info from first passenger's seat
         if (passengersData.length > 0 && passengersData[0].flight_seat_id) {

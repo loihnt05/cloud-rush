@@ -9,12 +9,6 @@ import Profile from "../profile-user";
 function Header() {
   const { user, isAuthenticated } = useAuth0();
 
-  useEffect(() => {
-    // Quick debug: inspect the user object to see available profile claims
-    // Remove or disable this in production
-    console.log("Auth0 user:", user);
-  }, [user]);
-
   return (
     <div className="bg-white shadow-md">
       <div className="flex items-center justify-between px-6 py-3 ">
