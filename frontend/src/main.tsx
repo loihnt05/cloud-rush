@@ -1,6 +1,6 @@
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, StrictMode, Suspense, useEffect } from "react";
+import { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import authConfig from "./auth-config.ts";
@@ -30,18 +30,7 @@ import "./styles/index.css";
 // Lazy load Places component
 const Places = lazy(() => import("./pages/services/places.tsx"));
 
-// Configure QueryClient with optimized defaults for better caching
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes default
-      cacheTime: 10 * 60 * 1000, // 10 minutes cache time
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
+const queryClient = new QueryClient();
 export function AccessTokenProvider({
   children,
 }: {
@@ -112,20 +101,11 @@ createRoot(document.getElementById("root")!).render(
                   element={<MyServiceBookings />}
                 />
                 <Route path="/packages" element={<Packages />} />
-                <Route
-                  path="/places"
-                  element={
-                    <Suspense
-                      fallback={
-                        <div className="flex items-center justify-center min-h-screen">
-                          Loading Places...
-                        </div>
-                      }
-                    >
-                      <Places />
-                    </Suspense>
-                  }
-                />
+                <Route path="/places" element={
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading Places...</div>}>
+                    <Places />
+                  </Suspense>
+                } />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
