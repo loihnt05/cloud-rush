@@ -1,17 +1,17 @@
 "use client";
 
-import * as React from "react";
-import {
-  Plane,
-  Package,
-  MapPin,
-  Compass,
-  Ticket,
-  Inbox,
-  ChartLine,
-} from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
+import {
+  ChartLine,
+  Compass,
+  Inbox,
+  Package,
+  Plane,
+  Ticket,
+} from "lucide-react";
+import * as React from "react";
 
+import { ModeToggle } from "@/components/mode-toggle";
 import { NavMain } from "@/components/nav-main";
 import {
   Sidebar,
@@ -20,9 +20,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useNavigate } from "react-router-dom";
 import Profile from "./profile-user";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isAuthenticated } = useAuth0();
@@ -31,7 +31,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const isAdmin = React.useMemo(() => {
     if (!user) return false;
     const userWithRoles = user as Record<string, unknown>;
-    const roles = (userWithRoles["http://localhost:8000/roles"] as string[]) || [];
+    const roles =
+      (userWithRoles["http://localhost:8000/roles"] as string[]) || [];
     return roles.includes("admin");
   }, [user]);
 
@@ -47,11 +48,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Packages",
         url: "/packages",
         icon: Package,
-      },
-      {
-        title: "Places",
-        url: "/places",
-        icon: MapPin,
       },
       {
         title: "Explore",
@@ -91,12 +87,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <div className="flex flex-row items-center gap-5 mt-1 ">
-          <Button className="w-8 h-8 flex items-center rounded-full p-0 cursor-pointer group-data-[collabisble=icon]:justify-center"
-            variant={"outline"} onClick={() => navigate("/flight")}>
+          <Button
+            className="w-12 h-12 flex items-center rounded-full p-0 cursor-pointer group-data-[collabisble=icon]:justify-center"
+            variant={"outline"}
+            onClick={() => navigate("/flight")}
+          >
             <img
               src="https://pub-08202a6e0a0e4f88a0b3f667d3b8ff4d.r2.dev/Gemini_Generated_Image_rwuccfrwuccfrwuc.png"
               alt="CloudRush Logo"
-              className="w-6 h-6 rounded-full"
+              className="w-12 h-12 rounded-full"
             />
           </Button>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
@@ -104,7 +103,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <p className="text-xs text-muted-foreground">Time to travel</p>
           </div>
         </div>
-        
+
         {/* Navigation Items */}
         <NavMain items={navMainItems} />
       </SidebarHeader>
@@ -114,9 +113,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-2 p-2 border-t border-sidebar-border group-data-[collapsible=icon]:justify-center">
-          {isAuthenticated ? (
-            <>
+        <div className="flex flex-col gap-2">
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between p-2 border-t border-sidebar-border">
+            <span className="text-sm font-medium text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+              Theme
+            </span>
+            <ModeToggle />
+          </div>
+
+          {/* User Profile */}
+          {isAuthenticated && (
+            <div className="flex items-center gap-2 p-2 border-t border-sidebar-border group-data-[collapsible=icon]:justify-center">
               <Profile />
               <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                 <p className="text-sm font-semibold text-sidebar-foreground truncate">
@@ -126,10 +134,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   {user?.email || ""}
                 </p>
               </div>
-            </>
-            ):(
-              <div></div>
-            )}
+            </div>
+          )}
         </div>
       </SidebarFooter>
       <SidebarRail />

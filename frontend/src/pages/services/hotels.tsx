@@ -152,7 +152,6 @@ export default function Hotels() {
 
     // Check for existing pending service bookings
     try {
-      console.log("Checking for pending bookings...");
       const userBookings = await getUserBookings(user.sub);
       
       // Check if any booking has pending service bookings
@@ -176,7 +175,6 @@ export default function Hotels() {
             }
 
             if (isPending || hasUnpaidPayment) {
-              console.log("Found pending service booking:", booking.booking_id);
               const goToBookings = confirm(
                 "You have pending service bookings that need payment. Please complete payment before booking another service.\n\n" +
                 "Click OK to view your pending bookings, or Cancel to stay here."
@@ -224,7 +222,7 @@ export default function Hotels() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-background">
       {/* Hero */}
       <div className="mt-10 text-center bg-linear-to-r from-[#07401F] to-[#148C56] h-64">
         <p className="pt-10 text-5xl text-white font-bold">
@@ -250,7 +248,7 @@ export default function Hotels() {
       {/* Error State */}
       {isError && !loading && (
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
             <p className="text-red-600 font-semibold">
               {error instanceof Error ? error.message : "Failed to load hotels. Please try again later."}
             </p>
@@ -264,7 +262,7 @@ export default function Hotels() {
           {currentHotels.map((hotel) => (
             <div
               key={hotel.id}
-              className="group flex flex-col md:flex-row bg-white border shadow-xl rounded-2xl overflow-hidden m-10"
+              className="group flex flex-col md:flex-row bg-card border border-border shadow-xl rounded-2xl overflow-hidden m-10"
             >
               <div className="md:w-2/5 md:h-full h-auto overflow-hidden">
                 <LazyImage
@@ -337,7 +335,7 @@ export default function Hotels() {
                       <p className="text-2xl text-[#148C56] font-bold">
                         ${hotel.price}
                       </p>
-                      <span className="text-s font-light text-black mt-2">
+                      <span className="text-s font-light text-foreground/70 mt-2">
                         /night
                       </span>
                     </div>
@@ -417,7 +415,7 @@ export default function Hotels() {
       {/* Empty State */}
       {!loading && !isError && hotels.length === 0 && (
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-foreground/70">
             No hotels available at the moment.
           </p>
         </div>

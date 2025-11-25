@@ -11,7 +11,7 @@ export default function Layout() {
     <SidebarProvider>
       <AppSidebar collapsible="icon" />
         <SidebarInset>
-          <div className="flex flex-col w-full bg-white p-5 h-full">
+          <div className="flex flex-col w-full bg-background text-foreground p-5 h-full">
             <Outlet />
           </div>
           <Footer />

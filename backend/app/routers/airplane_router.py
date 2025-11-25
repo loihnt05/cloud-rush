@@ -16,7 +16,7 @@ def create_airplane(airplane: AirplaneCreate, db: Session = Depends(get_db), pay
 
 
 @router.get("/all", response_model=list[AirplaneResponse])
-def list_airplanes(db: Session = Depends(get_db), payload: dict = Depends(verify_jwt)):
+def list_airplanes(db: Session = Depends(get_db)):
     """Get all airplanes"""
     return AirplaneService(db).get_all_airplanes()
 

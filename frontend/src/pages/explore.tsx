@@ -84,7 +84,7 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="bg-linear-to-b from-white to-gray-50 min-h-screen">
+    <div className="bg-linear-to-b min-h-screen">
       {/* Hero Section */}
       <div className="relative bg-linear-to-r from-[#07401F] to-[#148C56] text-white py-20">
         <div className="max-w-7xl mx-auto px-4">
@@ -105,7 +105,7 @@ export default function ExplorePage() {
                 <DialogTrigger asChild>
                   <Button 
                     size="lg" 
-                    className="bg-white text-[#148C56] hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
+                    className="bg-background text-[#148C56] hover:bg-muted font-semibold px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
                   >
                     <FaPlus className="mr-2" />
                     Share Your Journey
@@ -155,12 +155,14 @@ export default function ExplorePage() {
                           <SelectContent>
                             <SelectItem value="none">No specific place</SelectItem>
                             {places.map((place) => (
-                              <SelectItem
-                                key={place.place_id}
-                                value={place.place_id.toString()}
-                              >
-                                {place.name} {place.city && place.country && `(${place.city}, ${place.country})`}
-                              </SelectItem>
+                              place.place_id && (
+                                <SelectItem
+                                  key={place.place_id}
+                                  value={place.place_id.toString()}
+                                >
+                                  {place.name} {place.city && place.country && `(${place.city}, ${place.country})`}
+                                </SelectItem>
+                              )
                             ))}
                           </SelectContent>
                         </Select>
@@ -208,10 +210,10 @@ export default function ExplorePage() {
       {/* Explores Grid */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-[#07401F] mb-4">
+          <h2 className="text-4xl font-bold text-[#148C56] mb-4">
             Real Experiences from Our Travelers
           </h2>
-          <p className="text-gray-600 text-lg">
+          <p className="text-foreground/70 text-lg">
             Discover authentic stories and adventures from explorers around the world
           </p>
         </div>
@@ -219,7 +221,7 @@ export default function ExplorePage() {
         {exploresLoading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {([0, 1, 2, 3, 4, 5] as const).map((i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 shadow-lg">
+              <div key={i} className="bg-background rounded-2xl p-6 shadow-lg">
                 <Skeleton className="h-8 w-8 mb-4 rounded" />
                 <Skeleton className="h-6 w-3/4 mb-3" />
                 <Skeleton className="h-4 w-1/2 mb-4" />
@@ -248,7 +250,7 @@ export default function ExplorePage() {
               return (
                 <div
                   key={explore.explore_id}
-                  className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                  className="bg-background rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
                 >
                   {/* Quote Icon */}
                   <FaQuoteLeft className="text-[#148C56] text-3xl mb-4 opacity-50" />
@@ -295,7 +297,7 @@ export default function ExplorePage() {
                       <p className="font-bold text-[#07401F]">
                         {explore.user_id.substring(0, 15)}...
                       </p>
-                      <p className="text-sm text-gray-500">Verified Explorer</p>
+                      <p className="text-sm text-foreground/50">Verified Explorer</p>
                     </div>
                   </div>
                 </div>
@@ -311,7 +313,7 @@ export default function ExplorePage() {
             <h3 className="text-2xl font-semibold text-gray-600 mb-2">
               No Explores Yet
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-foreground/70 mb-6">
               Be the first to share your journey!
             </p>
             {isAuthenticated && (

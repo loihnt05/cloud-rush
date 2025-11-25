@@ -210,7 +210,6 @@ export default function PassengerInformation() {
             
             if (firstSeat.flight_id === Number(flightId)) {
               // This booking is for the same flight and same seats - redirect to payment
-              console.log("Existing booking found:", booking.booking_id);
               navigate(`/payment?bookingId=${booking.booking_id}&flightId=${flightId}`, { replace: true });
               return;
             }
@@ -381,7 +380,7 @@ export default function PassengerInformation() {
       <div className="w-full lg:w-3/5 space-y-6">
         {/* Agent/Admin: Booking for another traveler section */}
         {isAgentOrAdmin && (
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="bg-background rounded-lg shadow-md p-6 border-l-4 border-blue-500">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
               Agent Booking Options
             </h2>

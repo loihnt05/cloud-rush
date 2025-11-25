@@ -53,15 +53,8 @@ export default function BookingDetails() {
 
   useEffect(() => {
     const loadBookingDetails = async () => {
-      console.log("=== Booking Details Page Debug ===");
-      console.log("bookingId:", bookingId);
-      console.log("authLoading:", authLoading);
-      console.log("isAuthenticated:", isAuthenticated);
-      console.log("user:", user);
-      console.log("accessToken:", accessToken ? "Present" : "Missing");
 
       if (authLoading) {
-        console.log("Waiting for authentication...");
         return;
       }
 
@@ -86,9 +79,7 @@ export default function BookingDetails() {
         setLoading(true);
 
         // Fetch booking
-        console.log("Fetching booking:", bookingId);
         const bookingData = await getBooking(parseInt(bookingId));
-        console.log("Booking data:", bookingData);
 
         // Authorization check
         if (bookingData.user_id !== user.sub) {
@@ -102,7 +93,6 @@ export default function BookingDetails() {
 
         // Fetch passengers
         const passengersData = await getPassengersByBooking(parseInt(bookingId));
-        console.log("Passengers data:", passengersData);
 
         // Get flight info from first passenger's seat
         if (passengersData.length > 0 && passengersData[0].flight_seat_id) {
@@ -166,10 +156,8 @@ export default function BookingDetails() {
           console.log("No payment found for booking:", bookingId);
         }
 
-        console.log("✅ All booking details loaded successfully");
         setLoading(false);
       } catch (err) {
-        console.error("❌ Error loading booking details:", err);
         setError(err instanceof Error ? err.message : "Failed to load booking details");
         setLoading(false);
       }

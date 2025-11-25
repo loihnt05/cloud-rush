@@ -83,21 +83,21 @@ const hotelImageIds = [
 /**
  * Generates a random Unsplash image URL for a place
  * @param placeId - The place ID to ensure consistent images for the same place
- * @param width - Image width (default: 1200)
- * @param height - Image height (default: 800)
+ * @param width - Image width (default: 800)
+ * @param height - Image height (default: 600)
  * @returns Unsplash image URL
  */
 export function getRandomPlaceImage(
   placeId: number,
-  width: number = 1200,
-  height: number = 800
+  width: number = 800,
+  height: number = 600
 ): string {
   // Use place ID to consistently select an image
   const imageIndex = placeId % placeImageIds.length;
   const imageId = placeImageIds[imageIndex];
   
-  // Generate image URL using Unsplash Images API with specific photo ID
-  return `https://images.unsplash.com/${imageId}?w=${width}&h=${height}&fit=crop&q=80`;
+  // Generate optimized image URL with correct Unsplash format
+  return `https://images.unsplash.com/${imageId}?w=${width}&h=${height}&fit=crop&q=75&auto=format`;
 }
 
 

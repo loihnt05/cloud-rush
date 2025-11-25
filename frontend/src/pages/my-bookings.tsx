@@ -35,14 +35,8 @@ export default function MyBookings() {
   const [filter, setFilter] = useState<"all" | "confirmed" | "pending">("all");
 
   const loadBookings = async () => {
-    console.log("=== My Bookings Page Debug ===");
-    console.log("authLoading:", authLoading);
-    console.log("isAuthenticated:", isAuthenticated);
-    console.log("user:", user);
-    console.log("accessToken:", accessToken ? "Present" : "Missing");
 
     if (authLoading) {
-      console.log("Waiting for authentication...");
       return;
     }
 
@@ -60,10 +54,8 @@ export default function MyBookings() {
 
     try {
       setLoading(true);
-      console.log("Fetching bookings for user:", user.sub);
 
       const userBookings = await getUserBookings(user.sub);
-      console.log("User bookings:", userBookings);
 
       if (userBookings.length === 0) {
         setBookings([]);
@@ -132,7 +124,6 @@ export default function MyBookings() {
         (b): b is BookingWithDetails => b !== null
       );
 
-      console.log("Bookings with details:", validBookings);
       setBookings(validBookings);
       setLoading(false);
     } catch (err) {

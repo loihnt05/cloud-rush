@@ -1,11 +1,14 @@
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { StrictMode, useEffect } from "react";
+import { lazy, StrictMode, Suspense, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import authConfig from "./auth-config.ts";
 import Layout from "./components/layout/layout.tsx";
+import ProtectedRoute from "./components/layout/protected-route.tsx";
+import { ThemeProvider } from "./components/theme-provider.tsx";
 import About from "./pages/about.tsx";
+import RevenueForecasting from "./pages/admin/revenue-forecasting.tsx";
 import BookingDetails from "./pages/booking-details.tsx";
 import ETicket from "./pages/e-ticket.tsx";
 import Explore from "./pages/explore.tsx";
@@ -15,18 +18,30 @@ import MyBookings from "./pages/my-bookings.tsx";
 import MyServiceBookings from "./pages/my-service-bookings.tsx";
 import PassengerInformation from "./pages/passenger-infomation.tsx";
 import Payment from "./pages/payment.tsx";
+import Profile from "./pages/profile.tsx";
 import SeatSelection from "./pages/seat-selection.tsx";
 import CarRentals from "./pages/services/car-rental.tsx";
 import Hotels from "./pages/services/hotels.tsx";
 import Packages from "./pages/services/packages.tsx";
-import Places from "./pages/services/places.tsx";
 import TempPackages from "./pages/tempPackages.tsx";
-import RevenueForecasting from "./pages/admin/revenue-forecasting.tsx";
 import useSettingStore from "./stores/setting-store";
 import "./styles/index.css";
-import ProtectedRoute from "./components/layout/protected-route.tsx";
 
-const queryClient = new QueryClient();
+// Lazy load Places component
+const Places = lazy(() => import("./pages/services/places.tsx"));
+
+// Configure QueryClient with optimized defaults for better caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes default
+      cacheTime: 10 * 60 * 1000, // 10 minutes cache time
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 export function AccessTokenProvider({
   children,
 }: {
@@ -56,33 +71,61 @@ export function AccessTokenProvider({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Auth0Provider
-      domain={authConfig.domain}
-      clientId={authConfig.clientId}
-      authorizationParams={{
-        redirect_uri: window.location.origin,
-        audience: authConfig.audience,
-        scope: "openid profile email",
-      }}
-      cacheLocation="localstorage"
-    >
-      <AccessTokenProvider>
-        <BrowserRouter>
-          <QueryClientProvider client={queryClient}>
-            <Routes>
-              <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Auth0Provider
+        domain={authConfig.domain}
+        clientId={authConfig.clientId}
+        authorizationParams={{
+          redirect_uri: window.location.origin,
+          audience: authConfig.audience,
+          scope: "openid profile email",
+        }}
+        cacheLocation="localstorage"
+      >
+        <AccessTokenProvider>
+          <BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+              <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Navigate to="/home" replace />} />
-                <Route path="/home" element={<Navigate to="/flight" replace />} />
+                <Route
+                  path="/home"
+                  element={<Navigate to="/flight" replace />}
+                />
                 <Route path="/flight" element={<Flight />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/flights/search" element={<FlightSearch />} />
                 <Route
                   path="/passenger-information"
                   element={<PassengerInformation />}
                 />
-                <Route path="/my-service-bookings" element={<MyServiceBookings />} />
+                <Route
+                  path="/my-service-bookings"
+                  element={<MyServiceBookings />}
+                />
                 <Route path="/packages" element={<Packages />} />
-                <Route path="/places" element={<Places />} />
+                <Route
+                  path="/places"
+                  element={
+                    <Suspense
+                      fallback={
+                        <div className="flex items-center justify-center min-h-screen">
+                          Loading Places...
+                        </div>
+                      }
+                    >
+                      <Places />
+                    </Suspense>
+                  }
+                />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/test" element={<TempPackages />} />
                 <Route path="/payment" element={<Payment />} />
@@ -99,14 +142,18 @@ createRoot(document.getElementById("root")!).render(
 
                 <Route path="/car-rentals" element={<CarRentals />} />
                 <Route path="/hotels" element={<Hotels />} />
-                
+
                 {/* Admin Routes */}
-                <Route path="/admin/revenue-forecasting" element={<RevenueForecasting />} />
+                <Route
+                  path="/admin/revenue-forecasting"
+                  element={<RevenueForecasting />}
+                />
               </Route>
             </Routes>
           </QueryClientProvider>
         </BrowserRouter>
-      </AccessTokenProvider>
-    </Auth0Provider>
+        </AccessTokenProvider>
+      </Auth0Provider>
+    </ThemeProvider>
   </StrictMode>
 );

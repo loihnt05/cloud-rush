@@ -25,7 +25,7 @@ type PlaceDisplay = {
   amenities?: string[];
 };
 
-// Lazy Loading Image Component
+// Lazy Loading Image Component with optimizations
 function LazyImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
@@ -44,7 +44,8 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
         });
       },
       {
-        rootMargin: "50px",
+        rootMargin: "100px", // Increased margin to preload images earlier
+        threshold: 0.01,
       }
     );
 
@@ -58,20 +59,22 @@ function LazyImage({ src, alt, className }: { src: string; alt: string; classNam
       {isInView && (
         <>
           {!isLoaded && (
-            <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
-              <span className="text-gray-400">Loading...</span>
+            <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+              <span className="text-muted-foreground">Loading...</span>
             </div>
           )}
           <img
             src={src}
             alt={alt}
+            loading="lazy"
+            decoding="async"
             onLoad={() => setIsLoaded(true)}
             className={`${className} ${!isLoaded ? "hidden" : ""}`}
           />
         </>
       )}
       {!isInView && (
-        <div className="w-full h-full bg-gray-200 animate-pulse" />
+        <div className="w-full h-full bg-muted animate-pulse" />
       )}
     </div>
   );
@@ -92,7 +95,7 @@ export default function Places() {
     queryFn: async () => {
       const data = await placesApi.getPlaces();
 
-      // Transform backend data to display format with random images
+      // Transform backend data to display format with optimized images
       const transformedPlaces: PlaceDisplay[] = data.map(
         (place: ApiPlace) => ({
           id: place.place_id,
@@ -100,7 +103,8 @@ export default function Places() {
           price: Math.floor(Math.random() * 300) + 100,
           description:
             place.description || "Discover this amazing destination",
-          imageUrl: getRandomPlaceImage(place.place_id, 1470, 1000),
+          // Reduced image size for faster loading (800x600 instead of 1470x1000)
+          imageUrl: getRandomPlaceImage(place.place_id, 800, 600),
           rating: Number((Math.random() * 1 + 4).toFixed(1)),
           location:
             [place.city, place.country].filter(Boolean).join(", ") ||
@@ -111,9 +115,10 @@ export default function Places() {
 
       return transformedPlaces;
     },
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 minutes - data stays fresh longer
+    cacheTime: 60 * 60 * 1000, // 60 minutes - keep in cache longer
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch if data exists
   });
 
   // Pagination calculations - using useMemo for optimization
@@ -134,7 +139,7 @@ export default function Places() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-background">
       {/* Hero */}
       <div className="mt-10 text-center bg-linear-to-r from-[#07401F] to-[#148C56] h-64">
         <p className="pt-10 text-5xl text-white font-bold">
@@ -161,7 +166,7 @@ export default function Places() {
       {/* Error State */}
       {isError && !loading && (
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
             <p className="text-red-600 font-semibold">
               {error instanceof Error ? error.message : "Failed to load places. Please try again later."}
             </p>
@@ -173,8 +178,9 @@ export default function Places() {
         <div className="max-w-7xl mx-auto px-4 py-12 space-y-6 ">
           {currentPlaces.map((place) => (
             <div
+              key={place.id}
               className="group flex flex-col 
-                    md:flex-row bg-white border shadow-xl rounded-2xl overflow-hidden m-10"
+                    md:flex-row bg-card border border-border shadow-xl rounded-2xl overflow-hidden m-10"
             >
               <div className="md:w-2/5 md:h-full h-auto overflow-hidden">
                 <LazyImage
@@ -231,7 +237,7 @@ export default function Places() {
                       <p className="text-2xl text-[#148C56] font-bold">
                         {place.price}$
                       </p>
-                      <span className="text-s font-light text-black mt-2">
+                      <span className="text-s font-light text-foreground/70 mt-2">
                         /night
                       </span>
                     </div>
@@ -310,7 +316,7 @@ export default function Places() {
       {/* Empty State */}
       {!loading && !isError && places.length === 0 && (
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-foreground/70">
             No places available at the moment.
           </p>
         </div>

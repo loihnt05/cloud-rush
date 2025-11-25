@@ -28,7 +28,6 @@ def create_explore(
 @router.get("/explores", response_model=list[ExploreResponse])
 def list_explores(
     db: Session = Depends(get_db),
-    payload: dict = Depends(verify_jwt)
 ):
     """Get all explores"""
     return ExploreService(db).get_all_explores()
@@ -93,7 +92,6 @@ def delete_explore(
 def create_place(
     place: PlaceCreate,
     db: Session = Depends(get_db),
-    payload: dict = Depends(verify_jwt)
 ):
     """Create a new place"""
     try:
