@@ -229,7 +229,7 @@ export default function CarRentals() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-background">
       {/* Hero */}
       <div className="mt-10 text-center bg-linear-to-r from-[#07401F] to-[#148C56] h-64">
         <p className="pt-10 text-5xl text-white font-bold">
@@ -255,7 +255,7 @@ export default function CarRentals() {
       {/* Error State */}
       {isError && !loading && (
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
             <p className="text-red-600 font-semibold">
               {error instanceof Error ? error.message : "Failed to load car rentals. Please try again later."}
             </p>
@@ -269,7 +269,7 @@ export default function CarRentals() {
           {currentCarRentals.map((car) => (
             <div
               key={car.id}
-              className="group flex flex-col md:flex-row bg-white border shadow-xl rounded-2xl overflow-hidden m-10"
+              className="group flex flex-col md:flex-row bg-card border-border shadow-xl rounded-2xl overflow-hidden m-10"
             >
               <div className="md:w-2/5 md:h-full h-auto overflow-hidden">
                 <LazyImage

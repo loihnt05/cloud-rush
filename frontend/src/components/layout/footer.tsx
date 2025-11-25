@@ -96,7 +96,7 @@ const Footer = ({
   legalLinks = defaultLegalLinks,
 }: Footer7Props) => {
   return (
-    <footer className="bg-linear-to-b from-gray-50 to-white border-t border-gray-200">
+    <footer className="bg-card border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-12 lg:py-16">
@@ -116,21 +116,21 @@ const Footer = ({
               </div>
               
               {/* Description */}
-              <p className="text-gray-600 mb-6 leading-relaxed max-w-sm">
+              <p className="text-foreground/70 mb-6 leading-relaxed max-w-sm">
                 {description}
               </p>
 
               {/* Contact Info */}
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-gray-600 hover:text-[#148C56] transition-colors">
+                <div className="flex items-center gap-3 text-foreground/70 hover:text-[#148C56] transition-colors">
                   <FaPhone className="text-[#148C56]" />
                   <span className="text-sm">+1 (555) 123-4567</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-600 hover:text-[#148C56] transition-colors">
+                <div className="flex items-center gap-3 text-foreground/70 hover:text-[#148C56] transition-colors">
                   <FaEnvelope className="text-[#148C56]" />
                   <span className="text-sm">support@cloudrush.com</span>
                 </div>
-                <div className="flex items-start gap-3 text-gray-600">
+                <div className="flex items-start gap-3 text-foreground/70">
                   <FaMapMarkerAlt className="text-[#148C56] mt-1" />
                   <span className="text-sm">123 Travel Street, Suite 456<br />New York, NY 10001</span>
                 </div>
@@ -138,14 +138,14 @@ const Footer = ({
 
               {/* Social Links */}
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-3">Follow Us</p>
+                <p className="text-sm font-semibold text-foreground mb-3">Follow Us</p>
                 <div className="flex items-center gap-3">
                   {socialLinks.map((social, idx) => (
                     <a
                       key={idx}
                       href={social.href}
                       aria-label={social.label}
-                      className="bg-gray-100 hover:bg-[#148C56] text-gray-600 hover:text-white p-2.5 rounded-full transition-all duration-300 hover:scale-110"
+                      className="bg-muted hover:bg-[#148C56] text-foreground hover:text-white p-2.5 rounded-full transition-all duration-300 hover:scale-110"
                     >
                       {social.icon}
                     </a>
@@ -157,7 +157,7 @@ const Footer = ({
             {/* Footer Sections - Each spans 1 column */}
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>
-                <h3 className="text-lg font-bold text-[#07401F] mb-4">
+                <h3 className="text-lg font-bold text-[#148C56] mb-4">
                   {section.title}
                 </h3>
                 <ul className="space-y-3">
@@ -165,7 +165,7 @@ const Footer = ({
                     <li key={linkIdx}>
                       <a
                         href={link.href}
-                        className="text-gray-600 hover:text-[#148C56] text-sm transition-colors duration-200 inline-block hover:translate-x-1 transform"
+                        className="text-foreground/70 hover:text-[#148C56] text-sm transition-colors duration-200 inline-block hover:translate-x-1 transform"
                       >
                         {link.name}
                       </a>
@@ -178,13 +178,13 @@ const Footer = ({
         </div>
 
         {/* Newsletter Section */}
-        <div className="border-t border-gray-200 py-8">
+        <div className="border-t border-border py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
-              <h3 className="text-lg font-bold text-[#07401F] mb-2">
+              <h3 className="text-lg font-bold text-[#148C56] mb-2">
                 Subscribe to our Newsletter
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-foreground/70">
                 Get the latest deals and travel tips delivered to your inbox
               </p>
             </div>
@@ -192,7 +192,7 @@ const Footer = ({
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 md:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#148C56] focus:border-transparent text-sm"
+                className="flex-1 md:w-64 px-4 py-2.5 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-[#148C56] focus:border-transparent text-sm"
               />
               <button className="bg-linear-to-r from-[#07401F] to-[#148C56] text-white px-6 py-2.5 rounded-lg hover:from-[#148C56] hover:to-[#148C11] transition-all duration-300 font-semibold text-sm whitespace-nowrap">
                 Subscribe
@@ -202,9 +202,9 @@ const Footer = ({
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-200 py-6">
+        <div className="border-t border-border py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-600 text-center md:text-left">
+            <p className="text-sm text-foreground/70 text-center md:text-left">
               {copyright}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
@@ -212,7 +212,7 @@ const Footer = ({
                 <a
                   key={idx}
                   href={link.href}
-                  className="text-sm text-gray-600 hover:text-[#148C56] transition-colors duration-200"
+                  className="text-sm text-foreground/70 hover:text-[#148C56] transition-colors duration-200"
                 >
                   {link.name}
                 </a>
@@ -222,8 +222,8 @@ const Footer = ({
         </div>
 
         {/* Trust Badges */}
-        <div className="border-t border-gray-200 py-6">
-          <div className="flex flex-wrap items-center justify-center gap-8 text-gray-400">
+        <div className="border-t border-border py-6">
+          <div className="flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

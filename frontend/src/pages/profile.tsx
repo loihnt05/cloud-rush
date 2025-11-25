@@ -39,7 +39,7 @@ export default function Profile() {
   const upcomingBookings = bookings.filter((b: Booking) => b.booking_date && new Date(b.booking_date) > new Date()).length;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-background min-h-screen">
       {/* Hero Section with User Info */}
       <div className="bg-linear-to-r from-[#07401F] to-[#148C56] text-white py-16 px-4">
         <div className="max-w-7xl mx-auto">
@@ -53,11 +53,11 @@ export default function Profile() {
                   className="w-32 h-32 rounded-full border-4 border-white shadow-2xl object-cover"
                 />
               ) : (
-                <div className="w-32 h-32 rounded-full bg-white border-4 border-white shadow-2xl flex items-center justify-center text-4xl font-bold text-[#148C56]">
+                <div className="w-32 h-32 rounded-full bg-background border-4 border-white shadow-2xl flex items-center justify-center text-4xl font-bold text-[#148C56]">
                   {user?.name ? user.name.split(" ").map(n => n[0]).slice(0, 2).join("") : "U"}
                 </div>
               )}
-              <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-lg">
+              <div className="absolute -bottom-2 -right-2 bg-background rounded-full p-2 shadow-lg">
                 <FaShieldAlt className="text-[#148C56] text-xl" />
               </div>
             </div>
@@ -74,7 +74,7 @@ export default function Profile() {
                   />
                   <button
                     onClick={handleSave}
-                    className="bg-white text-[#148C56] p-3 rounded-full hover:bg-gray-100 transition-all"
+                    className="bg-card text-[#148C56] p-3 rounded-full hover:bg-muted transition-all"
                   >
                     <FaSave className="text-xl" />
                   </button>
@@ -129,33 +129,33 @@ export default function Profile() {
           {/* Left Column - Account Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Personal Information */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 border border-border">
               <h2 className="text-2xl font-bold text-[#07401F] mb-6 flex items-center gap-3">
                 <FaUser className="text-[#148C56]" />
                 Personal Information
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Full Name</label>
-                  <div className="bg-gray-50 rounded-lg p-3 text-gray-800">
+                  <label className="text-sm font-semibold text-foreground/70 mb-2 block">Full Name</label>
+                  <div className="bg-muted rounded-lg p-3 text-foreground">
                     {user?.name || "Not provided"}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Email Address</label>
-                  <div className="bg-gray-50 rounded-lg p-3 text-gray-800">
+                  <label className="text-sm font-semibold text-foreground/70 mb-2 block">Email Address</label>
+                  <div className="bg-muted rounded-lg p-3 text-foreground">
                     {user?.email || "Not provided"}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Phone Number</label>
-                  <div className="bg-gray-50 rounded-lg p-3 text-gray-400">
+                  <label className="text-sm font-semibold text-foreground/70 mb-2 block">Phone Number</label>
+                  <div className="bg-muted rounded-lg p-3 text-muted-foreground">
                     Not provided
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Date of Birth</label>
-                  <div className="bg-gray-50 rounded-lg p-3 text-gray-400">
+                  <label className="text-sm font-semibold text-foreground/70 mb-2 block">Date of Birth</label>
+                  <div className="bg-muted rounded-lg p-3 text-muted-foreground">
                     Not provided
                   </div>
                 </div>
@@ -163,30 +163,30 @@ export default function Profile() {
             </div>
 
             {/* Travel Preferences */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 border border-border">
               <h2 className="text-2xl font-bold text-[#07401F] mb-6 flex items-center gap-3">
                 <FaGlobe className="text-[#148C56]" />
                 Travel Preferences
               </h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
                     <FaPlane className="text-[#148C56] text-xl" />
                     <div>
                       <p className="font-semibold">Preferred Seat</p>
-                      <p className="text-sm text-gray-600">Window seat</p>
+                      <p className="text-sm text-foreground/60">Window seat</p>
                     </div>
                   </div>
                   <button className="text-[#148C56] hover:text-[#07401F] font-semibold">
                     Edit
                   </button>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
                     <FaHotel className="text-[#148C56] text-xl" />
                     <div>
                       <p className="font-semibold">Hotel Preferences</p>
-                      <p className="text-sm text-gray-600">4-5 star hotels</p>
+                      <p className="text-sm text-foreground/60">4-5 star hotels</p>
                     </div>
                   </div>
                   <button className="text-[#148C56] hover:text-[#07401F] font-semibold">
@@ -198,7 +198,7 @@ export default function Profile() {
                     <FaCar className="text-[#148C56] text-xl" />
                     <div>
                       <p className="font-semibold">Car Type</p>
-                      <p className="text-sm text-gray-600">SUV or Sedan</p>
+                      <p className="text-sm text-foreground/60">SUV or Sedan</p>
                     </div>
                   </div>
                   <button className="text-[#148C56] hover:text-[#07401F] font-semibold">
@@ -209,19 +209,19 @@ export default function Profile() {
             </div>
 
             {/* Recent Bookings */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 border border-border">
               <h2 className="text-2xl font-bold text-[#07401F] mb-6 flex items-center gap-3">
                 <FaCalendar className="text-[#148C56]" />
                 Recent Bookings
               </h2>
               {bookingsLoading ? (
-                <div className="text-center py-8 text-gray-500">Loading bookings...</div>
+                <div className="text-center py-8 text-muted-foreground">Loading bookings...</div>
               ) : bookings.length > 0 ? (
                 <div className="space-y-4">
                   {bookings.slice(0, 3).map((booking: Booking) => (
                     <div
                       key={booking.booking_id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all cursor-pointer"
+                      className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted/80 transition-all cursor-pointer"
                       onClick={() => window.location.href = `/my-bookings/${booking.booking_id}`}
                     >
                       <div className="flex items-center gap-4">
@@ -230,21 +230,21 @@ export default function Profile() {
                         </div>
                         <div>
                           <p className="font-semibold">Booking #{booking.booking_id}</p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-foreground/60">
                             {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-[#148C56]">${booking.total_amount || 0}</p>
-                        <p className="text-sm text-gray-600 capitalize">{booking.status}</p>
+                        <p className="text-sm text-foreground/60 capitalize">{booking.status}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">No bookings yet</p>
+                  <p className="text-muted-foreground mb-4">No bookings yet</p>
                   <button
                     onClick={() => window.location.href = '/flight'}
                     className="bg-linear-to-r from-[#07401F] to-[#148C56] text-white px-6 py-2 rounded-full hover:from-[#148C56] hover:to-[#148C11] transition-all"
@@ -269,7 +269,7 @@ export default function Profile() {
           {/* Right Column - Quick Actions & Settings */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 border border-border">
               <h2 className="text-xl font-bold text-[#07401F] mb-4">Quick Actions</h2>
               <div className="space-y-3">
                 <button
@@ -297,12 +297,12 @@ export default function Profile() {
             </div>
 
             {/* Account Settings */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 border border-border">
               <h2 className="text-xl font-bold text-[#07401F] mb-4">Settings</h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
-                    <FaBell className="text-gray-600" />
+                    <FaBell className="text-foreground/70" />
                     <span className="font-medium">Notifications</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -310,9 +310,9 @@ export default function Profile() {
                     <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#148C56]"></div>
                   </label>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
-                    <FaEnvelope className="text-gray-600" />
+                    <FaEnvelope className="text-foreground/70" />
                     <span className="font-medium">Email Updates</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -320,9 +320,9 @@ export default function Profile() {
                     <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#148C56]"></div>
                   </label>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
-                    <FaShieldAlt className="text-gray-600" />
+                    <FaShieldAlt className="text-foreground/70" />
                     <span className="font-medium">Two-Factor Auth</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">

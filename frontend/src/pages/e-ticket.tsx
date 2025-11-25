@@ -356,7 +356,7 @@ export default function ETicket() {
         </div>
 
         {/* E-Ticket */}
-        <div ref={ticketRef} id="e-ticket-content" className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div ref={ticketRef} id="e-ticket-content" className="bg-background rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div 
             className="bg-linear-to-r from-[#07401F] via-[#224A33] to-[#357D52] text-white p-8"
@@ -448,7 +448,7 @@ export default function ETicket() {
 
             <div className="space-y-4">
               {passengers.map((passenger, index) => (
-                <div key={passenger.passenger_id} className="bg-gray-50 rounded-lg p-4">
+                <div key={passenger.passenger_id} className="bg-muted rounded-lg p-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <div className="text-xs text-gray-600 mb-1">Passenger {index + 1}</div>
@@ -484,7 +484,7 @@ export default function ETicket() {
           </div>
 
           {/* QR Code Section */}
-          <div className="p-8 bg-gray-50">
+          <div className="p-8 bg-muted/50">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-4">
@@ -514,7 +514,7 @@ export default function ETicket() {
                 </div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="bg-white p-4 rounded-lg shadow-md">
+                <div className="bg-background p-4 rounded-lg shadow-md">
                   <QRCodeSVG value={qrCodeData} size={200} level="H" includeMargin={true} />
                 </div>
                 <p className="text-xs text-gray-500 mt-2 text-center">Scan to verify booking</p>
@@ -523,7 +523,7 @@ export default function ETicket() {
           </div>
 
           {/* Footer */}
-          <div className="p-6 bg-gray-100 text-center">
+          <div className="p-6 bg-muted text-center">
             <p className="text-xs text-gray-600">
               This is an electronic ticket. Please arrive at the airport at least 2 hours before
               departure for international flights and 1 hour for domestic flights.
@@ -535,7 +535,7 @@ export default function ETicket() {
         </div>
 
         {/* Notes - Hide on print */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 print:hidden">
+        <div className="mt-6 bg-primary/10 border border-primary/20 rounded-lg p-4 print:hidden">
           <h3 className="font-semibold text-blue-900 mb-2">Important Notes:</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Please check in online or at the airport counter before your flight</li>

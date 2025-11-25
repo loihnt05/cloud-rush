@@ -223,7 +223,7 @@ function Flight() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Hero Section with Search */}
       <div className="relative bg-linear-to-br from-[#07401F] via-[#224A33] to-[#357D52] py-16 px-4">
         <div className="max-w-7xl mx-auto">
@@ -239,7 +239,7 @@ function Flight() {
           </h1>
 
           {/* Search Bar */}
-          <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
+          <div className="bg-card border-border rounded-2xl shadow-2xl p-6 md:p-8">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* From */}
               <div className="relative">
@@ -470,11 +470,11 @@ function Flight() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {flights.map((flight) => (
-            <div
-              key={flight.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100"
-            >
+            {flights.map((flight) => (
+              <div
+                key={flight.id}
+                className="group bg-card border-border rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              >
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -486,7 +486,7 @@ function Flight() {
                   ${flight.price}
                 </div>
                 {flight.duration && (
-                  <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-lg text-sm font-semibold text-[#07401F]">
+                  <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-sm px-3 py-1 rounded-lg text-sm font-semibold text-[#07401F]">
                     {flight.duration}
                   </div>
                 )}
@@ -540,7 +540,7 @@ function Flight() {
                 </Button>
               </div>
             </div>
-          ))}
+            ))}
           </div>
         )}
       </div>
@@ -581,7 +581,7 @@ function Flight() {
               {hotels.map((hotel) => (
                 <div
                   key={hotel.id}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                  className="group bg-card border-border rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                 >
                   {/* Image */}
                   <div className="relative h-56 overflow-hidden">
@@ -618,7 +618,7 @@ function Flight() {
                       {hotel.description}
                     </p>
 
-                    <button className="w-full bg-white border-2 border-[#357D52] text-[#357D52] font-semibold py-3 rounded-lg hover:bg-[#357D52] hover:text-white transition-all duration-300">
+                    <button className="w-full bg-background border-2 border-[#357D52] text-[#357D52] font-semibold py-3 rounded-lg hover:bg-[#357D52] hover:text-white transition-all duration-300">
                       View Details
                     </button>
                   </div>
@@ -664,7 +664,7 @@ function Flight() {
             {places.map((place) => (
               <div
                 key={place.id}
-                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                className="group bg-card border-border rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
               >
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden">
@@ -694,7 +694,7 @@ function Flight() {
                     {place.description}
                   </p>
 
-                  <button className="w-full bg-white border-2 border-[#357D52] text-[#357D52] font-semibold py-3 rounded-lg hover:bg-[#357D52] hover:text-white transition-all duration-300">
+                  <button className="w-full bg-background border-2 border-[#357D52] text-[#357D52] font-semibold py-3 rounded-lg hover:bg-[#357D52] hover:text-white transition-all duration-300">
                     View Details
                   </button>
                 </div>
@@ -719,7 +719,7 @@ function Flight() {
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
+              className="bg-card border-border rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300"
             >
               {/* Quote Icon */}
               <FaQuoteLeft className="text-[#148C56] text-3xl mb-4 opacity-50" />

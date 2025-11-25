@@ -1,5 +1,4 @@
 import LoginButton from "@/components/login-button";
-import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Link } from "react-router-dom";
 // import { Tooltip, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
@@ -10,7 +9,7 @@ function Header() {
   const { user, isAuthenticated } = useAuth0();
 
   return (
-    <div className="bg-white shadow-md">
+    <div className="bg-background shadow-md">
       <div className="flex items-center justify-between px-6 py-3 ">
         <img
           src="https://pub-08202a6e0a0e4f88a0b3f667d3b8ff4d.r2.dev/Gemini_Generated_Image_rwuccfrwuccfrwuc.png"
