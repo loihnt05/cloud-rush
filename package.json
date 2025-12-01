@@ -1,7 +1,16 @@
 {
 	"dependencies": {
-		"react-hook-form": "^7.66.0",
 		"@hookform/resolvers": "^5.2.2",
+		"assert": "^2.1.0",
+		"react-hook-form": "^7.66.0",
+		"selenium-webdriver": "^4.38.0",
 		"zod": "^4.1.12"
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^24.10.1",
+		"mocha": "^11.7.5",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.9.3"
 	}
 }
