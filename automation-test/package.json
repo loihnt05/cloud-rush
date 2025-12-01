@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha -r ts-node/register googleSearchTest.ts"
+    "test": "mocha -r ts-node/register a.spec.js"
   },
   "keywords": [],
   "author": "",
