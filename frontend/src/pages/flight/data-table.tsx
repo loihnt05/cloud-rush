@@ -189,8 +189,13 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                <TableCell colSpan={columns.length} className="h-32 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-2 text-muted-foreground">
+                    <p className="text-lg font-medium">No flights found</p>
+                    <p className="text-sm">
+                      No flights match your current filter criteria. Try adjusting your filters.
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

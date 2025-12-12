@@ -15,6 +15,8 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import {
   FaCalendarAlt,
   FaMapMarkerAlt,
@@ -61,6 +63,9 @@ function Flight() {
   const [toOpen, setToOpen] = useState(false);
   const [fromSearch, setFromSearch] = useState("");
   const [toSearch, setToSearch] = useState("");
+  const [departureDate, setDepartureDate] = useState("");
+  const [dateOpen, setDateOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Fetch airports using useQuery
   const { data: airports = [], isLoading: isLoadingAirports } = useQuery({
@@ -91,12 +96,44 @@ function Flight() {
   });
 
   const handleSearchFlights = () => {
+    // Clear previous errors
+    setErrorMessage("");
+
+    // Validation: Check if origin and destination are selected
+    if (!fromAirport || !toAirport) {
+      setErrorMessage("Please select both origin and destination airports.");
+      return;
+    }
+
+    // Validation: Check if origin and destination are the same
+    if (fromAirport.airport_id === toAirport.airport_id) {
+      setErrorMessage("Origin and destination cannot be the same. Please select different airports.");
+      return;
+    }
+
+    // Validation: Check if date is selected
+    if (!departureDate) {
+      setErrorMessage("Please select a departure date.");
+      return;
+    }
+
+    // Validation: Check if date is in the past
+    const selectedDate = new Date(departureDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      setErrorMessage("Please select a future date. Past dates are not allowed.");
+      return;
+    }
+
     const searchParams = new URLSearchParams();
-    if (fromAirport)
-      searchParams.set("from", fromAirport.airport_id.toString());
-    if (toAirport) searchParams.set("to", toAirport.airport_id.toString());
+    searchParams.set("from", fromAirport.airport_id.toString());
+    searchParams.set("to", toAirport.airport_id.toString());
     searchParams.set("adults", adults.toString());
     searchParams.set("children", children.toString());
+    searchParams.set("date", departureDate);
 
     navigate(`/flights/search?${searchParams.toString()}`);
   };
@@ -240,6 +277,13 @@ function Flight() {
 
           {/* Search Bar */}
           <div className="bg-card border-border rounded-2xl shadow-2xl p-6 md:p-8">
+            {/* Error Message */}
+            {errorMessage && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* From */}
               <div className="relative">
@@ -278,6 +322,7 @@ function Flight() {
                                 setFromAirport(airport);
                                 setFromOpen(false);
                                 setFromSearch("");
+                                setErrorMessage(""); // Clear error when selection changes
                               }}
                             >
                               <div className="flex flex-col">
@@ -334,6 +379,7 @@ function Flight() {
                                 setToAirport(airport);
                                 setToOpen(false);
                                 setToSearch("");
+                                setErrorMessage(""); // Clear error when selection changes
                               }}
                             >
                               <div className="flex flex-col">
@@ -355,15 +401,24 @@ function Flight() {
 
               {/* Date */}
               <div>
-                <Popover>
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
                   <PopoverTrigger asChild>
                     <button className="w-full h-12 rounded-md border border-[#357D52] bg-transparent px-4 text-left text-gray-600 hover:bg-[#148C56]/10 transition-colors flex items-center gap-2">
                       <FaCalendarAlt className="text-[#148C56]" />
-                      When?
+                      {departureDate ? new Date(departureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "When?"}
                     </button>
                   </PopoverTrigger>
                   <PopoverContent>
-                    <Input type="date" />
+                    <Input 
+                      type="date" 
+                      value={departureDate}
+                      onChange={(e) => {
+                        setDepartureDate(e.target.value);
+                        setErrorMessage(""); // Clear error when date changes
+                      }}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full"
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
