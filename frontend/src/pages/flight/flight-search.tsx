@@ -152,10 +152,39 @@ export default function FlightSearch() {
         </>
       ) : (
         <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">
-              No flights found.
-            </p>
+          <CardContent className="p-12">
+            <div className="flex flex-col items-center justify-center text-center space-y-4">
+              <div className="rounded-full bg-muted p-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-semibold text-foreground">
+                No Flights Available
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                We couldn't find any flights for the selected route. This could be because:
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                <li>No flights operate on this route</li>
+                <li>All flights are fully booked</li>
+                <li>The selected date has no scheduled flights</li>
+              </ul>
+              <p className="text-sm text-muted-foreground mt-4">
+                Try adjusting your search criteria or selecting a different route.
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}

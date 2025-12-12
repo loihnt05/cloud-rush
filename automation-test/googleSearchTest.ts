@@ -8,7 +8,6 @@ describe("Google Search Scraping - Dynamic UA", function () {
   this.timeout(60000);
 
   let driver: WebDriver;
-  let currentUA: string;
 
   before(async function () {
     // 1. Generate a random User-Agent specifically for Firefox on Desktop.

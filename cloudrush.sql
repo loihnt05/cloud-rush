@@ -217,8 +217,29 @@ CREATE TABLE revenue_forecasts (
    forecast_id SERIAL PRIMARY KEY,
    forecast_date DATE NOT NULL,
    predicted_revenue DECIMAL(12,2) NOT NULL,
+   actual_revenue DECIMAL(12, 2),
+   confidence_score FLOAT CHECK (confidence_score >= 0 AND confidence_score <= 100),
    model_used VARCHAR(100),
+   model_version VARCHAR(50),
+   prediction_type VARCHAR(50) DEFAULT 'daily' CHECK (prediction_type IN ('daily', 'weekly', 'monthly', 'yearly')),
+   features_used TEXT,
+   notes TEXT,
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Revenue Metrics table for tracking actual metrics
+CREATE TABLE revenue_metrics (
+    metric_id SERIAL PRIMARY KEY,
+    date DATE NOT NULL UNIQUE,
+    actual_revenue DECIMAL(12, 2) NOT NULL,
+    booking_count INT DEFAULT 0,
+    passenger_count INT DEFAULT 0,
+    average_ticket_price DECIMAL(10, 2),
+    flight_count INT DEFAULT 0,
+    cancellation_count INT DEFAULT 0,
+    refund_amount DECIMAL(12, 2) DEFAULT 0.00,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ========== INDEXES FOR PERFORMANCE ==========
@@ -226,3 +247,13 @@ CREATE INDEX idx_passengers_booking ON passengers(booking_id);
 CREATE INDEX idx_passengers_type ON passengers(passenger_type);
 CREATE INDEX idx_emergency_contacts_passenger ON emergency_contacts(passenger_id);
 CREATE INDEX idx_bookings_reference ON bookings(booking_reference);
+
+-- Revenue forecasting indexes
+CREATE INDEX idx_revenue_forecasts_date ON revenue_forecasts(forecast_date);
+CREATE INDEX idx_revenue_forecasts_type ON revenue_forecasts(prediction_type);
+CREATE INDEX idx_revenue_forecasts_model ON revenue_forecasts(model_used);
+CREATE INDEX idx_revenue_forecasts_confidence ON revenue_forecasts(confidence_score);
+
+-- Revenue metrics indexes
+CREATE INDEX idx_revenue_metrics_date ON revenue_metrics(date);
+CREATE INDEX idx_revenue_metrics_revenue ON revenue_metrics(actual_revenue);

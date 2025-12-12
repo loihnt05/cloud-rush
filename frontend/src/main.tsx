@@ -60,7 +60,7 @@ export function AccessTokenProvider({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <Auth0Provider
         domain={authConfig.domain}
         clientId={authConfig.clientId}
