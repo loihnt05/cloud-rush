@@ -18,7 +18,7 @@ def initialize_factories():
     ServiceFactoryRegistry.register_factory("rental_car", CarRentalFactory())
     ServiceFactoryRegistry.register_factory("package", PackageFactory())
     
-    print(f"✅ Registered factories for: {ServiceFactoryRegistry.get_available_types()}")
+    print(f"Registered factories for: {ServiceFactoryRegistry.get_available_types()}")
 
 
 def get_service_factory(service_type: str):
