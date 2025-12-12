@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "mocha -r ts-node/register a.spec.js",
-    "test:auth": "mocha -r ts-node/register function/auth.spec.ts"
+    "test:auth": "mocha -r ts-node/register function/auth.spec.ts",
+    "test:search": "mocha -r ts-node/register function/search.spec.ts"
   },
   "keywords": [],
   "author": "",
