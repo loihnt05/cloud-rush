@@ -8,7 +8,13 @@
     "test": "mocha -r ts-node/register a.spec.js",
     "test:auth": "mocha -r ts-node/register function/auth.spec.ts",
     "test:search": "mocha -r ts-node/register function/search.spec.ts",
-    "test:booking": "mocha -r ts-node/register function/booking.spec.ts"
+
+    "test:booking-infor-empty": "mocha -r ts-node/register function/booking/passengerInforEmptyFields.spec.js",
+    "test:booking-infor-valid": "mocha -r ts-node/register function/booking/passengerInformationValidData.spec.js",
+    "test:booking-select-available": "mocha -r ts-node/register function/booking/selectedavailableValidData.spec.js",
+    "test:booking-view-seat": "mocha -r ts-node/register function/booking/viewseat.spec.js"
+
+    
   },
   "keywords": [],
   "author": "",
