@@ -72,7 +72,7 @@ export default function FlightSearch() {
         }
         
         if (date) {
-          initialFilters.departureDate = date;
+          initialFilters.departureDate = new Date(date);
         }
         
         // Set the filters if any URL params were found
