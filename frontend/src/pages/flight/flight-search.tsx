@@ -7,6 +7,7 @@ import type { Flight } from "@/types/flight";
 import type { Airport } from "@/types/airport";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import {
@@ -21,6 +22,7 @@ export default function FlightSearch() {
   const [loading, setLoading] = useState(true);
   const { accessToken } = useSettingStore();
   const { isAuthenticated, isLoading } = useAuth0();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,6 +44,41 @@ export default function FlightSearch() {
         ]);
         setFlights(flightsResult);
         setAirports(airportsResult);
+
+        // Initialize filters from URL parameters
+        const initialFilters: FlightFilters = {};
+        
+        // Get origin and destination from URL params (they are airport IDs)
+        const fromAirportId = searchParams.get("from");
+        const toAirportId = searchParams.get("to");
+        const date = searchParams.get("date");
+        
+        if (fromAirportId) {
+          const originAirport = airportsResult.find(
+            (a) => a.airport_id.toString() === fromAirportId
+          );
+          if (originAirport) {
+            initialFilters.origin = originAirport.name;
+          }
+        }
+        
+        if (toAirportId) {
+          const destAirport = airportsResult.find(
+            (a) => a.airport_id.toString() === toAirportId
+          );
+          if (destAirport) {
+            initialFilters.destination = destAirport.name;
+          }
+        }
+        
+        if (date) {
+          initialFilters.departureDate = date;
+        }
+        
+        // Set the filters if any URL params were found
+        if (Object.keys(initialFilters).length > 0) {
+          setFilters(initialFilters);
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -50,7 +87,7 @@ export default function FlightSearch() {
     };
 
     fetchData();
-  }, [isAuthenticated, isLoading, accessToken]);
+  }, [isAuthenticated, isLoading, accessToken, searchParams]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">

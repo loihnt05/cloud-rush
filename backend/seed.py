@@ -131,12 +131,12 @@ def main():
         # ---------- FLIGHTS ----------
         print("6) Seeding flights...")
         flights = []
-        today = datetime.now().replace(hour=6, minute=0, second=0, microsecond=0)
+        tomorrow = datetime.now().replace(hour=6, minute=0, second=0, microsecond=0) + timedelta(days=1)
         num_flights = FLIGHTS_PER_DAY * DAYS_RANGE
         for i in range(num_flights):
             origin, dest = random.sample(airport_ids, 2)
-            # departure spread across next DAYS_RANGE days
-            depart = today + timedelta(days=random.randint(0, DAYS_RANGE-1), hours=random.randint(0, 18), minutes=random.choice([0,15,30,45]))
+            # departure spread across next DAYS_RANGE days (starting from tomorrow)
+            depart = tomorrow + timedelta(days=random.randint(0, DAYS_RANGE-1), hours=random.randint(0, 18), minutes=random.choice([0,15,30,45]))
             duration_hours = random.randint(1, 12)
             arrive = depart + timedelta(hours=duration_hours, minutes=random.randint(0,59))
             airplane_id = random.choice(airplane_ids)
