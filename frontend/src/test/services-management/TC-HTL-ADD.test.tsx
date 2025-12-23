@@ -476,7 +476,7 @@ describe('TC-HTL-ADD-001: Verify Add New Hotel - Success', () => {
       data: mockHotels,
     });
 
-    const { getByTestId } = render(<HotelDashboard onHotelAdded={mockHotelAdded} />);
+    const { getByTestId, queryByTestId } = render(<HotelDashboard onHotelAdded={mockHotelAdded} />);
 
     await waitFor(() => {
       expect(getByTestId('hotel-dashboard')).toBeInTheDocument();
@@ -541,9 +541,9 @@ describe('TC-HTL-ADD-001: Verify Add New Hotel - Success', () => {
       expect(getByTestId('success-message')).toHaveTextContent('Hotel "Mountain View Lodge" added successfully');
     });
 
-    // Verify form is closed
+    // Verify form is closed (success message is shown, form is hidden)
     await waitFor(() => {
-      expect(getByTestId('add-hotel-form')).not.toBeInTheDocument();
+      expect(queryByTestId('add-hotel-form')).not.toBeInTheDocument();
     });
 
     // Verify new hotel is listed in dashboard

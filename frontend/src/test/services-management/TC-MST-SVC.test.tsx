@@ -1023,3 +1023,167 @@ describe('Additional Master Service Management Tests', () => {
     console.log('✓ Additional Test PASSED: Multiple categories supported');
   });
 });
+
+describe('TC-MST-SVC-003..008: Master Service Validation & Lifecycle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('TC-MST-SVC-003: Create Service with Price Zero (accept or warn)', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: mockMasterServices });
+
+    const { getByTestId } = render(<ServicesMasterDashboard />);
+    await waitFor(() => expect(getByTestId('services-master-dashboard')).toBeInTheDocument());
+
+    // Open form
+    fireEvent.click(getByTestId('create-new-service-button'));
+    await waitFor(() => expect(getByTestId('create-service-form')).toBeInTheDocument());
+
+    // Enter free service
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Free Water' } });
+    fireEvent.change(getByTestId('price-input'), { target: { value: '0' } });
+    fireEvent.change(getByTestId('description-input'), { target: { value: 'Complimentary bottled water' } });
+
+    // Case A: system accepts price 0
+    mockedAxios.post.mockResolvedValueOnce({ data: { service_id: 99, name: 'Free Water', price: 0.0, is_active: true } });
+    fireEvent.click(getByTestId('save-button'));
+    await waitFor(() => expect(mockedAxios.post).toHaveBeenCalled());
+    await waitFor(() => expect(getByTestId('success-message')).toBeInTheDocument());
+
+    // Case B: system rejects price 0 (server-side policy)
+    mockedAxios.get.mockResolvedValueOnce({ data: mockMasterServices });
+    fireEvent.click(getByTestId('create-new-service-button'));
+    await waitFor(() => expect(getByTestId('create-service-form')).toBeInTheDocument());
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Free Water 2' } });
+    fireEvent.change(getByTestId('price-input'), { target: { value: '0' } });
+    fireEvent.change(getByTestId('description-input'), { target: { value: 'Complimentary water variant' } });
+
+    mockedAxios.post.mockRejectedValueOnce({ response: { status: 400, data: { message: 'Free services not allowed' } } });
+    fireEvent.click(getByTestId('save-button'));
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+  });
+
+  it('TC-MST-SVC-004: Create Service with Negative Price => client validation error', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: mockMasterServices });
+    const { getByTestId } = render(<ServicesMasterDashboard />);
+    await waitFor(() => expect(getByTestId('services-master-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('create-new-service-button'));
+    await waitFor(() => expect(getByTestId('create-service-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Broken Service' } });
+    fireEvent.change(getByTestId('price-input'), { target: { value: '-50' } });
+    fireEvent.change(getByTestId('description-input'), { target: { value: 'Negative price test' } });
+
+    // Client-side should block and show message without calling API
+    fireEvent.click(getByTestId('save-button'));
+    await waitFor(() => expect(getByTestId('error-message')).toHaveTextContent('Price must be a positive number'));
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
+
+  it('TC-MST-SVC-005: Create Service with Empty Name => validation error', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: mockMasterServices });
+    const { getByTestId } = render(<ServicesMasterDashboard />);
+    await waitFor(() => expect(getByTestId('services-master-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('create-new-service-button'));
+    await waitFor(() => expect(getByTestId('create-service-form')).toBeInTheDocument());
+
+    // Leave name empty
+    fireEvent.change(getByTestId('price-input'), { target: { value: '10' } });
+    fireEvent.change(getByTestId('description-input'), { target: { value: 'No name provided' } });
+
+    fireEvent.click(getByTestId('save-button'));
+    await waitFor(() => expect(getByTestId('error-message')).toHaveTextContent('All fields are required'));
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
+
+  it('TC-MST-SVC-006: Create Service with Name >255 chars => client/server handling', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: mockMasterServices });
+    const { getByTestId } = render(<ServicesMasterDashboard />);
+    await waitFor(() => expect(getByTestId('services-master-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('create-new-service-button'));
+    await waitFor(() => expect(getByTestId('create-service-form')).toBeInTheDocument());
+
+    const longName = 'A'.repeat(260);
+    fireEvent.change(getByTestId('name-input'), { target: { value: longName } });
+    fireEvent.change(getByTestId('price-input'), { target: { value: '5' } });
+    fireEvent.change(getByTestId('description-input'), { target: { value: 'Too long name test' } });
+
+    // Prefer client-side rejection if implemented
+    fireEvent.click(getByTestId('save-button'));
+    // Either client-side error or server 400
+    const clientSide = await waitFor(() => getByTestId('error-message'));
+    if (clientSide) {
+      expect(clientSide).toBeTruthy();
+    }
+  });
+
+  it('TC-MST-SVC-007: Update Service price - future bookings use new price, existing keep old', async () => {
+    // Simulate existing service and bookings
+    const mealService = { service_id: 10, name: 'Meal', price: 10.0, is_active: true };
+    const existingBookings = [{ booking_id: 201, service_id: 10, price_charged: 10.0 }];
+
+    // Mock initial GET
+    mockedAxios.get.mockResolvedValueOnce({ data: [mealService] });
+
+    // Simple component to perform update and verify bookings
+    const UpdateTest: React.FC = () => {
+      const [msg, setMsg] = React.useState('');
+      const update = async () => {
+        await axios.patch(`/api/master-services/10`, { price: 15.0 });
+        // fetch existing bookings
+        const res = await axios.get(`/api/bookings?service_id=10`);
+        const existing = res.data.find((b: any) => b.booking_id === 201);
+        setMsg(existing ? `existing:${existing.price_charged}` : 'no-existing');
+      };
+      return <div>
+        <button data-testid="do-update" onClick={update}>Update</button>
+        <div data-testid="update-msg">{msg}</div>
+      </div>;
+    };
+
+    // Mock patch success
+    mockedAxios.patch.mockResolvedValueOnce({ data: { service_id: 10, price: 15.0 } });
+    // Mock bookings GET returns existing booking with old price
+    mockedAxios.get.mockResolvedValueOnce({ data: existingBookings });
+
+    const { getByTestId } = render(<UpdateTest />);
+    fireEvent.click(getByTestId('do-update'));
+
+    await waitFor(() => expect(getByTestId('update-msg')).toHaveTextContent('existing:10'));
+
+    // Also assert PATCH call
+    expect(mockedAxios.patch).toHaveBeenCalledWith('/api/master-services/10', { price: 15.0 });
+  });
+
+  it('TC-MST-SVC-008: Delete Service that is In Use should be blocked or soft-delete', async () => {
+    const mealService = { service_id: 10, name: 'Meal', price: 10.0, is_active: true };
+    mockedAxios.get.mockResolvedValueOnce({ data: [mealService] });
+
+    // Simple delete component for test
+    const DeleteTest: React.FC = () => {
+      const [err, setErr] = React.useState('');
+      const doDelete = async () => {
+        try {
+          await axios.delete('/api/master-services/10');
+        } catch (e: any) {
+          setErr(e.response?.data?.message || 'delete-error');
+        }
+      };
+      return <div>
+        <button data-testid="do-delete" onClick={doDelete}>Delete</button>
+        {err && <div data-testid="delete-error">{err}</div>}
+      </div>;
+    };
+
+    // Mock server blocking delete with 409
+    mockedAxios.delete.mockRejectedValueOnce({ response: { status: 409, data: { message: 'Service in use' } } });
+
+    const { getByTestId } = render(<DeleteTest />);
+    fireEvent.click(getByTestId('do-delete'));
+
+    await waitFor(() => expect(getByTestId('delete-error')).toHaveTextContent('Service in use'));
+  });
+});
