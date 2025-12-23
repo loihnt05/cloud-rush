@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 const API = process.env.API_BASE || 'http://localhost:8000'
+// hello 
 
 async function post(path: string, body: any, headers = {}) {
   return fetch(`${API}${path}`, {
