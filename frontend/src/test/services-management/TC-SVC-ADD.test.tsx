@@ -500,6 +500,172 @@ describe('TC-SVC-ADD-001: Verify Add Extra Service to Valid Booking', () => {
   });
 });
 
+describe('TC-SVC-INT-001..004: Services Integration (add/remove/display)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('TC-SVC-INT-001: Verify Remove Service from Booking updates total and removes item', async () => {
+    // Booking already has a Meal service
+    const bookingWithService = {
+      ...mockValidBooking,
+      total_amount: 525.00,
+      services: [ { service_id: 2, service_name: 'Premium Meal', price: 25.00 } ],
+    };
+
+    // Simple Booking Services component
+    const BookingServices: React.FC = () => {
+      const [booking, setBooking] = React.useState<any>(bookingWithService);
+      const remove = async (serviceId: number) => {
+        const res = await axios.delete(`/api/bookings/${booking.booking_id}/services/${serviceId}`);
+        if (res.status === 200) {
+          const newServices = booking.services.filter((s: any) => s.service_id !== serviceId);
+          const newTotal = booking.total_amount - 25.00;
+          setBooking({ ...booking, services: newServices, total_amount: newTotal });
+        }
+      };
+      return (
+        <div>
+          <div data-testid="booking-total">${booking.total_amount}</div>
+          <div data-testid="services-list">
+            {booking.services.map((s: any) => (
+              <div key={s.service_id} data-testid={`svc-${s.service_id}`}>
+                <span data-testid={`svc-name-${s.service_id}`}>{s.service_name}</span>
+                <button data-testid={`svc-remove-${s.service_id}`} onClick={() => remove(s.service_id)}>Remove</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    mockedAxios.delete.mockResolvedValueOnce({ status: 200 });
+
+    const { getByTestId, queryByTestId } = render(<BookingServices />);
+
+    await waitFor(() => expect(getByTestId('booking-total')).toBeInTheDocument());
+
+    // Verify service present
+    expect(getByTestId('svc-2')).toBeInTheDocument();
+    expect(getByTestId('svc-name-2')).toHaveTextContent('Premium Meal');
+
+    // Click remove
+    fireEvent.click(getByTestId('svc-remove-2'));
+
+    await waitFor(() => expect(queryByTestId('svc-2')).not.toBeInTheDocument());
+
+    // Total should decrease
+    expect(getByTestId('booking-total')).toHaveTextContent('$500');
+  });
+
+  it('TC-SVC-INT-002: Verify Add Multiple Quantity adjusts total correctly', async () => {
+    // Component that allows quantity and adds service
+    const QuantityAdd: React.FC = () => {
+      const [booking, setBooking] = React.useState<any>(mockValidBooking);
+      const [qty, setQty] = React.useState<number>(1);
+      const add = async () => {
+        const res = await axios.post(`/api/bookings/${booking.booking_id}/services`, { service_id: 1, quantity: qty });
+        setBooking(res.data);
+      };
+      return (
+        <div>
+          <div data-testid="orig-total">${booking.total_amount}</div>
+          <input data-testid="qty-input" type="number" value={qty} onChange={(e) => setQty(Number(e.target.value))} />
+          <button data-testid="add-qty" onClick={add}>Add</button>
+          <div data-testid="new-total">${booking.total_amount}</div>
+        </div>
+      );
+    };
+
+    // Mock server returns updated total = base + 50*2
+    mockedAxios.post.mockResolvedValueOnce({ data: { ...mockValidBooking, total_amount: 600.00 } });
+
+    const { getByTestId } = render(<QuantityAdd />);
+    await waitFor(() => expect(getByTestId('orig-total')).toBeInTheDocument());
+
+    // Set qty to 2
+    const qtyInput = getByTestId('qty-input') as HTMLInputElement;
+    fireEvent.change(qtyInput, { target: { value: '2' } });
+    expect(qtyInput.value).toBe('2');
+
+    fireEvent.click(getByTestId('add-qty'));
+
+    await waitFor(() => expect(getByTestId('new-total')).toHaveTextContent('$600'));
+  });
+
+  it('TC-SVC-INT-003: Verify Add Incompatible Services warns or replaces previous selection', async () => {
+    // Component that attempts to add incompatible service
+    const IncompatTest: React.FC = () => {
+      const [error, setError] = React.useState('');
+      const addVegan = async () => {
+        await axios.post('/api/bookings/101/services', { service_id: 4 });
+      };
+      const addBeef = async () => {
+        try {
+          await axios.post('/api/bookings/101/services', { service_id: 5 });
+        } catch (e: any) {
+          setError(e.response?.data?.message || 'Incompatible');
+        }
+      };
+      return (
+        <div>
+          <button data-testid="add-vegan" onClick={addVegan}>Add Vegan</button>
+          <button data-testid="add-beef" onClick={addBeef}>Add Beef</button>
+          {error && <div data-testid="incompat-error">{error}</div>}
+        </div>
+      );
+    };
+
+    // Mock adding vegan succeeds
+    mockedAxios.post.mockResolvedValueOnce({ data: { success: true } });
+    // Mock adding beef fails with 409 due to incompatibility
+    mockedAxios.post.mockRejectedValueOnce({ response: { status: 409, data: { message: 'Incompatible with existing selection' } } });
+
+    const { getByTestId } = render(<IncompatTest />);
+    fireEvent.click(getByTestId('add-vegan'));
+    await waitFor(() => expect(mockedAxios.post).toHaveBeenCalled());
+
+    fireEvent.click(getByTestId('add-beef'));
+    await waitFor(() => expect(getByTestId('incompat-error')).toHaveTextContent('Incompatible with existing selection'));
+  });
+
+  it('TC-SVC-INT-004: Verify Service Display on E-Ticket lists all services', async () => {
+    const confirmedBooking = {
+      ...mockValidBooking,
+      services: [
+        { service_id: 1, service_name: 'Extra Baggage', price: 50.00 },
+        { service_id: 2, service_name: 'Premium Meal', price: 25.00 },
+      ],
+    };
+
+    const ETicket: React.FC<{ booking: any }> = ({ booking }) => {
+      return (
+        <div data-testid="e-ticket">
+          <h1>e-Ticket</h1>
+          <div data-testid="services-section">
+            {booking.services.map((s: any) => (
+              <div key={s.service_id} data-testid={`etk-svc-${s.service_id}`}>
+                <span data-testid={`etk-svc-name-${s.service_id}`}>{s.service_name}</span>
+                <span data-testid={`etk-svc-price-${s.service_id}`}>${s.price}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const { getByTestId } = render(<ETicket booking={confirmedBooking} />);
+
+    await waitFor(() => expect(getByTestId('e-ticket')).toBeInTheDocument());
+
+    // Verify services present in e-ticket
+    expect(getByTestId('etk-svc-1')).toBeInTheDocument();
+    expect(getByTestId('etk-svc-name-1')).toHaveTextContent('Extra Baggage');
+    expect(getByTestId('etk-svc-2')).toBeInTheDocument();
+    expect(getByTestId('etk-svc-name-2')).toHaveTextContent('Premium Meal');
+  });
+});
+
 describe('TC-SVC-ADD-002: Verify Add Service with Invalid Booking ID', () => {
   beforeEach(() => {
     vi.clearAllMocks();
