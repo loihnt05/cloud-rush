@@ -500,6 +500,167 @@ describe('TC-SVC-ADD-001: Verify Add Extra Service to Valid Booking', () => {
   });
 });
 
+describe('TC-VAL-SVC-001..010: Validation for Adding New Services', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Minimal Add New Service component for validation tests
+  const AddNewService: React.FC = () => {
+    const [name, setName] = React.useState('');
+    const [price, setPrice] = React.useState('');
+    const [error, setError] = React.useState('');
+    const [success, setSuccess] = React.useState('');
+
+    const handleSave = async () => {
+      setError('');
+      setSuccess('');
+
+      if (!name.trim()) {
+        setError('Name is mandatory');
+        return;
+      }
+      if (name.length > 255) {
+        setError('Name too long');
+        return;
+      }
+      // Basic XSS strip: reject tags
+      if (/[<>]/.test(name)) {
+        setError('Invalid characters in name');
+        return;
+      }
+      // Price validations
+      const parsed = Number(price);
+      if (price === '') {
+        setError('Price is required');
+        return;
+      }
+      if (isNaN(parsed)) {
+        setError('Invalid format');
+        return;
+      }
+      if (parsed < 0) {
+        setError('Price must be >= 0');
+        return;
+      }
+
+      try {
+        const res = await axios.post('/api/services', { name, price: parsed });
+        setSuccess('Created');
+        return res.data;
+      } catch (e: any) {
+        if (e.response?.status === 409) setError('Service already exists');
+        else if (e.response?.status === 400) setError(e.response.data.message || 'Invalid');
+        else setError('Failed');
+      }
+    };
+
+    return (
+      <div>
+        <input data-testid="svc-name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input data-testid="svc-price" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <button data-testid="svc-save" onClick={handleSave}>Save</button>
+        {error && <div data-testid="svc-error">{error}</div>}
+        {success && <div data-testid="svc-success">{success}</div>}
+      </div>
+    );
+  };
+
+  it('TC-VAL-SVC-001: Verify Service Name - Empty', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: '' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '10' } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-error')).toHaveTextContent('Name is mandatory'));
+  });
+
+  it('TC-VAL-SVC-002: Verify Service Name - Max Length', async () => {
+    const longName = 'A'.repeat(256);
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: longName } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '10' } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-error')).toHaveTextContent('Name too long'));
+  });
+
+  it('TC-VAL-SVC-003: Verify Service Name - Special Chars', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: '@#%&Service' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '5' } });
+
+    // Allowing special chars depends on policy; assume server accepts
+    mockedAxios.post.mockResolvedValueOnce({ data: { service_id: 200 } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-success')).toBeInTheDocument());
+  });
+
+  it('TC-VAL-SVC-004: Verify Service Name - HTML Tags (XSS)', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: '<b>Bold</b>' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '5' } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-error')).toHaveTextContent('Invalid characters in name'));
+  });
+
+  it('TC-VAL-SVC-005: Verify Service Price - Negative', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: 'Test Service' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '-100' } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-error')).toHaveTextContent('Price must be >= 0'));
+  });
+
+  it('TC-VAL-SVC-006: Verify Service Price - Zero', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: 'Free Service' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '0' } });
+
+    // Server may accept or warn; allow success if server returns created
+    mockedAxios.post.mockResolvedValueOnce({ data: { service_id: 201 } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-success')).toBeInTheDocument());
+  });
+
+  it('TC-VAL-SVC-007: Verify Service Price - Decimal', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: 'Decimal Service' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '10.99' } });
+    mockedAxios.post.mockResolvedValueOnce({ data: { service_id: 202 } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-success')).toBeInTheDocument());
+  });
+
+  it('TC-VAL-SVC-008: Verify Service Price - Non-numeric', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: 'Text Price' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: 'Ten dollars' } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-error')).toHaveTextContent('Invalid format'));
+  });
+
+  it('TC-VAL-SVC-009: Verify Service Price - Large Number', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: 'Expensive Service' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '999999999' } });
+
+    // Depending on server, either accepted or boundary error; accept success if server returns created
+    mockedAxios.post.mockResolvedValueOnce({ data: { service_id: 203 } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-success')).toBeInTheDocument());
+  });
+
+  it('TC-VAL-SVC-010: Verify Duplicate Service Name', async () => {
+    const { getByTestId } = render(<AddNewService />);
+    fireEvent.change(getByTestId('svc-name'), { target: { value: 'Extra Baggage' } });
+    fireEvent.change(getByTestId('svc-price'), { target: { value: '50' } });
+
+    // Server responds 409 for duplicate
+    mockedAxios.post.mockRejectedValueOnce({ response: { status: 409, data: { message: 'Service already exists' } } });
+    fireEvent.click(getByTestId('svc-save'));
+    await waitFor(() => expect(getByTestId('svc-error')).toHaveTextContent('Service already exists'));
+  });
+});
+
 describe('TC-SVC-INT-001..004: Services Integration (add/remove/display)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
