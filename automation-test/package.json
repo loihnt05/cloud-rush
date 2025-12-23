@@ -8,6 +8,7 @@
     "test": "mocha -r ts-node/register a.spec.js",
     "test:auth": "mocha -r ts-node/register function/auth.spec.ts",
     "test:search": "mocha -r ts-node/register function/search.spec.ts",
+    "test:tc-auth-001": "mocha -r ts-node/register ../testcases/TC-AUTH-001.spec.ts",
 
     "test:booking-infor-empty": "mocha -r ts-node/register function/booking/passengerInforEmptyFields.spec.js",
     "test:booking-infor-valid": "mocha -r ts-node/register function/booking/passengerInformationValidData.spec.js",
