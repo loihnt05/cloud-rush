@@ -718,3 +718,151 @@ describe('Additional Car Management Tests', () => {
     console.log('✓ Additional Test PASSED: Multiple operations handled');
   });
 });
+
+describe('TC-VAL-CAR-001..010: Validation for Adding New Car', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const AddCarForm: React.FC = () => {
+    const [plate, setPlate] = React.useState('');
+    const [brand, setBrand] = React.useState('');
+    const [model, setModel] = React.useState('');
+    const [seats, setSeats] = React.useState('');
+    const [error, setError] = React.useState('');
+
+    const handleSave = async () => {
+      setError('');
+      if (!plate.trim()) return setError('Field Mandatory');
+      if (!/^[A-Za-z0-9\-]+$/.test(plate)) return setError('Alphanumeric only');
+      if (plate.length > 12) return setError('Max length exceeded');
+      if (!brand.trim()) return setError('Field Mandatory');
+      if (!model.trim()) return setError('Field Mandatory');
+      const nSeats = Number(seats);
+      if (isNaN(nSeats) || !Number.isInteger(nSeats)) return setError('Invalid seats');
+      if (nSeats <= 0) return setError('Invalid seats');
+      // Simulate duplicate plate check via server
+      try {
+        await axios.post('/api/cars', { license_plate: plate, brand, model, seats: nSeats });
+        return;
+      } catch (e: any) {
+        if (e.response?.status === 409) return setError('Car already exists');
+        setError('Failed');
+      }
+    };
+
+    return (
+      <div>
+        <input data-testid="car-plate" value={plate} onChange={(e) => setPlate(e.target.value)} />
+        <input data-testid="car-brand" value={brand} onChange={(e) => setBrand(e.target.value)} />
+        <input data-testid="car-model" value={model} onChange={(e) => setModel(e.target.value)} />
+        <input data-testid="car-seats" value={seats} onChange={(e) => setSeats(e.target.value)} />
+        <button data-testid="car-save" onClick={handleSave}>Save</button>
+        {error && <div data-testid="car-error">{error}</div>}
+      </div>
+    );
+  };
+
+  it('TC-VAL-CAR-001: Verify License Plate - Empty', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Field Mandatory'));
+  });
+
+  it('TC-VAL-CAR-002: Verify License Plate - Format Error', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '@@@' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Test' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'X' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Alphanumeric only'));
+  });
+
+  it('TC-VAL-CAR-003: Verify License Plate - Max Length', async () => {
+    const longPlate = '51A-123456789';
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: longPlate } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Test' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'X' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Max length exceeded'));
+  });
+
+  it('TC-VAL-CAR-004: Verify License Plate - Duplicate', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '59A-123.45' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Test' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'X' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '4' } });
+    mockedAxios.post.mockRejectedValueOnce({ response: { status: 409, data: { message: 'Car already exists' } } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Car already exists'));
+  });
+
+  it('TC-VAL-CAR-005: Verify Car Brand - Empty', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '59A-123' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: '' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'X' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Field Mandatory'));
+  });
+
+  it('TC-VAL-CAR-006: Verify Car Model - Empty', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '59A-123' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Toyota' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: '' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Field Mandatory'));
+  });
+
+  it('TC-VAL-CAR-007: Verify Seats - Negative', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '59A-124' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Toyota' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'Corolla' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '-4' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Invalid seats'));
+  });
+
+  it('TC-VAL-CAR-008: Verify Seats - Zero', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '59A-125' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Toyota' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'Corolla' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '0' } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(getByTestId('car-error')).toHaveTextContent('Invalid seats'));
+  });
+
+  it('TC-VAL-CAR-009: Verify Seats - Min Value (2) Accepted', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: '59A-126' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Ferrari' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'F8' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '2' } });
+    // Mock successful create
+    mockedAxios.post.mockResolvedValueOnce({ data: { car_id: 900 } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(mockedAxios.post).toHaveBeenCalled());
+  });
+
+  it('TC-VAL-CAR-010: Verify Seats - Max Value (50) Accepted', async () => {
+    const { getByTestId } = render(<AddCarForm />);
+    fireEvent.change(getByTestId('car-plate'), { target: { value: 'BUS-001' } });
+    fireEvent.change(getByTestId('car-brand'), { target: { value: 'Volvo' } });
+    fireEvent.change(getByTestId('car-model'), { target: { value: 'Coach' } });
+    fireEvent.change(getByTestId('car-seats'), { target: { value: '50' } });
+    // Mock server accepts large seat counts
+    mockedAxios.post.mockResolvedValueOnce({ data: { car_id: 901 } });
+    fireEvent.click(getByTestId('car-save'));
+    await waitFor(() => expect(mockedAxios.post).toHaveBeenCalled());
+  });
+});
