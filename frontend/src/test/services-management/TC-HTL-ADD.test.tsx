@@ -568,6 +568,58 @@ describe('TC-HTL-ADD-001: Verify Add New Hotel - Success', () => {
   });
 });
 
+describe('TC-HTL-ADD-003..004: Add Hotel edge cases', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('TC-HTL-ADD-003: Verify Add Hotel - Invalid Rating', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Test Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Hanoi' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '6' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toHaveTextContent('Rating must be between 1 and 5'));
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+
+    // Negative rating
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '-1' } });
+    fireEvent.click(getByTestId('save-button'));
+    await waitFor(() => expect(getByTestId('error-message')).toHaveTextContent('Rating must be between 1 and 5'));
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
+
+  it('TC-HTL-ADD-004: Verify Add Hotel - Same Name Diff Address allowed', async () => {
+    // Existing Hilton in HCM
+    const existing = [{ hotel_id: 1, name: 'Hilton', address: 'Ho Chi Minh' }];
+    mockedAxios.get.mockResolvedValueOnce({ data: existing });
+
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Hilton' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Hanoi' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '4' } });
+
+    mockedAxios.post.mockResolvedValueOnce({ data: { hotel_id: 99, name: 'Hilton', address: 'Hanoi' } });
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(mockedAxios.post).toHaveBeenCalled());
+    await waitFor(() => expect(getByTestId('success-message')).toBeInTheDocument());
+  });
+});
+
 describe('TC-HTL-ADD-002: Verify Add Hotel - Duplicate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
