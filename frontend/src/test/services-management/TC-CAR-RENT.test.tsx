@@ -542,6 +542,30 @@ describe('Additional Car Rental Tests', () => {
     console.log('✓ Additional Test PASSED: Car unavailability handled');
   });
 
+    describe('TC-CAR-RENT-002: Rent Car - Already Reserved', () => {
+      beforeEach(() => {
+      vi.clearAllMocks();
+      });
+
+      it('should show Unavailable when a car is already reserved by another user for same date', async () => {
+      // Car A is reserved by User X on 2025-12-25
+      const carA = { id: 20, brand: 'Ford', model: 'Focus', plate: 'FOR123' };
+      mockedAxios.get.mockResolvedValueOnce({ data: [carA] });
+
+      // Reservation check returns conflict for the date
+      mockedAxios.post.mockResolvedValueOnce({ data: { reserved: true, reserved_by: 'userX' } });
+
+      const { getByTestId, getByText } = render(<CarRentalFlow />);
+      await waitFor(() => expect(getByTestId('car-rental-flow')).toBeInTheDocument());
+
+      // User Y searches and selects the car with same date
+      fireEvent.change(getByTestId('rental-date'), { target: { value: '2025-12-25' } });
+      fireEvent.click(getByTestId(`select-car-${carA.id}`));
+
+      // The UI should indicate it's unavailable
+      await waitFor(() => expect(getByText('Car Unavailable')).toBeInTheDocument());
+      });
+    });
   it('Should calculate price correctly for different rental periods', async () => {
     mockedAxios.get.mockImplementation((url: string) => {
       if (url.includes('/cars/')) {

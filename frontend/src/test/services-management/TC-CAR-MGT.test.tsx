@@ -343,6 +343,50 @@ describe('TC-CAR-MGT-001: Verify Toggle Availability', () => {
   });
 });
 
+describe('TC-CAR-MGT-003..004: Management edge cases', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('TC-CAR-MGT-003: Verify Delete Car - Not In Use', async () => {
+    const car = { id: 10, plate: 'ABC123', status: 'Available' };
+    mockedAxios.get.mockResolvedValueOnce({ data: [car] });
+
+    const { getByTestId, queryByText } = render(<CarManagement />);
+    await waitFor(() => expect(getByTestId('car-management')).toBeInTheDocument());
+
+    // Trigger delete
+    fireEvent.click(getByTestId(`remove-button-${car.id}`));
+    // Confirm dialog
+    fireEvent.click(getByTestId('confirm-delete'));
+
+    mockedAxios.delete.mockResolvedValueOnce({ status: 200 });
+    await waitFor(() => expect(mockedAxios.delete).toHaveBeenCalled());
+
+    // After delete the car should not be present
+    await waitFor(() => expect(queryByText(car.plate)).not.toBeInTheDocument());
+  });
+
+  it('TC-CAR-MGT-004: Verify Add Car - Invalid License Plate', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<CarManagement />);
+    await waitFor(() => expect(getByTestId('car-management')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-car-button'));
+    await waitFor(() => expect(getByTestId('add-car-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('plate-input'), { target: { value: 'ABC-@#' } });
+    fireEvent.change(getByTestId('brand-input'), { target: { value: 'TestBrand' } });
+    fireEvent.change(getByTestId('seats-input'), { target: { value: '4' } });
+
+    fireEvent.click(getByTestId('save-car'));
+
+    // Expect client-side validation error and no POST
+    await waitFor(() => expect(getByTestId('error-message')).toHaveTextContent('License plate must be alphanumeric'));
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
+});
+
 describe('TC-CAR-MGT-002: Verify Remove Car - In Use', () => {
   beforeEach(() => {
     vi.clearAllMocks();

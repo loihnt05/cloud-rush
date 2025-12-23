@@ -355,6 +355,64 @@ describe('TC-CAR-SRCH-001: Verify Search Car by Brand', () => {
   });
 });
 
+describe('TC-CAR-SRCH-003..005: Advanced search behaviors', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('TC-CAR-SRCH-003: Verify Search Car - Brand Case Insensitive', async () => {
+    const cars = [
+      { id: 1, brand: 'Toyota', model: 'Corolla', seats: 4 },
+      { id: 2, brand: 'Honda', model: 'Civic', seats: 4 }
+    ];
+    mockedAxios.get.mockResolvedValueOnce({ data: cars });
+
+    const { getByTestId, getByText } = render(<CarSearchDashboard />);
+    await waitFor(() => expect(getByTestId('car-search-dashboard')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('search-input'), { target: { value: 'toyota' } });
+    fireEvent.keyDown(getByTestId('search-input'), { key: 'Enter', code: 'Enter' });
+
+    await waitFor(() => expect(getByText('Toyota')).toBeInTheDocument());
+  });
+
+  it('TC-CAR-SRCH-004: Verify Search Car - Partial Name', async () => {
+    const cars = [ { id: 3, brand: 'Mercedes Benz', model: 'E-Class', seats: 5 } ];
+    mockedAxios.get.mockResolvedValueOnce({ data: cars });
+
+    const { getByTestId, getByText } = render(<CarSearchDashboard />);
+    await waitFor(() => expect(getByTestId('car-search-dashboard')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('search-input'), { target: { value: 'Merc' } });
+    fireEvent.keyDown(getByTestId('search-input'), { key: 'Enter', code: 'Enter' });
+
+    await waitFor(() => expect(getByText('Mercedes Benz')).toBeInTheDocument());
+  });
+
+  it('TC-CAR-SRCH-005: Verify Search Car - Multiple Filters', async () => {
+    const cars = [
+      { id: 4, brand: 'Honda', model: 'Jazz', seats: 4 },
+      { id: 5, brand: 'Honda', model: 'Accord', seats: 5 },
+      { id: 6, brand: 'Toyota', model: 'Yaris', seats: 4 }
+    ];
+    mockedAxios.get.mockResolvedValueOnce({ data: cars });
+
+    const { getByTestId, queryByText } = render(<CarSearchDashboard />);
+    await waitFor(() => expect(getByTestId('car-search-dashboard')).toBeInTheDocument());
+
+    // Apply filters: Brand=Honda, Seats=4
+    fireEvent.click(getByTestId('filter-brand-honda'));
+    fireEvent.click(getByTestId('filter-seats-4'));
+    fireEvent.click(getByTestId('apply-filters'));
+
+    await waitFor(() => {
+      expect(queryByText('Honda Jazz')).toBeInTheDocument();
+      expect(queryByText('Honda Accord')).not.toBeInTheDocument();
+      expect(queryByText('Toyota Yaris')).not.toBeInTheDocument();
+    });
+  });
+});
+
 describe('TC-CAR-SRCH-002: Verify Search Car - No Results', () => {
   beforeEach(() => {
     vi.clearAllMocks();
