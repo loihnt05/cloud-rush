@@ -20,6 +20,10 @@ All test files are located in: **`frontend/src/test/`**
    - File: [frontend/src/test/TC-VER-PAY.test.tsx](../frontend/src/test/TC-VER-PAY.test.tsx)
    - Tests: 20 passing ✅
 
+4. **TC-TRK-UPD-PAY**: Track and Update Payment Status (CSA Features)
+   - File: [frontend/src/test/TC-TRK-UPD-PAY.test.tsx](../frontend/src/test/TC-TRK-UPD-PAY.test.tsx)
+   - Tests: 19 passing ✅
+
 ---
 
 ## How to Run Tests
@@ -40,6 +44,9 @@ pnpm test TC-REV-PEN
 
 # Run payment verification tests
 pnpm test TC-VER-PAY
+
+# Run track and update payment tests
+pnpm test TC-TRK-UPD-PAY
 
 # Run tests from home page
 pnpm test home
@@ -345,12 +352,155 @@ Tests use realistic payment and booking data structures:
 
 ---
 
+## TC-TRK-UPD-PAY: CSA Track and Update Payment Status
+
+### Test Description
+Tests the CSA workflow for tracking payment status with payment gateway integration, updating payment status with validation rules, and filtering/viewing payments by date or date range.
+
+### Prerequisites
+- CSA is logged in with appropriate permissions
+- Payment gateway API endpoints are available  
+- Payments with different statuses exist in the system
+- Access to Payment Dashboard
+
+### Test Cases
+
+#### TC-TRK-PAY-001: Verify Track Completed Payment
+**Description:** CSA tracks a completed payment and marks the booking as verified.
+
+- **Step 1**: View Payment Details - Status is visible
+
+**Expected Result:** CSA successfully views payment details and marks booking_flight_status as "verified".
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR45.9
+
+#### TC-TRK-PAY-002: Verify Track Pending Payment
+**Description:** CSA tracks a pending payment and checks gateway status.
+
+- **Step 1**: Check Gateway /payment-gateway - Gateway status retrieved
+
+**Expected Result:** System retrieves gateway status and waits for final status from payment gateway.
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR45.10
+
+#### TC-UPD-PAY-001: Verify Invalid Status Transition (Refunded -> Pending)
+**Description:** System prevents invalid payment status transitions.
+
+- **Step 1**: Attempt to change status to "Pending" - Input selected
+
+**Expected Result:** System displays error "Invalid transition" and blocks the update.
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR46.11
+
+#### TC-UPD-PAY-002: Verify Update to "Completed"
+**Description:** CSA updates payment status to completed with automatic booking verification.
+
+- **Step 1**: Confirm status change - Update processed
+
+**Expected Result:** booking_flight_status becomes "verified"; Receipt email sent; Success notification sent.
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR47.12
+
+#### TC-UPD-PAY-003: Verify Update to "Refunded"
+**Description:** CSA updates payment status to refunded, triggering refund process.
+
+- **Step 1**: Confirm status change - Update processed
+
+**Expected Result:** System triggers "Process Refund" flow.
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR47.13
+
+#### TC-VIEW-PAY-001: Verify Filter Payments by Date
+**Description:** CSA filters payments on dashboard by specific date.
+
+- **Step 1**: Select a specific date - Date filter applied
+
+**Expected Result:** System retrieves and displays all payments made on that specific date.
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR48.14
+
+#### TC-VIEW-PAY-002: Verify Filter Payments by Date Range
+**Description:** CSA filters payments on dashboard by date range.
+
+- **Step 1**: Select a date range (Start - End) - Range filter applied
+
+**Expected Result:** System retrieves and displays all payments within that period.
+
+**Tests**: 2 (1 step + 1 complete flow)
+
+**Business Rule**: BR48.15
+
+---
+
+### Additional Tests
+5 error handling and edge case tests:
+- Display error when payment fetch fails
+- Handle gateway API error for pending payment
+- Display no payments message when filter returns empty
+- Handle API error when filtering payments
+- Block other invalid transitions (completed -> pending)
+
+### Test Coverage Summary
+- **TC-TRK-PAY-001**: 2 tests ✅
+- **TC-TRK-PAY-002**: 2 tests ✅
+- **TC-UPD-PAY-001**: 2 tests ✅
+- **TC-UPD-PAY-002**: 2 tests ✅
+- **TC-UPD-PAY-003**: 2 tests ✅
+- **TC-VIEW-PAY-001**: 2 tests ✅
+- **TC-VIEW-PAY-002**: 2 tests ✅
+- **Additional**: 5 tests ✅
+
+**Total**: 19 test scenarios, all passing
+
+### Technology Stack
+- **Framework**: Vitest
+- **Testing Library**: React Testing Library
+- **Mocking**: Vitest mocks for axios API calls and payment gateway
+- **Environment**: jsdom
+
+### Mock Data Structure
+Tests use realistic payment and gateway data structures:
+- Completed payment with gateway response
+- Pending payment awaiting gateway status
+- Refunded payment with refund date
+- Payment lists for date filtering
+
+### Benefits
+- ✅ Tests payment tracking without backend/gateway dependency
+- ✅ Validates payment status transition rules
+- ✅ Tests payment filtering and dashboard features
+- ✅ Fast execution (no actual API/gateway calls)
+- ✅ Isolated component testing with mocked data
+
+### Business Rules Validated
+- **BR45.9**: Completed payment allows marking booking as verified
+- **BR45.10**: Pending payment checks gateway for status updates
+- **BR46.11**: Invalid status transitions are blocked with error messages
+- **BR47.12**: Update to completed triggers booking verification and receipt email
+- **BR47.13**: Update to refunded triggers refund process flow
+- **BR48.14**: Filter payments by specific date on dashboard
+- **BR48.15**: Filter payments by date range on dashboard
+
+---
+
 ## Test Results Summary
 
 ### Overall Statistics
-- **Total Test Suites**: 3
-- **Total Tests**: 39 passing ✅
-- **Test Duration**: ~2.5s
+- **Total Test Suites**: 4
+- **Total Tests**: 58 passing ✅
+- **Test Duration**: ~1.5s
 - **Pass Rate**: 100%
 
 ### Breakdown by Test Suite
@@ -359,15 +509,13 @@ Tests use realistic payment and booking data structures:
 | TC-AUTH-001 | TC-AUTH-001.test.tsx | 6 | ✅ All Passing |
 | TC-REV-PEN | TC-REV-PEN.test.tsx | 13 | ✅ All Passing |
 | TC-VER-PAY | TC-VER-PAY.test.tsx | 20 | ✅ All Passing |
+| TC-TRK-UPD-PAY | TC-TRK-UPD-PAY.test.tsx | 19 | ✅ All Passing |
 
 ### Latest Test Run Output
 ```
-Test Files  3 passed (3)
-     Tests  39 passed (39)
-  Duration  ~2.5
-Test Files  2 passed (2)
-     Tests  19 passed (19)
-  Duration  1.32s
+Test Files  4 passed (4)
+     Tests  58 passed (58)
+  Duration  1.46s
 ```
 
 ---
