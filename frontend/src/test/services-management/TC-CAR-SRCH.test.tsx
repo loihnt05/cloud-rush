@@ -644,3 +644,207 @@ describe('Additional Car Search Tests', () => {
     console.log('✓ Additional Test PASSED: Partial model match works');
   });
 });
+
+describe('TC-SRCH-CAR-001..010: Filters by Brand and Seats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const dataset = [
+    { car_id: 101, license_plate: 'TOY-101', brand: 'Toyota', model: 'Corolla', year: 2022, seats: 4 },
+    { car_id: 102, license_plate: 'TOY-102', brand: 'Toyota', model: 'RAV4', year: 2023, seats: 7 },
+    { car_id: 103, license_plate: 'HON-103', brand: 'Honda', model: 'Odyssey', year: 2021, seats: 7 },
+    { car_id: 104, license_plate: 'HON-104', brand: 'Honda', model: 'Fit', year: 2020, seats: 4 },
+    { car_id: 105, license_plate: 'FRD-105', brand: 'Ford', model: 'Focus', year: 2019, seats: 4 },
+    { car_id: 106, license_plate: 'BMW-106', brand: 'BMW', model: 'X5', year: 2024, seats: 5 },
+    { car_id: 107, license_plate: 'MER-107', brand: 'Mercedes', model: 'C-Class', year: 2023, seats: 5 },
+  ];
+
+  const TestCarSearchFilters: React.FC = () => {
+    const [allCars, setAllCars] = React.useState<any[]>([]);
+    const [filtered, setFiltered] = React.useState<any[]>([]);
+    const [brand, setBrand] = React.useState('');
+    const [seats, setSeats] = React.useState('');
+
+    React.useEffect(() => {
+      const fetch = async () => {
+        const res = await axios.get('/api/cars');
+        setAllCars(res.data);
+        setFiltered(res.data);
+      };
+      fetch();
+    }, []);
+
+    const apply = () => {
+      let results = [...allCars];
+      if (brand) results = results.filter(c => c.brand.toLowerCase() === brand.toLowerCase());
+      if (seats) results = results.filter(c => c.seats === Number(seats));
+      setFiltered(results);
+    };
+
+    return (
+      <div data-testid="car-search-filters">
+        <input data-testid="brand-filter-input-2" value={brand} onChange={e => setBrand(e.target.value)} />
+        <select data-testid="seats-filter-select-2" value={seats} onChange={e => setSeats(e.target.value)}>
+          <option value="">Any</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="7">7</option>
+        </select>
+        <button data-testid="apply-filters-2" onClick={apply}>Apply</button>
+
+        <div data-testid="search-results-2">
+          <h4>Search Results ({filtered.length} cars)</h4>
+          {filtered.length === 0 ? (
+            <div data-testid="no-results-message-2">No results found</div>
+          ) : (
+            <div data-testid="car-results-list-2">
+              {filtered.map(c => (
+                <div data-testid={`car-result-${c.car_id}`} key={c.car_id}>
+                  <div data-testid={`car-brand-${c.car_id}`}>{c.brand}</div>
+                  <div data-testid={`car-model-${c.car_id}`}>{c.model}</div>
+                  <div data-testid={`car-seats-${c.car_id}`}>{c.seats} seats</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  it('TC-SRCH-CAR-001: Filter by Brand: Toyota', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Toyota' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (2 cars)'));
+
+    expect(getByTestId('car-result-101')).toBeInTheDocument();
+    expect(getByTestId('car-result-102')).toBeInTheDocument();
+    expect(queryByTestId('car-result-103')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-002: Filter by Brand: Honda', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Honda' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (2 cars)'));
+    expect(getByTestId('car-result-103')).toBeInTheDocument();
+    expect(getByTestId('car-result-104')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-003: Filter by Brand: Ford', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Ford' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (1 cars)'));
+    expect(getByTestId('car-result-105')).toBeInTheDocument();
+    expect(queryByTestId('car-result-101')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-004: Filter by Brand: BMW', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'BMW' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (1 cars)'));
+    expect(getByTestId('car-result-106')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-005: Filter by Brand: Mercedes', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Mercedes' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (1 cars)'));
+    expect(getByTestId('car-result-107')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-006: Filter by Seats: 4', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('seats-filter-select-2'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (3 cars)'));
+    expect(getByTestId('car-result-101')).toBeInTheDocument();
+    expect(getByTestId('car-result-104')).toBeInTheDocument();
+    expect(getByTestId('car-result-105')).toBeInTheDocument();
+    expect(queryByTestId('car-result-102')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-007: Filter by Seats: 7', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('seats-filter-select-2'), { target: { value: '7' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (2 cars)'));
+    expect(getByTestId('car-result-102')).toBeInTheDocument();
+    expect(getByTestId('car-result-103')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-008: Filter Combined: Toyota + 4 Seats', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Toyota' } });
+    fireEvent.change(getByTestId('seats-filter-select-2'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (1 cars)'));
+    expect(getByTestId('car-result-101')).toBeInTheDocument();
+    expect(queryByTestId('car-result-102')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-009: Filter Combined: Honda + 7 Seats', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Honda' } });
+    fireEvent.change(getByTestId('seats-filter-select-2'), { target: { value: '7' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (1 cars)'));
+    expect(getByTestId('car-result-103')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-CAR-010: Filter No Result (Ferrari + 50 seats)', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestCarSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('car-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('brand-filter-input-2'), { target: { value: 'Ferrari' } });
+    fireEvent.change(getByTestId('seats-filter-select-2'), { target: { value: '50' } });
+    fireEvent.click(getByTestId('apply-filters-2'));
+
+    await waitFor(() => expect(getByTestId('no-results-message-2')).toBeInTheDocument());
+    expect(getByTestId('no-results-message-2')).toHaveTextContent('No results found');
+    expect(getByTestId('search-results-2')).toHaveTextContent('Search Results (0 cars)');
+  });
+});
