@@ -27,6 +27,6 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/testcaseoh/**/*"]
+  "exclude": ["src/testcaseoh/**/*", "src/test/**/*"]
 }
  
