@@ -668,21 +668,18 @@ describe('TC-ADM-USR: Admin User Management UI (Danh sách User)', () => {
     });
 
     const searchInput = screen.getByTestId('search-input');
-    await user.type(searchInput, searchEmail);
+    fireEvent.change(searchInput, { target: { value: searchEmail } });
 
-    // Wait for the full text to be typed
+    // Verify API is called with search query
     await waitFor(() => {
-      expect(searchInput).toHaveValue(searchEmail);
-    });
-
-    // Verify API is called with search query (check last call since typing triggers on each keystroke)
-    const calls = mockGetUserList.mock.calls;
-    const lastCall = calls[calls.length - 1];
-    expect(lastCall[0]).toEqual({
-      search: searchEmail,
-      role: undefined,
-      page: 1,
-      limit: 10,
+      const calls = mockGetUserList.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall[0]).toEqual({
+        search: searchEmail,
+        role: undefined,
+        page: 1,
+        limit: 10,
+      });
     });
 
     // Verify search results
@@ -731,21 +728,18 @@ describe('TC-ADM-USR: Admin User Management UI (Danh sách User)', () => {
     });
 
     const searchInput = screen.getByTestId('search-input');
-    await user.type(searchInput, searchQuery);
+    fireEvent.change(searchInput, { target: { value: searchQuery } });
 
-    // Wait for the full text to be typed
+    // Verify API is called with search query
     await waitFor(() => {
-      expect(searchInput).toHaveValue(searchQuery);
-    });
-
-    // Verify API is called with search query (check last call since typing triggers on each keystroke)
-    const calls = mockGetUserList.mock.calls;
-    const lastCall = calls[calls.length - 1];
-    expect(lastCall[0]).toEqual({
-      search: searchQuery,
-      role: undefined,
-      page: 1,
-      limit: 10,
+      const calls = mockGetUserList.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall[0]).toEqual({
+        search: searchQuery,
+        role: undefined,
+        page: 1,
+        limit: 10,
+      });
     });
 
     // Verify multiple results
@@ -795,21 +789,18 @@ describe('TC-ADM-USR: Admin User Management UI (Danh sách User)', () => {
     });
 
     const searchInput = screen.getByTestId('search-input');
-    await user.type(searchInput, searchQuery);
+    fireEvent.change(searchInput, { target: { value: searchQuery } });
 
-    // Wait for the full text to be typed
+    // Verify API is called
     await waitFor(() => {
-      expect(searchInput).toHaveValue(searchQuery);
-    });
-
-    // Verify API is called (check last call since typing triggers on each keystroke)
-    const calls = mockGetUserList.mock.calls;
-    const lastCall = calls[calls.length - 1];
-    expect(lastCall[0]).toEqual({
-      search: searchQuery,
-      role: undefined,
-      page: 1,
-      limit: 10,
+      const calls = mockGetUserList.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall[0]).toEqual({
+        search: searchQuery,
+        role: undefined,
+        page: 1,
+        limit: 10,
+      });
     });
 
     // Verify "No users found" message
@@ -1084,3 +1075,4 @@ describe('TC-ADM-USR: Admin User Management UI (Danh sách User)', () => {
     });
   });
 });
+
