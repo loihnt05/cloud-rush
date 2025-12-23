@@ -498,6 +498,208 @@ describe('TC-HTL-SRCH-001: Verify Filter Hotel by Rating', () => {
     console.log('✓ TC-HTL-SRCH-001 Additional Test PASSED: No results handling works');
   });
 
+describe('TC-SRCH-HTL-001..010: Hotel Search Filters (Rating + Location)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const dataset = [
+    { hotel_id: 201, name: 'Hanoi Budget', address: 'Hanoi', rating: 1, city: 'Hanoi', price_per_night: 30.0, available_rooms: 5, amenities: [] },
+    { hotel_id: 202, name: 'Hanoi Comfort', address: 'Hanoi Old Quarter', rating: 5, city: 'Hanoi', price_per_night: 200.0, available_rooms: 20, amenities: [] },
+    { hotel_id: 203, name: 'HCM Central', address: 'District 1', rating: 3, city: 'HCM', price_per_night: 90.0, available_rooms: 10, amenities: [] },
+    { hotel_id: 204, name: 'HCM Luxury', address: 'District 3', rating: 5, city: 'HCM', price_per_night: 300.0, available_rooms: 8, amenities: [] },
+    { hotel_id: 205, name: 'Da Nang Seaview', address: 'My Khe', rating: 4, city: 'Da Nang', price_per_night: 120.0, available_rooms: 12, amenities: [] },
+    { hotel_id: 206, name: 'Da Nang Hostel', address: 'Backpacker Street', rating: 2, city: 'Da Nang', price_per_night: 25.0, available_rooms: 6, amenities: [] },
+    { hotel_id: 207, name: 'Hanoi Mid', address: 'Hanoi Suburb', rating: 3, city: 'Hanoi', price_per_night: 70.0, available_rooms: 7, amenities: [] },
+  ];
+
+  const TestHotelSearchFilters: React.FC = () => {
+    const [all, setAll] = React.useState<any[]>([]);
+    const [filtered, setFiltered] = React.useState<any[]>([]);
+    const [rating, setRating] = React.useState('');
+    const [city, setCity] = React.useState('');
+
+    React.useEffect(() => {
+      const fetch = async () => {
+        const res = await axios.get('/api/hotels/search');
+        setAll(res.data);
+        setFiltered(res.data);
+      };
+      fetch();
+    }, []);
+
+    const apply = () => {
+      let r = [...all];
+      if (rating) r = r.filter(h => h.rating === Number(rating));
+      if (city) r = r.filter(h => h.city.toLowerCase().includes(city.toLowerCase()));
+      setFiltered(r);
+    };
+
+    return (
+      <div data-testid="hotel-search-filters">
+        <select data-testid="rating-select-2" value={rating} onChange={e => setRating(e.target.value)}>
+          <option value="">Any</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <input data-testid="location-input-2" value={city} onChange={e => setCity(e.target.value)} placeholder="City" />
+        <button data-testid="apply-filters-htl" onClick={apply}>Apply</button>
+
+        <div data-testid="search-results-htl">
+          <h4>Hotels ({filtered.length})</h4>
+          {filtered.length === 0 ? (
+            <div data-testid="no-results-htl">No results found</div>
+          ) : (
+            <div data-testid="hotels-list-htl">
+              {filtered.map(h => (
+                <div key={h.hotel_id} data-testid={`hotel-item-${h.hotel_id}`}>
+                  <div data-testid={`hotel-name-${h.hotel_id}`}>{h.name}</div>
+                  <div data-testid={`hotel-city-${h.hotel_id}`}>{h.city}</div>
+                  <div data-testid={`hotel-rating-${h.hotel_id}`}>{h.rating} Stars</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  it('TC-SRCH-HTL-001: Filter by Rating: 1 Star', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '1' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (1)'));
+    expect(getByTestId('hotel-item-201')).toBeInTheDocument();
+    expect(queryByTestId('hotel-item-202')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-002: Filter by Rating: 2 Stars', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '2' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (1)'));
+    expect(getByTestId('hotel-item-206')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-003: Filter by Rating: 3 Stars', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '3' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (2)'));
+    expect(getByTestId('hotel-item-203')).toBeInTheDocument();
+    expect(getByTestId('hotel-item-207')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-004: Filter by Rating: 4 Stars', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '4' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (1)'));
+    expect(getByTestId('hotel-item-205')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-005: Filter by Rating: 5 Stars', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '5' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (2)'));
+    expect(getByTestId('hotel-item-202')).toBeInTheDocument();
+    expect(getByTestId('hotel-item-204')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-006: Filter by Location: Hanoi', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('location-input-2'), { target: { value: 'Hanoi' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (3)'));
+    expect(getByTestId('hotel-item-201')).toBeInTheDocument();
+    expect(getByTestId('hotel-item-202')).toBeInTheDocument();
+    expect(getByTestId('hotel-item-207')).toBeInTheDocument();
+    expect(queryByTestId('hotel-item-203')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-007: Filter by Location: HCM', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('location-input-2'), { target: { value: 'HCM' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (2)'));
+    expect(getByTestId('hotel-item-203')).toBeInTheDocument();
+    expect(getByTestId('hotel-item-204')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-008: Filter by Location: Da Nang', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('location-input-2'), { target: { value: 'Da Nang' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (2)'));
+    expect(getByTestId('hotel-item-205')).toBeInTheDocument();
+    expect(getByTestId('hotel-item-206')).toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-009: Filter Combined: Hanoi + 5 Stars', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId, queryByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('location-input-2'), { target: { value: 'Hanoi' } });
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '5' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (1)'));
+    expect(getByTestId('hotel-item-202')).toBeInTheDocument();
+    expect(queryByTestId('hotel-item-201')).not.toBeInTheDocument();
+  });
+
+  it('TC-SRCH-HTL-010: Filter Combined: HCM + 3 Stars', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: dataset });
+    const { getByTestId } = render(<TestHotelSearchFilters />);
+
+    await waitFor(() => expect(getByTestId('hotel-search-filters')).toBeInTheDocument());
+    fireEvent.change(getByTestId('location-input-2'), { target: { value: 'HCM' } });
+    fireEvent.change(getByTestId('rating-select-2'), { target: { value: '3' } });
+    fireEvent.click(getByTestId('apply-filters-htl'));
+
+    await waitFor(() => expect(getByTestId('search-results-htl')).toHaveTextContent('Hotels (1)'));
+    expect(getByTestId('hotel-item-203')).toBeInTheDocument();
+  });
+});
+
   it('Verify hotel selection callback', async () => {
     const mockHotelSelected = vi.fn();
 

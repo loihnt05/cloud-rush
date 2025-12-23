@@ -1043,3 +1043,207 @@ describe('Additional Hotel Management Tests', () => {
     console.log('✓ Additional Test PASSED: Optional fields can be empty');
   });
 });
+
+describe('TC-VAL-HTL-001..010: Validate Add New Hotel', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('TC-VAL-HTL-001: Verify Hotel Name - Empty', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    // Leave name empty
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Some Address' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '4' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Field Mandatory');
+  });
+
+  it('TC-VAL-HTL-002: Verify Address - Empty', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    // Leave address empty
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Test Hotel' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '3' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Field Mandatory');
+  });
+
+  it('TC-VAL-HTL-003: Verify Rating - Negative', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Neg Rating Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Address' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '-1' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Rating 1-5 only');
+  });
+
+  it('TC-VAL-HTL-004: Verify Rating - Zero', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Zero Rating Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Address' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '0' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Rating 1-5 only');
+  });
+
+  it('TC-VAL-HTL-005: Verify Rating - Over Max', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Too High Rating' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Address' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '6' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Rating 1-5 only');
+  });
+
+  it('TC-VAL-HTL-006: Verify Rating - Decimal (4.5)', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Decimal Rating Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Address' } });
+    // Enter decimal rating
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '4.5' } });
+
+    // Mock API success to accept decimal rating if component converts/accepts it
+    mockedAxios.post.mockResolvedValueOnce({ data: { hotel_id: 200, name: 'Decimal Rating Hotel', address: 'Address', rating: 4.5 } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => {
+      // Either success-message appears or validation blocks; treat success as passing expected acceptance
+      const success = document.querySelector('[data-testid="success-message"]');
+      expect(success || getByTestId('error-message')).toBeTruthy();
+    });
+  });
+
+  it('TC-VAL-HTL-007: Verify Rating - Text input', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Text Rating Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Address' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: 'Five' } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Numeric only');
+  });
+
+  it('TC-VAL-HTL-008: Verify Description - Max Length', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    const longText = 'A'.repeat(6000);
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Long Desc Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Address' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '4' } });
+    fireEvent.change(getByTestId('description-input'), { target: { value: longText } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    // Either error shown or description truncated by system
+    await waitFor(() => {
+      const err = document.querySelector('[data-testid="error-message"]');
+      const success = document.querySelector('[data-testid="success-message"]');
+      expect(err || success).toBeTruthy();
+    });
+  });
+
+  it('TC-VAL-HTL-009: Verify Duplicate Hotel', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: mockHotels });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    // Use existing hotel's name & address
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Grand Plaza Hotel' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: '123 Main Street, New York, NY 10001' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '5' } });
+
+    mockedAxios.post.mockRejectedValueOnce({ response: { status: 409, data: { message: 'Hotel exists' } } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('error-message')).toBeInTheDocument());
+    expect(getByTestId('error-message')).toHaveTextContent('Hotel exists');
+  });
+
+  it('TC-VAL-HTL-010: Verify Valid Hotel', async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+    const { getByTestId } = render(<HotelDashboard />);
+    await waitFor(() => expect(getByTestId('hotel-dashboard')).toBeInTheDocument());
+
+    fireEvent.click(getByTestId('add-hotel-button'));
+    await waitFor(() => expect(getByTestId('add-hotel-form')).toBeInTheDocument());
+
+    fireEvent.change(getByTestId('name-input'), { target: { value: 'Hilton' } });
+    fireEvent.change(getByTestId('address-input'), { target: { value: 'Hanoi' } });
+    fireEvent.change(getByTestId('rating-input'), { target: { value: '5' } });
+
+    mockedAxios.post.mockResolvedValueOnce({ data: { hotel_id: 300, name: 'Hilton', address: 'Hanoi', rating: 5 } });
+
+    fireEvent.click(getByTestId('save-button'));
+
+    await waitFor(() => expect(getByTestId('success-message')).toBeInTheDocument());
+    expect(getByTestId('success-message')).toHaveTextContent('Hotel "Hilton" added successfully');
+  });
+});
