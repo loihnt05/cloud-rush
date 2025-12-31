@@ -14,8 +14,6 @@
     "test:booking-infor-valid": "mocha -r ts-node/register function/booking/passengerInformationValidData.spec.js",
     "test:booking-select-available": "mocha -r ts-node/register function/booking/selectedavailableValidData.spec.js",
     "test:booking-view-seat": "mocha -r ts-node/register function/booking/viewseat.spec.js"
-
-    
   },
   "keywords": [],
   "author": "",
